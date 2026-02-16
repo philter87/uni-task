@@ -51,13 +51,10 @@ public class TasksControllerTests : IDisposable
     public async Task CreateTask_ReturnsCreatedTask()
     {
         // Arrange
-        var newTask = new TaskItem
-        {
-            Title = "Test Task",
-            Description = "Test Description",
-            OldStatus = UniTask.Api.Models.TaskStatus.Todo,
-            Priority = TaskPriority.Medium
-        };
+        var newTask = Any.TaskItem(
+            title: "Test Task",
+            description: "Test Description",
+            priority: TaskPriority.Medium);
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/tasks", newTask);
@@ -75,12 +72,9 @@ public class TasksControllerTests : IDisposable
     public async Task GetTask_ReturnsTask_WhenTaskExists()
     {
         // Arrange
-        var newTask = new TaskItem
-        {
-            Title = "Get Task Test",
-            OldStatus = UniTask.Api.Models.TaskStatus.InProgress,
-            Priority = TaskPriority.High
-        };
+        var newTask = Any.TaskItem(
+            title: "Get Task Test",
+            priority: TaskPriority.High);
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItem>();
@@ -111,12 +105,9 @@ public class TasksControllerTests : IDisposable
     public async Task UpdateTask_UpdatesTask_WhenTaskExists()
     {
         // Arrange
-        var newTask = new TaskItem
-        {
-            Title = "Original Title",
-            OldStatus = UniTask.Api.Models.TaskStatus.Todo,
-            Priority = TaskPriority.Low
-        };
+        var newTask = Any.TaskItem(
+            title: "Original Title",
+            priority: TaskPriority.Low);
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItem>();
@@ -143,12 +134,9 @@ public class TasksControllerTests : IDisposable
     public async Task DeleteTask_DeletesTask_WhenTaskExists()
     {
         // Arrange
-        var newTask = new TaskItem
-        {
-            Title = "Task to Delete",
-            OldStatus = UniTask.Api.Models.TaskStatus.Todo,
-            Priority = TaskPriority.Medium
-        };
+        var newTask = Any.TaskItem(
+            title: "Task to Delete",
+            priority: TaskPriority.Medium);
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItem>();

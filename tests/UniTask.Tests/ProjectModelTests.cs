@@ -31,25 +31,10 @@ public class ProjectModelTests : IDisposable
     public async Task Project_CanHaveTaskTypes()
     {
         // Arrange
-        var project = new Project
-        {
-            Name = "Test Project",
-            Description = "Project with task types",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var project = Any.Project();
 
-        var taskType1 = new TaskType
-        {
-            Name = "Bug",
-            Description = "Bug task type"
-        };
-
-        var taskType2 = new TaskType
-        {
-            Name = "Feature",
-            Description = "Feature task type"
-        };
+        var taskType1 = Any.TaskType(name: "Bug", description: "Bug task type");
+        var taskType2 = Any.TaskType(name: "Feature", description: "Feature task type");
 
         // Act
         _context.Projects.Add(project);
@@ -76,18 +61,9 @@ public class ProjectModelTests : IDisposable
     public async Task TaskType_HasProjectReference()
     {
         // Arrange
-        var project = new Project
-        {
-            Name = "Test Project",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var project = Any.Project(name: "Test Project");
 
-        var taskType = new TaskType
-        {
-            Name = "Story",
-            Description = "User story task type"
-        };
+        var taskType = Any.TaskType(name: "Story", description: "User story task type");
 
         // Act
         _context.Projects.Add(project);
@@ -112,11 +88,7 @@ public class ProjectModelTests : IDisposable
     public async Task TaskType_CanBeGlobal_WithoutProject()
     {
         // Arrange
-        var taskType = new TaskType
-        {
-            Name = "Global Task Type",
-            Description = "Task type not associated with any project"
-        };
+        var taskType = Any.TaskType(name: "Global Task Type", description: "Task type not associated with any project");
 
         // Act
         _context.TaskTypes.Add(taskType);
@@ -136,17 +108,9 @@ public class ProjectModelTests : IDisposable
     public async Task DeletingProject_SetsTaskTypeProjectIdToNull()
     {
         // Arrange
-        var project = new Project
-        {
-            Name = "Project to Delete",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var project = Any.Project(name: "Project to Delete");
 
-        var taskType = new TaskType
-        {
-            Name = "Task Type with Project"
-        };
+        var taskType = Any.TaskType(name: "Task Type with Project");
 
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
