@@ -67,7 +67,20 @@ public class TasksController : ControllerBase
             return BadRequest();
         }
 
-        _context.Entry(task).State = EntityState.Modified;
+        var existingTask = await _context.Tasks.FindAsync(id);
+        if (existingTask == null)
+        {
+            return NotFound();
+        }
+
+        // Update only allowed fields to prevent overposting
+        existingTask.Title = task.Title;
+        existingTask.Description = task.Description;
+        existingTask.Status = task.Status;
+        existingTask.Priority = task.Priority;
+        existingTask.DueDate = task.DueDate;
+        existingTask.AssignedTo = task.AssignedTo;
+        // Note: CreatedAt, Source, and ExternalId are not updated to prevent overposting
 
         try
         {
