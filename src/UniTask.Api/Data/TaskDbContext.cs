@@ -75,6 +75,11 @@ public class TaskDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
             
+            entity.HasOne(e => e.Project)
+                .WithMany(e => e.Statuses)
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
             entity.HasMany(e => e.Tasks)
                 .WithOne(e => e.Status)
                 .HasForeignKey(e => e.StatusId)
