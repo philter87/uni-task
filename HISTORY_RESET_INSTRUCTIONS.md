@@ -100,15 +100,16 @@ git ls-files
 
 ## For This PR Branch
 
-To reset just this PR branch (`copilot/remove-git-history`), the repository owner should run:
+To reset just this PR branch, the repository owner should run:
 
 ```bash
-git checkout copilot/remove-git-history
+# Replace <branch-name> with the actual branch name (e.g., copilot/remove-git-history)
+git checkout <branch-name>
 git checkout --orphan temp-clean
 git add -A
 git commit -m "Initial commit - clean repository history"
-git branch -f copilot/remove-git-history temp-clean
-git checkout copilot/remove-git-history
+git branch -f <branch-name> temp-clean
+git checkout <branch-name>
 git branch -d temp-clean
-git push -f origin copilot/remove-git-history
+git push -f origin <branch-name>
 ```
