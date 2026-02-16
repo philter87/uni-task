@@ -9,8 +9,6 @@ namespace UniTask.Tests;
 /// </summary>
 public static class Any
 {
-    private static readonly Random _random = new Random();
-
     /// <summary>
     /// Generates a random string of the specified length.
     /// </summary>
@@ -20,7 +18,7 @@ public static class Any
     {
         const string chars = "abcdefghijklmnopqrstuvwxyz";
         return new string(Enumerable.Range(0, length)
-            .Select(_ => chars[_random.Next(chars.Length)])
+            .Select(_ => chars[Random.Shared.Next(chars.Length)])
             .ToArray());
     }
 
@@ -32,7 +30,7 @@ public static class Any
     /// <returns>A random integer</returns>
     public static int Int(int min = 1, int max = 1000)
     {
-        return _random.Next(min, max);
+        return Random.Shared.Next(min, max);
     }
 
     /// <summary>
@@ -52,7 +50,7 @@ public static class Any
     public static T Enum<T>() where T : struct, System.Enum
     {
         var values = System.Enum.GetValues<T>();
-        return values[_random.Next(values.Length)];
+        return values[Random.Shared.Next(values.Length)];
     }
 
     /// <summary>
@@ -63,7 +61,7 @@ public static class Any
     /// <returns>A random DateTime</returns>
     public static DateTime DateTime(int minDaysAgo = 0, int maxDaysAgo = 365)
     {
-        var daysAgo = _random.Next(minDaysAgo, maxDaysAgo);
+        var daysAgo = Random.Shared.Next(minDaysAgo, maxDaysAgo);
         return System.DateTime.UtcNow.AddDays(-daysAgo);
     }
 
@@ -87,7 +85,7 @@ public static class Any
             Name = name ?? $"Project {String(8)}",
             Description = description ?? String(20),
             CreatedAt = created,
-            UpdatedAt = updatedAt ?? created.AddDays(_random.Next(0, 30))
+            UpdatedAt = updatedAt ?? created.AddDays(Random.Shared.Next(0, 30))
         };
     }
 
@@ -169,7 +167,7 @@ public static class Any
             Goal = goal ?? String(25),
             ProjectId = projectId,
             StartDate = start,
-            EndDate = endDate ?? start.AddDays(_random.Next(7, 21))
+            EndDate = endDate ?? start.AddDays(Random.Shared.Next(7, 21))
         };
     }
 
