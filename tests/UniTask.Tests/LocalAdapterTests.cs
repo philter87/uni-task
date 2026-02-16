@@ -6,7 +6,6 @@ using UniTask.Api.Adapters;
 using UniTask.Api.Data;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
-using UniTask.Api.Services;
 using Xunit;
 
 namespace UniTask.Tests;
@@ -15,7 +14,6 @@ public class LocalAdapterTests : IDisposable
 {
     private readonly TaskDbContext _context;
     private readonly LocalAdapter _adapter;
-    private readonly IChangeEventService _changeEventService;
 
     public LocalAdapterTests()
     {
@@ -24,8 +22,7 @@ public class LocalAdapterTests : IDisposable
             .Options;
         
         _context = new TaskDbContext(options);
-        _changeEventService = new ChangeEventService(_context);
-        _adapter = new LocalAdapter(_context, _changeEventService);
+        _adapter = new LocalAdapter(_context);
     }
 
     public void Dispose()
@@ -248,82 +245,4 @@ public class LocalAdapterTests : IDisposable
         Assert.NotNull(dbTask);
         Assert.Equal(TaskPriority.Medium, dbTask.Priority); // Should default to Medium
     }
-
-    [Fact]
-    public async Task CreateTaskAsync_CreatesChangeEvent()
-    {
-        // Arrange
-        var taskDto = Any.TaskItemDto(
-            title: "Test Task",
-            description: "Test Description",
-            priority: "High");
-
-        // Act
-        var result = await _adapter.CreateTaskAsync(taskDto);
-
-        // Assert - Verify change event was created
-        var changeEvents = await _context.ChangeEvents
-            .Where(e => e.EntityId == result.Id && e.EntityType == ChangeEventEntityType.Task)
-            .ToListAsync();
-        
-        Assert.Single(changeEvents);
-        var changeEvent = changeEvents.First();
-        Assert.Equal(ChangeEventOperation.Created, changeEvent.Operation);
-        Assert.NotNull(changeEvent.Payload);
-    }
-
-    [Fact]
-    public async Task UpdateTaskAsync_CreatesChangeEvent()
-    {
-        // Arrange
-        var task = Any.TaskItem(
-            title: "Original Title",
-            priority: TaskPriority.Low);
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
-
-        var updateDto = Any.TaskItemDto(
-            id: task.Id,
-            title: "Updated Title",
-            priority: "High");
-
-        // Act
-        var result = await _adapter.UpdateTaskAsync(task.Id, updateDto);
-
-        // Assert - Verify change event was created
-        var changeEvents = await _context.ChangeEvents
-            .Where(e => e.EntityId == task.Id && e.EntityType == ChangeEventEntityType.Task && e.Operation == ChangeEventOperation.Updated)
-            .ToListAsync();
-        
-        Assert.Single(changeEvents);
-        var changeEvent = changeEvents.First();
-        Assert.Equal(ChangeEventOperation.Updated, changeEvent.Operation);
-        Assert.NotNull(changeEvent.Payload);
-    }
-
-    [Fact]
-    public async Task DeleteTaskAsync_CreatesChangeEvent()
-    {
-        // Arrange
-        var task = Any.TaskItem(
-            title: "Task to Delete",
-            priority: TaskPriority.Medium);
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
-        var taskId = task.Id;
-
-        // Act
-        var result = await _adapter.DeleteTaskAsync(taskId);
-
-        // Assert - Verify change event was created
-        var changeEvents = await _context.ChangeEvents
-            .Where(e => e.EntityId == taskId && e.EntityType == ChangeEventEntityType.Task)
-            .ToListAsync();
-        
-        Assert.Single(changeEvents);
-        var changeEvent = changeEvents.First();
-        Assert.Equal(ChangeEventOperation.Deleted, changeEvent.Operation);
-        Assert.NotNull(changeEvent.Payload);
-    }
 }
-

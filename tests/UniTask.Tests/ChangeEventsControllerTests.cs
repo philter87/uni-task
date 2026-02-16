@@ -72,7 +72,7 @@ public class ChangeEventsControllerTests : IDisposable
         Assert.Equal(ChangeEventEntityType.Task, changeEvent.EntityType);
         Assert.Equal(ChangeEventOperation.Created, changeEvent.Operation);
         Assert.NotNull(changeEvent.EventId);
-        Assert.NotNull(changeEvent.Payload);
+        Assert.Null(changeEvent.Payload); // Events are thin - no payload
     }
 
     [Fact]

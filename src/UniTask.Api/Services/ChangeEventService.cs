@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Data;
 using UniTask.Api.Models;
@@ -19,8 +18,7 @@ public class ChangeEventService : IChangeEventService
         string entityType,
         int entityId,
         string operation,
-        string? actorUserId,
-        object? payload = null)
+        string? actorUserId)
     {
         var version = await GetNextVersionAsync();
         var eventId = GenerateEventId();
@@ -35,7 +33,7 @@ public class ChangeEventService : IChangeEventService
             OccurredAt = DateTime.UtcNow,
             ActorUserId = actorUserId,
             Version = version,
-            Payload = payload != null ? JsonSerializer.Serialize(payload) : null
+            Payload = null // Events are thin - no payload
         };
 
         _context.ChangeEvents.Add(changeEvent);

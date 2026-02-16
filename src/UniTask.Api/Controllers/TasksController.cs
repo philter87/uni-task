@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using UniTask.Api.Adapters;
 using UniTask.Api.DTOs;
+using UniTask.Api.Models;
+using UniTask.Api.Services;
 
 namespace UniTask.Api.Controllers;
 
@@ -9,11 +11,13 @@ namespace UniTask.Api.Controllers;
 public class TasksController : ControllerBase
 {
     private readonly ITaskAdapter _adapter;
+    private readonly IChangeEventService _changeEventService;
     private readonly ILogger<TasksController> _logger;
 
-    public TasksController(ITaskAdapter adapter, ILogger<TasksController> logger)
+    public TasksController(ITaskAdapter adapter, IChangeEventService changeEventService, ILogger<TasksController> logger)
     {
         _adapter = adapter;
+        _changeEventService = changeEventService;
         _logger = logger;
     }
 
@@ -50,6 +54,15 @@ public class TasksController : ControllerBase
     public async Task<ActionResult<TaskItemDto>> CreateTask(TaskItemDto task)
     {
         var createdTask = await _adapter.CreateTaskAsync(task);
+        
+        // Create change event after successful operation
+        await _changeEventService.CreateChangeEventAsync(
+            projectId: createdTask.ProjectId,
+            entityType: ChangeEventEntityType.Task,
+            entityId: createdTask.Id,
+            operation: ChangeEventOperation.Created,
+            actorUserId: createdTask.AssignedTo);
+        
         return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
     }
 
@@ -70,6 +83,14 @@ public class TasksController : ControllerBase
             return NotFound();
         }
 
+        // Create change event after successful operation
+        await _changeEventService.CreateChangeEventAsync(
+            projectId: task.ProjectId,
+            entityType: ChangeEventEntityType.Task,
+            entityId: task.Id,
+            operation: ChangeEventOperation.Updated,
+            actorUserId: task.AssignedTo);
+
         return NoContent();
     }
 
@@ -79,11 +100,26 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
+        // Get task info before deletion for the event
+        var task = await _adapter.GetTaskByIdAsync(id);
+        if (task == null)
+        {
+            return NotFound();
+        }
+
         var success = await _adapter.DeleteTaskAsync(id);
         if (!success)
         {
             return NotFound();
         }
+
+        // Create change event after successful operation
+        await _changeEventService.CreateChangeEventAsync(
+            projectId: task.ProjectId,
+            entityType: ChangeEventEntityType.Task,
+            entityId: id,
+            operation: ChangeEventOperation.Deleted,
+            actorUserId: task.AssignedTo);
 
         return NoContent();
     }

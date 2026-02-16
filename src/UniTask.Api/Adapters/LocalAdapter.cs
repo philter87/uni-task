@@ -2,19 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Data;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
-using UniTask.Api.Services;
 
 namespace UniTask.Api.Adapters;
 
 public class LocalAdapter : ITaskAdapter
 {
     private readonly TaskDbContext _context;
-    private readonly IChangeEventService _changeEventService;
 
-    public LocalAdapter(TaskDbContext context, IChangeEventService changeEventService)
+    public LocalAdapter(TaskDbContext context)
     {
         _context = context;
-        _changeEventService = changeEventService;
     }
 
     public async Task<IEnumerable<TaskItemDto>> GetAllTasksAsync()
@@ -53,15 +50,6 @@ public class LocalAdapter : ITaskAdapter
         _context.Tasks.Add(taskItem);
         await _context.SaveChangesAsync();
 
-        // Create change event with full snapshot
-        await _changeEventService.CreateChangeEventAsync(
-            projectId: taskItem.ProjectId,
-            entityType: ChangeEventEntityType.Task,
-            entityId: taskItem.Id,
-            operation: ChangeEventOperation.Created,
-            actorUserId: taskItem.AssignedTo,
-            payload: MapToDto(taskItem));
-
         return MapToDto(taskItem);
     }
 
@@ -72,32 +60,6 @@ public class LocalAdapter : ITaskAdapter
         {
             return false;
         }
-
-        // Build a patch object containing only changed fields
-        var patch = new Dictionary<string, object?>();
-        
-        if (taskDto.Title != existingTask.Title)
-            patch["Title"] = taskDto.Title;
-        if (taskDto.Description != existingTask.Description)
-            patch["Description"] = taskDto.Description;
-        if (taskDto.StatusId != existingTask.StatusId)
-            patch["StatusId"] = taskDto.StatusId;
-        if (taskDto.Priority != existingTask.Priority.ToString())
-            patch["Priority"] = taskDto.Priority;
-        if (taskDto.DueDate != existingTask.DueDate)
-            patch["DueDate"] = taskDto.DueDate;
-        if (taskDto.AssignedTo != existingTask.AssignedTo)
-            patch["AssignedTo"] = taskDto.AssignedTo;
-        if (taskDto.ProjectId != existingTask.ProjectId)
-            patch["ProjectId"] = taskDto.ProjectId;
-        if (taskDto.TaskTypeId != existingTask.TaskTypeId)
-            patch["TaskTypeId"] = taskDto.TaskTypeId;
-        if (taskDto.SprintId != existingTask.SprintId)
-            patch["SprintId"] = taskDto.SprintId;
-        if (taskDto.DurationMin != existingTask.DurationMin)
-            patch["DurationMin"] = taskDto.DurationMin;
-        if (taskDto.RemainingMin != existingTask.RemainingMin)
-            patch["RemainingMin"] = taskDto.RemainingMin;
 
         existingTask.Title = taskDto.Title;
         existingTask.Description = taskDto.Description;
@@ -115,16 +77,6 @@ public class LocalAdapter : ITaskAdapter
         try
         {
             await _context.SaveChangesAsync();
-            
-            // Create change event with patch containing only changed fields
-            await _changeEventService.CreateChangeEventAsync(
-                projectId: existingTask.ProjectId,
-                entityType: ChangeEventEntityType.Task,
-                entityId: existingTask.Id,
-                operation: ChangeEventOperation.Updated,
-                actorUserId: existingTask.AssignedTo,
-                payload: patch.Count > 0 ? patch : null);
-            
             return true;
         }
         catch (DbUpdateConcurrencyException)
@@ -145,21 +97,8 @@ public class LocalAdapter : ITaskAdapter
             return false;
         }
 
-        var projectId = task.ProjectId;
-        var assignedTo = task.AssignedTo;
-
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
-
-        // Create change event with minimal info for deletion
-        await _changeEventService.CreateChangeEventAsync(
-            projectId: projectId,
-            entityType: ChangeEventEntityType.Task,
-            entityId: id,
-            operation: ChangeEventOperation.Deleted,
-            actorUserId: assignedTo,
-            payload: new { Id = id, Title = task.Title });
-
         return true;
     }
 

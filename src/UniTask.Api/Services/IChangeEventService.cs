@@ -12,8 +12,7 @@ public interface IChangeEventService
         string entityType,
         int entityId,
         string operation,
-        string? actorUserId,
-        object? payload = null);
+        string? actorUserId);
 
     /// <summary>
     /// Gets change events for a specific project

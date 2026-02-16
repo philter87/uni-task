@@ -32,17 +32,13 @@ public class ChangeEventServiceTests : IDisposable
     [Fact]
     public async Task CreateChangeEventAsync_CreatesEventSuccessfully()
     {
-        // Arrange
-        var payload = new { Title = "Test Task" };
-
         // Act
         var result = await _service.CreateChangeEventAsync(
             projectId: 1,
             entityType: ChangeEventEntityType.Task,
             entityId: 100,
             operation: ChangeEventOperation.Created,
-            actorUserId: "user123",
-            payload: payload);
+            actorUserId: "user123");
 
         // Assert
         Assert.NotNull(result);
@@ -54,7 +50,7 @@ public class ChangeEventServiceTests : IDisposable
         Assert.Equal(ChangeEventOperation.Created, result.Operation);
         Assert.Equal("user123", result.ActorUserId);
         Assert.True(result.Version > 0);
-        Assert.NotNull(result.Payload);
+        Assert.Null(result.Payload); // Events are thin - no payload
     }
 
     [Fact]
