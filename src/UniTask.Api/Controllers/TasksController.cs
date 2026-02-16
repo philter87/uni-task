@@ -24,7 +24,13 @@ public class TasksController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks()
     {
-        return await _context.Tasks.ToListAsync();
+        return await _context.Tasks
+            .Include(t => t.Project)
+            .Include(t => t.TaskType)
+            .Include(t => t.Status)
+            .Include(t => t.Sprint)
+            .Include(t => t.Labels)
+            .ToListAsync();
     }
 
     /// <summary>
@@ -33,7 +39,14 @@ public class TasksController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskItem>> GetTask(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var task = await _context.Tasks
+            .Include(t => t.Project)
+            .Include(t => t.TaskType)
+            .Include(t => t.Status)
+            .Include(t => t.Sprint)
+            .Include(t => t.Labels)
+            .Include(t => t.Comments)
+            .FirstOrDefaultAsync(t => t.Id == id);
 
         if (task == null)
         {
@@ -50,6 +63,7 @@ public class TasksController : ControllerBase
     public async Task<ActionResult<TaskItem>> CreateTask(TaskItem task)
     {
         task.CreatedAt = DateTime.UtcNow;
+        task.UpdatedAt = DateTime.UtcNow;
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -76,10 +90,17 @@ public class TasksController : ControllerBase
         // Update only allowed fields to prevent overposting
         existingTask.Title = task.Title;
         existingTask.Description = task.Description;
-        existingTask.Status = task.Status;
+        existingTask.StatusId = task.StatusId;
+        existingTask.OldStatus = task.OldStatus;
         existingTask.Priority = task.Priority;
         existingTask.DueDate = task.DueDate;
         existingTask.AssignedTo = task.AssignedTo;
+        existingTask.ProjectId = task.ProjectId;
+        existingTask.TaskTypeId = task.TaskTypeId;
+        existingTask.SprintId = task.SprintId;
+        existingTask.DurationMin = task.DurationMin;
+        existingTask.RemainingMin = task.RemainingMin;
+        existingTask.UpdatedAt = DateTime.UtcNow;
         // Note: CreatedAt, Source, and ExternalId are not updated to prevent overposting
 
         try
