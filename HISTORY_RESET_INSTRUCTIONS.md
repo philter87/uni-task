@@ -91,6 +91,14 @@ git log --oneline
 git ls-files
 ```
 
+## Post-Reset Cleanup
+
+After completing the history reset, remember to:
+
+1. **Remove the temporary PR note from README.md**: Delete the "Note About This PR" section that was added for this documentation
+2. **Delete this instructions file**: Remove `HISTORY_RESET_INSTRUCTIONS.md` as it will no longer be needed
+3. **Update the README**: Restore the README to its original state or update it as needed for your project
+
 ## Notes
 
 - This operation rewrites history and requires force push
