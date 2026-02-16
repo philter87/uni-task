@@ -13,4 +13,5 @@ public class Project
     public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
     public ICollection<Sprint> Sprints { get; set; } = new List<Sprint>();
     public ICollection<Status> Statuses { get; set; } = new List<Status>();
+    public ICollection<TaskType> TaskTypes { get; set; } = new List<TaskType>();
 }
