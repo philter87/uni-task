@@ -73,21 +73,31 @@ public class LocalAdapter : ITaskAdapter
             return false;
         }
 
-        // Build a patch object containing only changed fields (keeping it simple with full snapshot for now)
-        var patch = new
-        {
-            Title = taskDto.Title != existingTask.Title ? taskDto.Title : null,
-            Description = taskDto.Description != existingTask.Description ? taskDto.Description : null,
-            StatusId = taskDto.StatusId != existingTask.StatusId ? taskDto.StatusId : null,
-            Priority = taskDto.Priority != existingTask.Priority.ToString() ? taskDto.Priority : null,
-            DueDate = taskDto.DueDate != existingTask.DueDate ? taskDto.DueDate : null,
-            AssignedTo = taskDto.AssignedTo != existingTask.AssignedTo ? taskDto.AssignedTo : null,
-            ProjectId = taskDto.ProjectId != existingTask.ProjectId ? taskDto.ProjectId : null,
-            TaskTypeId = taskDto.TaskTypeId != existingTask.TaskTypeId ? taskDto.TaskTypeId : null,
-            SprintId = taskDto.SprintId != existingTask.SprintId ? taskDto.SprintId : null,
-            DurationMin = taskDto.DurationMin != existingTask.DurationMin ? taskDto.DurationMin : null,
-            RemainingMin = taskDto.RemainingMin != existingTask.RemainingMin ? taskDto.RemainingMin : null
-        };
+        // Build a patch object containing only changed fields
+        var patch = new Dictionary<string, object?>();
+        
+        if (taskDto.Title != existingTask.Title)
+            patch["Title"] = taskDto.Title;
+        if (taskDto.Description != existingTask.Description)
+            patch["Description"] = taskDto.Description;
+        if (taskDto.StatusId != existingTask.StatusId)
+            patch["StatusId"] = taskDto.StatusId;
+        if (taskDto.Priority != existingTask.Priority.ToString())
+            patch["Priority"] = taskDto.Priority;
+        if (taskDto.DueDate != existingTask.DueDate)
+            patch["DueDate"] = taskDto.DueDate;
+        if (taskDto.AssignedTo != existingTask.AssignedTo)
+            patch["AssignedTo"] = taskDto.AssignedTo;
+        if (taskDto.ProjectId != existingTask.ProjectId)
+            patch["ProjectId"] = taskDto.ProjectId;
+        if (taskDto.TaskTypeId != existingTask.TaskTypeId)
+            patch["TaskTypeId"] = taskDto.TaskTypeId;
+        if (taskDto.SprintId != existingTask.SprintId)
+            patch["SprintId"] = taskDto.SprintId;
+        if (taskDto.DurationMin != existingTask.DurationMin)
+            patch["DurationMin"] = taskDto.DurationMin;
+        if (taskDto.RemainingMin != existingTask.RemainingMin)
+            patch["RemainingMin"] = taskDto.RemainingMin;
 
         existingTask.Title = taskDto.Title;
         existingTask.Description = taskDto.Description;
@@ -106,14 +116,14 @@ public class LocalAdapter : ITaskAdapter
         {
             await _context.SaveChangesAsync();
             
-            // Create change event with patch
+            // Create change event with patch containing only changed fields
             await _changeEventService.CreateChangeEventAsync(
                 projectId: existingTask.ProjectId,
                 entityType: ChangeEventEntityType.Task,
                 entityId: existingTask.Id,
                 operation: ChangeEventOperation.Updated,
                 actorUserId: existingTask.AssignedTo,
-                payload: patch);
+                payload: patch.Count > 0 ? patch : null);
             
             return true;
         }

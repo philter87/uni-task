@@ -8,8 +8,6 @@ namespace UniTask.Api.Services;
 public class ChangeEventService : IChangeEventService
 {
     private readonly TaskDbContext _context;
-    private static int _versionCounter = 0;
-    private static readonly object _versionLock = new object();
 
     public ChangeEventService(TaskDbContext context)
     {
@@ -24,7 +22,7 @@ public class ChangeEventService : IChangeEventService
         string? actorUserId,
         object? payload = null)
     {
-        var version = GetNextVersion();
+        var version = await GetNextVersionAsync();
         var eventId = GenerateEventId();
         
         var changeEvent = new ChangeEvent
@@ -73,12 +71,12 @@ public class ChangeEventService : IChangeEventService
             .ToListAsync();
     }
 
-    private static int GetNextVersion()
+    private async Task<int> GetNextVersionAsync()
     {
-        lock (_versionLock)
-        {
-            return ++_versionCounter;
-        }
+        // Use database to determine next version to avoid issues in multi-instance deployments
+        var maxVersion = await _context.ChangeEvents
+            .MaxAsync(e => (int?)e.Version) ?? 0;
+        return maxVersion + 1;
     }
 
     private static string GenerateEventId()
