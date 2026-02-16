@@ -2,16 +2,19 @@ using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Data;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
+using UniTask.Api.Services;
 
 namespace UniTask.Api.Adapters;
 
 public class LocalAdapter : ITaskAdapter
 {
     private readonly TaskDbContext _context;
+    private readonly IChangeEventService _changeEventService;
 
-    public LocalAdapter(TaskDbContext context)
+    public LocalAdapter(TaskDbContext context, IChangeEventService changeEventService)
     {
         _context = context;
+        _changeEventService = changeEventService;
     }
 
     public async Task<IEnumerable<TaskItemDto>> GetAllTasksAsync()
@@ -50,6 +53,15 @@ public class LocalAdapter : ITaskAdapter
         _context.Tasks.Add(taskItem);
         await _context.SaveChangesAsync();
 
+        // Create change event with full snapshot
+        await _changeEventService.CreateChangeEventAsync(
+            projectId: taskItem.ProjectId,
+            entityType: ChangeEventEntityType.Task,
+            entityId: taskItem.Id,
+            operation: ChangeEventOperation.Created,
+            actorUserId: taskItem.AssignedTo,
+            payload: MapToDto(taskItem));
+
         return MapToDto(taskItem);
     }
 
@@ -60,6 +72,22 @@ public class LocalAdapter : ITaskAdapter
         {
             return false;
         }
+
+        // Build a patch object containing only changed fields (keeping it simple with full snapshot for now)
+        var patch = new
+        {
+            Title = taskDto.Title != existingTask.Title ? taskDto.Title : null,
+            Description = taskDto.Description != existingTask.Description ? taskDto.Description : null,
+            StatusId = taskDto.StatusId != existingTask.StatusId ? taskDto.StatusId : null,
+            Priority = taskDto.Priority != existingTask.Priority.ToString() ? taskDto.Priority : null,
+            DueDate = taskDto.DueDate != existingTask.DueDate ? taskDto.DueDate : null,
+            AssignedTo = taskDto.AssignedTo != existingTask.AssignedTo ? taskDto.AssignedTo : null,
+            ProjectId = taskDto.ProjectId != existingTask.ProjectId ? taskDto.ProjectId : null,
+            TaskTypeId = taskDto.TaskTypeId != existingTask.TaskTypeId ? taskDto.TaskTypeId : null,
+            SprintId = taskDto.SprintId != existingTask.SprintId ? taskDto.SprintId : null,
+            DurationMin = taskDto.DurationMin != existingTask.DurationMin ? taskDto.DurationMin : null,
+            RemainingMin = taskDto.RemainingMin != existingTask.RemainingMin ? taskDto.RemainingMin : null
+        };
 
         existingTask.Title = taskDto.Title;
         existingTask.Description = taskDto.Description;
@@ -77,6 +105,16 @@ public class LocalAdapter : ITaskAdapter
         try
         {
             await _context.SaveChangesAsync();
+            
+            // Create change event with patch
+            await _changeEventService.CreateChangeEventAsync(
+                projectId: existingTask.ProjectId,
+                entityType: ChangeEventEntityType.Task,
+                entityId: existingTask.Id,
+                operation: ChangeEventOperation.Updated,
+                actorUserId: existingTask.AssignedTo,
+                payload: patch);
+            
             return true;
         }
         catch (DbUpdateConcurrencyException)
@@ -97,8 +135,21 @@ public class LocalAdapter : ITaskAdapter
             return false;
         }
 
+        var projectId = task.ProjectId;
+        var assignedTo = task.AssignedTo;
+
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
+
+        // Create change event with minimal info for deletion
+        await _changeEventService.CreateChangeEventAsync(
+            projectId: projectId,
+            entityType: ChangeEventEntityType.Task,
+            entityId: id,
+            operation: ChangeEventOperation.Deleted,
+            actorUserId: assignedTo,
+            payload: new { Id = id, Title = task.Title });
+
         return true;
     }
 

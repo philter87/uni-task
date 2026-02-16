@@ -19,6 +19,7 @@ public class TaskDbContext : DbContext
     public DbSet<Label> Labels { get; set; } = null!;
     public DbSet<Sprint> Sprints { get; set; } = null!;
     public DbSet<TaskChange> TaskChanges { get; set; } = null!;
+    public DbSet<ChangeEvent> ChangeEvents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -154,6 +155,25 @@ public class TaskDbContext : DbContext
             entity.Property(e => e.AssignedTo).HasMaxLength(100);
             entity.Property(e => e.Source).HasMaxLength(50);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
+        });
+
+        // ChangeEvent configuration
+        modelBuilder.Entity<ChangeEvent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EventId).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.EntityType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Operation).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.ActorUserId).HasMaxLength(100);
+            
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasIndex(e => e.EventId).IsUnique();
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.OccurredAt);
         });
     }
 }
