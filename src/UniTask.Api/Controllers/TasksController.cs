@@ -91,6 +91,7 @@ public class TasksController : ControllerBase
         existingTask.Title = task.Title;
         existingTask.Description = task.Description;
         existingTask.StatusId = task.StatusId;
+        existingTask.OldStatus = task.OldStatus;
         existingTask.Priority = task.Priority;
         existingTask.DueDate = task.DueDate;
         existingTask.AssignedTo = task.AssignedTo;

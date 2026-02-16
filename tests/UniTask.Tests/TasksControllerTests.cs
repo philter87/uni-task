@@ -136,6 +136,7 @@ public class TasksControllerTests : IDisposable
         var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItem>();
         Assert.NotNull(updatedTask);
         Assert.Equal("Updated Title", updatedTask.Title);
+        Assert.Equal(UniTask.Api.Models.TaskStatus.Done, updatedTask.OldStatus);
     }
 
     [Fact]

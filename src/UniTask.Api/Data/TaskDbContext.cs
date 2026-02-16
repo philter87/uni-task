@@ -40,6 +40,11 @@ public class TaskDbContext : DbContext
                 .WithOne(e => e.Project)
                 .HasForeignKey(e => e.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(e => e.Sprints)
+                .WithOne(e => e.Project)
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ProjectMember configuration
@@ -107,11 +112,6 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Goal).HasMaxLength(1000);
-            
-            entity.HasOne(e => e.Project)
-                .WithMany()
-                .HasForeignKey(e => e.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasMany(e => e.Tasks)
                 .WithOne(e => e.Sprint)
