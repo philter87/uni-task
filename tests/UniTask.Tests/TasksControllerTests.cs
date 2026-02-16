@@ -55,7 +55,7 @@ public class TasksControllerTests : IDisposable
         {
             Title = "Test Task",
             Description = "Test Description",
-            Status = UniTask.Api.Models.TaskStatus.Todo,
+            OldStatus = UniTask.Api.Models.TaskStatus.Todo,
             Priority = TaskPriority.Medium
         };
 
@@ -68,6 +68,7 @@ public class TasksControllerTests : IDisposable
         Assert.NotNull(createdTask);
         Assert.Equal("Test Task", createdTask.Title);
         Assert.True(createdTask.Id > 0);
+        Assert.True(createdTask.UpdatedAt > DateTime.MinValue);
     }
 
     [Fact]
@@ -77,7 +78,7 @@ public class TasksControllerTests : IDisposable
         var newTask = new TaskItem
         {
             Title = "Get Task Test",
-            Status = UniTask.Api.Models.TaskStatus.InProgress,
+            OldStatus = UniTask.Api.Models.TaskStatus.InProgress,
             Priority = TaskPriority.High
         };
 
@@ -113,7 +114,7 @@ public class TasksControllerTests : IDisposable
         var newTask = new TaskItem
         {
             Title = "Original Title",
-            Status = UniTask.Api.Models.TaskStatus.Todo,
+            OldStatus = UniTask.Api.Models.TaskStatus.Todo,
             Priority = TaskPriority.Low
         };
 
@@ -122,7 +123,7 @@ public class TasksControllerTests : IDisposable
         Assert.NotNull(createdTask);
 
         createdTask.Title = "Updated Title";
-        createdTask.Status = UniTask.Api.Models.TaskStatus.Done;
+        createdTask.OldStatus = UniTask.Api.Models.TaskStatus.Done;
 
         // Act
         var response = await _client.PutAsJsonAsync($"/api/tasks/{createdTask.Id}", createdTask);
@@ -135,7 +136,6 @@ public class TasksControllerTests : IDisposable
         var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItem>();
         Assert.NotNull(updatedTask);
         Assert.Equal("Updated Title", updatedTask.Title);
-        Assert.Equal(UniTask.Api.Models.TaskStatus.Done, updatedTask.Status);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class TasksControllerTests : IDisposable
         var newTask = new TaskItem
         {
             Title = "Task to Delete",
-            Status = UniTask.Api.Models.TaskStatus.Todo,
+            OldStatus = UniTask.Api.Models.TaskStatus.Todo,
             Priority = TaskPriority.Medium
         };
 

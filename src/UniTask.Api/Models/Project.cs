@@ -1,0 +1,14 @@
+namespace UniTask.Api.Models;
+
+public class Project
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public string? Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+
+    // Navigation properties
+    public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+    public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
+}
