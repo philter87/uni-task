@@ -45,12 +45,10 @@ public class LocalAdapterTests : IDisposable
     public async Task CreateTaskAsync_CreatesTaskAndReturnsDto()
     {
         // Arrange
-        var taskDto = new TaskItemDto
-        {
-            Title = "Test Task",
-            Description = "Test Description",
-            Priority = "High"
-        };
+        var taskDto = Any.TaskItemDto(
+            title: "Test Task",
+            description: "Test Description",
+            priority: "High");
 
         // Act
         var result = await _adapter.CreateTaskAsync(taskDto);
@@ -75,14 +73,10 @@ public class LocalAdapterTests : IDisposable
     public async Task GetTaskByIdAsync_ReturnsDto_WhenTaskExists()
     {
         // Arrange
-        var task = new TaskItem
-        {
-            Title = "Existing Task",
-            Description = "Existing Description",
-            Priority = TaskPriority.Medium,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var task = Any.TaskItem(
+            title: "Existing Task",
+            description: "Existing Description",
+            priority: TaskPriority.Medium);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -110,24 +104,18 @@ public class LocalAdapterTests : IDisposable
     public async Task UpdateTaskAsync_UpdatesTask_WhenTaskExists()
     {
         // Arrange
-        var task = new TaskItem
-        {
-            Title = "Original Title",
-            Description = "Original Description",
-            Priority = TaskPriority.Low,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var task = Any.TaskItem(
+            title: "Original Title",
+            description: "Original Description",
+            priority: TaskPriority.Low);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
-        var updateDto = new TaskItemDto
-        {
-            Id = task.Id,
-            Title = "Updated Title",
-            Description = "Updated Description",
-            Priority = "Critical"
-        };
+        var updateDto = Any.TaskItemDto(
+            id: task.Id,
+            title: "Updated Title",
+            description: "Updated Description",
+            priority: "Critical");
 
         // Act
         var result = await _adapter.UpdateTaskAsync(task.Id, updateDto);
@@ -147,12 +135,10 @@ public class LocalAdapterTests : IDisposable
     public async Task UpdateTaskAsync_ReturnsFalse_WhenTaskDoesNotExist()
     {
         // Arrange
-        var updateDto = new TaskItemDto
-        {
-            Id = 999,
-            Title = "Updated Title",
-            Priority = "High"
-        };
+        var updateDto = Any.TaskItemDto(
+            id: 999,
+            title: "Updated Title",
+            priority: "High");
 
         // Act
         var result = await _adapter.UpdateTaskAsync(999, updateDto);
@@ -165,13 +151,9 @@ public class LocalAdapterTests : IDisposable
     public async Task DeleteTaskAsync_DeletesTask_WhenTaskExists()
     {
         // Arrange
-        var task = new TaskItem
-        {
-            Title = "Task to Delete",
-            Priority = TaskPriority.Medium,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var task = Any.TaskItem(
+            title: "Task to Delete",
+            priority: TaskPriority.Medium);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -200,32 +182,19 @@ public class LocalAdapterTests : IDisposable
     public async Task GetAllTasksAsync_ReturnsTasksWithRelatedData()
     {
         // Arrange
-        var project = new Project
-        {
-            Name = "Test Project",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var project = Any.Project(name: "Test Project");
         _context.Projects.Add(project);
 
-        var status = new Status
-        {
-            Name = "In Progress",
-            Order = 1
-        };
+        var status = Any.Status(name: "In Progress", order: 1);
         _context.Statuses.Add(status);
 
         await _context.SaveChangesAsync();
 
-        var task = new TaskItem
-        {
-            Title = "Task with Relations",
-            Priority = TaskPriority.High,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            ProjectId = project.Id,
-            StatusId = status.Id
-        };
+        var task = Any.TaskItem(
+            title: "Task with Relations",
+            priority: TaskPriority.High,
+            projectId: project.Id,
+            statusId: status.Id);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -247,11 +216,9 @@ public class LocalAdapterTests : IDisposable
     public async Task CreateTaskAsync_ParsesPriorityCorrectly()
     {
         // Arrange
-        var taskDto = new TaskItemDto
-        {
-            Title = "Priority Test",
-            Priority = "low" // Test case-insensitive parsing
-        };
+        var taskDto = Any.TaskItemDto(
+            title: "Priority Test",
+            priority: "low"); // Test case-insensitive parsing
 
         // Act
         var result = await _adapter.CreateTaskAsync(taskDto);
@@ -266,11 +233,9 @@ public class LocalAdapterTests : IDisposable
     public async Task CreateTaskAsync_UsesDefaultPriorityForInvalidValue()
     {
         // Arrange
-        var taskDto = new TaskItemDto
-        {
-            Title = "Invalid Priority Test",
-            Priority = "InvalidPriority"
-        };
+        var taskDto = Any.TaskItemDto(
+            title: "Invalid Priority Test",
+            priority: "InvalidPriority");
 
         // Act
         var result = await _adapter.CreateTaskAsync(taskDto);
