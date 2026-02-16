@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Data;
-using UniTask.Api.Models;
+using UniTask.Api.Adapters;
+using UniTask.Api.DTOs;
 
 namespace UniTask.Api.Controllers;
 
@@ -9,12 +8,12 @@ namespace UniTask.Api.Controllers;
 [Route("api/[controller]")]
 public class TasksController : ControllerBase
 {
-    private readonly TaskDbContext _context;
+    private readonly ITaskAdapter _adapter;
     private readonly ILogger<TasksController> _logger;
 
-    public TasksController(TaskDbContext context, ILogger<TasksController> logger)
+    public TasksController(ITaskAdapter adapter, ILogger<TasksController> logger)
     {
-        _context = context;
+        _adapter = adapter;
         _logger = logger;
     }
 
@@ -22,31 +21,19 @@ public class TasksController : ControllerBase
     /// Get all tasks
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks()
+    public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetTasks()
     {
-        return await _context.Tasks
-            .Include(t => t.Project)
-            .Include(t => t.TaskType)
-            .Include(t => t.Status)
-            .Include(t => t.Sprint)
-            .Include(t => t.Labels)
-            .ToListAsync();
+        var tasks = await _adapter.GetAllTasksAsync();
+        return Ok(tasks);
     }
 
     /// <summary>
     /// Get a specific task by id
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<TaskItem>> GetTask(int id)
+    public async Task<ActionResult<TaskItemDto>> GetTask(int id)
     {
-        var task = await _context.Tasks
-            .Include(t => t.Project)
-            .Include(t => t.TaskType)
-            .Include(t => t.Status)
-            .Include(t => t.Sprint)
-            .Include(t => t.Labels)
-            .Include(t => t.Comments)
-            .FirstOrDefaultAsync(t => t.Id == id);
+        var task = await _adapter.GetTaskByIdAsync(id);
 
         if (task == null)
         {
@@ -60,63 +47,27 @@ public class TasksController : ControllerBase
     /// Create a new task
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<TaskItem>> CreateTask(TaskItem task)
+    public async Task<ActionResult<TaskItemDto>> CreateTask(TaskItemDto task)
     {
-        task.CreatedAt = DateTime.UtcNow;
-        task.UpdatedAt = DateTime.UtcNow;
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+        var createdTask = await _adapter.CreateTaskAsync(task);
+        return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
     }
 
     /// <summary>
     /// Update an existing task
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTask(int id, TaskItem task)
+    public async Task<IActionResult> UpdateTask(int id, TaskItemDto task)
     {
         if (id != task.Id)
         {
             return BadRequest();
         }
 
-        var existingTask = await _context.Tasks.FindAsync(id);
-        if (existingTask == null)
+        var success = await _adapter.UpdateTaskAsync(id, task);
+        if (!success)
         {
             return NotFound();
-        }
-
-        // Update only allowed fields to prevent overposting
-        existingTask.Title = task.Title;
-        existingTask.Description = task.Description;
-        existingTask.StatusId = task.StatusId;
-        existingTask.OldStatus = task.OldStatus;
-        existingTask.Priority = task.Priority;
-        existingTask.DueDate = task.DueDate;
-        existingTask.AssignedTo = task.AssignedTo;
-        existingTask.ProjectId = task.ProjectId;
-        existingTask.TaskTypeId = task.TaskTypeId;
-        existingTask.SprintId = task.SprintId;
-        existingTask.DurationMin = task.DurationMin;
-        existingTask.RemainingMin = task.RemainingMin;
-        existingTask.UpdatedAt = DateTime.UtcNow;
-        // Note: CreatedAt, Source, and ExternalId are not updated to prevent overposting
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await TaskExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
         }
 
         return NoContent();
@@ -128,20 +79,12 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
-        if (task == null)
+        var success = await _adapter.DeleteTaskAsync(id);
+        if (!success)
         {
             return NotFound();
         }
 
-        _context.Tasks.Remove(task);
-        await _context.SaveChangesAsync();
-
         return NoContent();
-    }
-
-    private async Task<bool> TaskExists(int id)
-    {
-        return await _context.Tasks.AnyAsync(e => e.Id == id);
     }
 }

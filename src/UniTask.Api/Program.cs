@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using UniTask.Api.Adapters;
 using UniTask.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,9 @@ builder.Services.AddEndpointsApiExplorer();
 // Configure DbContext with SQLite
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tasks.db"));
+
+// Register adapter
+builder.Services.AddScoped<ITaskAdapter, LocalAdapter>();
 
 // Configure OpenAPI with NSwag
 builder.Services.AddOpenApiDocument(config =>

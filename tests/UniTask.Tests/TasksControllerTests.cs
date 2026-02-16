@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using UniTask.Api.Data;
+using UniTask.Api.DTOs;
 using UniTask.Api.Models;
 using Xunit;
 
@@ -42,7 +43,7 @@ public class TasksControllerTests : IDisposable
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var tasks = await response.Content.ReadFromJsonAsync<List<TaskItem>>();
+        var tasks = await response.Content.ReadFromJsonAsync<List<TaskItemDto>>();
         Assert.NotNull(tasks);
         Assert.Empty(tasks);
     }
@@ -51,17 +52,19 @@ public class TasksControllerTests : IDisposable
     public async Task CreateTask_ReturnsCreatedTask()
     {
         // Arrange
-        var newTask = Any.TaskItem(
-            title: "Test Task",
-            description: "Test Description",
-            priority: TaskPriority.Medium);
+        var newTask = new TaskItemDto
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            Priority = "Medium"
+        };
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/tasks", newTask);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdTask = await response.Content.ReadFromJsonAsync<TaskItem>();
+        var createdTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(createdTask);
         Assert.Equal("Test Task", createdTask.Title);
         Assert.True(createdTask.Id > 0);
@@ -72,12 +75,14 @@ public class TasksControllerTests : IDisposable
     public async Task GetTask_ReturnsTask_WhenTaskExists()
     {
         // Arrange
-        var newTask = Any.TaskItem(
-            title: "Get Task Test",
-            priority: TaskPriority.High);
+        var newTask = new TaskItemDto
+        {
+            Title = "Get Task Test",
+            Priority = "High"
+        };
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItem>();
+        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(createdTask);
 
         // Act
@@ -85,7 +90,7 @@ public class TasksControllerTests : IDisposable
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var task = await response.Content.ReadFromJsonAsync<TaskItem>();
+        var task = await response.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(task);
         Assert.Equal(createdTask.Id, task.Id);
         Assert.Equal("Get Task Test", task.Title);
@@ -105,16 +110,18 @@ public class TasksControllerTests : IDisposable
     public async Task UpdateTask_UpdatesTask_WhenTaskExists()
     {
         // Arrange
-        var newTask = Any.TaskItem(
-            title: "Original Title",
-            priority: TaskPriority.Low);
+        var newTask = new TaskItemDto
+        {
+            Title = "Original Title",
+            Priority = "Low"
+        };
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItem>();
+        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(createdTask);
 
         createdTask.Title = "Updated Title";
-        createdTask.OldStatus = UniTask.Api.Models.TaskStatus.Done;
+        createdTask.Priority = "High";
 
         // Act
         var response = await _client.PutAsJsonAsync($"/api/tasks/{createdTask.Id}", createdTask);
@@ -124,22 +131,24 @@ public class TasksControllerTests : IDisposable
 
         // Verify update
         var getResponse = await _client.GetAsync($"/api/tasks/{createdTask.Id}");
-        var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItem>();
+        var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(updatedTask);
         Assert.Equal("Updated Title", updatedTask.Title);
-        Assert.Equal(UniTask.Api.Models.TaskStatus.Done, updatedTask.OldStatus);
+        Assert.Equal("High", updatedTask.Priority);
     }
 
     [Fact]
     public async Task DeleteTask_DeletesTask_WhenTaskExists()
     {
         // Arrange
-        var newTask = Any.TaskItem(
-            title: "Task to Delete",
-            priority: TaskPriority.Medium);
+        var newTask = new TaskItemDto
+        {
+            Title = "Task to Delete",
+            Priority = "Medium"
+        };
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItem>();
+        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(createdTask);
 
         // Act
