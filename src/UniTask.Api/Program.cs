@@ -38,6 +38,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
     app.UseSwaggerUi();
+    
+    // Ensure database is created (only for SQLite)
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+        db.Database.EnsureCreated();
+    }
 }
 
 app.UseCors("AllowFrontend");

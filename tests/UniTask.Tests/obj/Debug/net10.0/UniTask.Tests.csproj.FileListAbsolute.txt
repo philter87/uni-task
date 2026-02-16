@@ -464,3 +464,4 @@
 /home/runner/work/uni-task/uni-task/tests/UniTask.Tests/obj/Debug/net10.0/UniTask.Tests.pdb
 /home/runner/work/uni-task/uni-task/tests/UniTask.Tests/obj/Debug/net10.0/UniTask.Tests.genruntimeconfig.cache
 /home/runner/work/uni-task/uni-task/tests/UniTask.Tests/obj/Debug/net10.0/ref/UniTask.Tests.dll
+/home/runner/work/uni-task/uni-task/tests/UniTask.Tests/bin/Debug/net10.0/nswag.json

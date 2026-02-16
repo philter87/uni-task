@@ -159,3 +159,4 @@
 /home/runner/work/uni-task/uni-task/src/UniTask.Api/obj/Debug/net10.0/UniTask.Api.pdb
 /home/runner/work/uni-task/uni-task/src/UniTask.Api/obj/Debug/net10.0/UniTask.Api.genruntimeconfig.cache
 /home/runner/work/uni-task/uni-task/src/UniTask.Api/obj/Debug/net10.0/ref/UniTask.Api.dll
+/home/runner/work/uni-task/uni-task/src/UniTask.Api/bin/Debug/net10.0/nswag.json
