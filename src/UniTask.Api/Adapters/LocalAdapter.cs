@@ -107,6 +107,9 @@ public class LocalAdapter : ITaskAdapter
         return await _context.Tasks.AnyAsync(e => e.Id == id);
     }
 
+    /// <summary>
+    /// Maps a TaskItem entity to a TaskItemDto including all navigation properties.
+    /// </summary>
     private static TaskItemDto MapToDto(TaskItem task)
     {
         return new TaskItemDto
@@ -177,6 +180,9 @@ public class LocalAdapter : ITaskAdapter
         };
     }
 
+    /// <summary>
+    /// Maps a TaskItemDto to a TaskItem entity for database operations.
+    /// </summary>
     private static TaskItem MapToEntity(TaskItemDto dto)
     {
         return new TaskItem
@@ -200,6 +206,10 @@ public class LocalAdapter : ITaskAdapter
         };
     }
 
+    /// <summary>
+    /// Parses a priority string to TaskPriority enum value.
+    /// Performs case-insensitive parsing and defaults to Medium for invalid values.
+    /// </summary>
     private static TaskPriority ParsePriority(string priority)
     {
         return Enum.TryParse<TaskPriority>(priority, true, out var result) 
