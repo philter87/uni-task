@@ -19,6 +19,9 @@ builder.Services.AddScoped<IChangeEventService, ChangeEventService>();
 // Register adapter
 builder.Services.AddScoped<ITaskAdapter, LocalAdapter>();
 
+// Register MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
 // Configure OpenAPI with NSwag
 builder.Services.AddOpenApiDocument(config =>
 {
