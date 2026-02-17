@@ -1,0 +1,41 @@
+@UniTask.Api_HostAddress = http://localhost:5148
+
+GET {{UniTask.Api_HostAddress}}/api/tasks
+Accept: application/json
+
+###
+
+POST {{UniTask.Api_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Sample Task",
+  "description": "This is a test task",
+  "status": 0,
+  "priority": 1
+}
+
+###
+
+GET {{UniTask.Api_HostAddress}}/api/tasks/1
+Accept: application/json
+
+###
+
+PUT {{UniTask.Api_HostAddress}}/api/tasks/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "title": "Updated Task",
+  "description": "Updated description",
+  "status": 1,
+  "priority": 2,
+  "createdAt": "2026-02-16T00:00:00Z"
+}
+
+###
+
+DELETE {{UniTask.Api_HostAddress}}/api/tasks/1
+
+###
