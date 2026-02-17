@@ -16,11 +16,19 @@ public class AddTaskLabelCommandHandler : IRequestHandler<AddTaskLabelCommand, T
 
     public async Task<TaskItemDto> Handle(AddTaskLabelCommand request, CancellationToken cancellationToken)
     {
+        // First check if the task exists
+        var existingTask = await _adapter.GetTaskByIdAsync(request.TaskId);
+        if (existingTask == null)
+        {
+            throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
+        }
+
+        // Then try to add the label
         var task = await _adapter.AddLabelToTaskAsync(request.TaskId, request.LabelId);
         
         if (task == null)
         {
-            throw new InvalidOperationException($"Task with ID {request.TaskId} not found or label with ID {request.LabelId} not found");
+            throw new InvalidOperationException($"Label with ID {request.LabelId} not found");
         }
 
         var labelAddedEvent = new TaskLabelAddedEvent

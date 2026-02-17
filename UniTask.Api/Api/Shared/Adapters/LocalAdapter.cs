@@ -159,9 +159,11 @@ public class LocalAdapter : ITaskAdapter
             task.Labels.Add(label);
             task.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            return await GetTaskByIdAsync(taskId);
         }
 
-        return await GetTaskByIdAsync(taskId);
+        // Label already exists, return task without making changes
+        return MapToDto(task);
     }
 
     public async Task<TaskItemDto?> RemoveLabelFromTaskAsync(int taskId, int labelId)
