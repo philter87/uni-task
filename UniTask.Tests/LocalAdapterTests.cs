@@ -6,6 +6,7 @@ using UniTask.Api.Adapters;
 using UniTask.Api.Data;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
+using UniTask.Api.Services;
 using Xunit;
 
 namespace UniTask.Tests;
@@ -14,6 +15,7 @@ public class LocalAdapterTests : IDisposable
 {
     private readonly TaskDbContext _context;
     private readonly LocalAdapter _adapter;
+    private readonly IChangeEventService _changeEventService;
 
     public LocalAdapterTests()
     {
@@ -22,7 +24,8 @@ public class LocalAdapterTests : IDisposable
             .Options;
         
         _context = new TaskDbContext(options);
-        _adapter = new LocalAdapter(_context);
+        _changeEventService = new ChangeEventService(_context);
+        _adapter = new LocalAdapter(_context, _changeEventService);
     }
 
     public void Dispose()
