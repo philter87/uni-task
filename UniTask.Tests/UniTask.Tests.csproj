@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\UniTask.Api\UniTask.Api.csproj" />
+    <ProjectReference Include="..\UniTask.Api\UniTask.Api.csproj" />
   </ItemGroup>
 
 </Project>

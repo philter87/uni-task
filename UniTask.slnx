@@ -1,8 +1,4 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/UniTask.Api/UniTask.Api.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/UniTask.Tests/UniTask.Tests.csproj" />
-  </Folder>
+  <Project Path="UniTask.Api/UniTask.Api.csproj" />
+  <Project Path="UniTask.Tests/UniTask.Tests.csproj" />
 </Solution>
