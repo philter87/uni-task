@@ -21,20 +21,7 @@ public class ChangeEventsController : ControllerBase
         [FromQuery] int? sinceVersion = null)
     {
         var events = await _changeEventService.GetChangeEventsAsync(projectId, sinceVersion);
-        var eventDtos = events.Select(e => new ChangeEventDto
-        {
-            Id = e.Id,
-            EventId = e.EventId,
-            ProjectId = e.ProjectId,
-            EntityType = e.EntityType,
-            EntityId = e.EntityId,
-            Operation = e.Operation,
-            OccurredAt = e.OccurredAt,
-            ActorUserId = e.ActorUserId,
-            Version = e.Version,
-            Payload = e.Payload
-        });
-
+        var eventDtos = events.Select(MapToDto);
         return Ok(eventDtos);
     }
 
@@ -44,7 +31,13 @@ public class ChangeEventsController : ControllerBase
         int entityId)
     {
         var events = await _changeEventService.GetEntityChangeEventsAsync(entityType, entityId);
-        var eventDtos = events.Select(e => new ChangeEventDto
+        var eventDtos = events.Select(MapToDto);
+        return Ok(eventDtos);
+    }
+
+    private static ChangeEventDto MapToDto(UniTask.Api.Models.ChangeEvent e)
+    {
+        return new ChangeEventDto
         {
             Id = e.Id,
             EventId = e.EventId,
@@ -56,8 +49,6 @@ public class ChangeEventsController : ControllerBase
             ActorUserId = e.ActorUserId,
             Version = e.Version,
             Payload = e.Payload
-        });
-
-        return Ok(eventDtos);
+        };
     }
 }
