@@ -11,9 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using UniTask.Api.Data;
-using UniTask.Api.DTOs;
-using UniTask.Api.Models;
+using UniTask.Api.Shared;
+using UniTask.Api.Tasks;
 using Xunit;
 
 namespace UniTask.Tests;

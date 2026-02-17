@@ -1,5 +1,6 @@
-using UniTask.Api.DTOs;
-using UniTask.Api.Models;
+using UniTask.Api.Projects;
+using UniTask.Api.Shared;
+using UniTask.Api.Tasks;
 
 namespace UniTask.Tests;
 
@@ -121,7 +122,7 @@ public static class Any
             SprintId = sprintId,
             CreatedAt = DateTime(),
             UpdatedAt = DateTime(),
-            OldStatus = Enum<Api.Models.TaskStatus>()
+            OldStatus = Enum<UniTask.Api.Tasks.TaskStatus>()
         };
     }
 

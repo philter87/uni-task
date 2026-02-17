@@ -5,8 +5,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
-using UniTask.Api.Commands;
-using UniTask.Api.DTOs;
+using UniTask.Api.Projects;
+using UniTask.Api.Projects.Create;
 using Xunit;
 
 namespace UniTask.Tests;

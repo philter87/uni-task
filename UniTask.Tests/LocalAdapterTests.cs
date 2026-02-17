@@ -2,10 +2,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Adapters;
-using UniTask.Api.Data;
-using UniTask.Api.DTOs;
-using UniTask.Api.Models;
+using UniTask.Api.Projects;
+using UniTask.Api.Shared;
+using UniTask.Api.Shared.Adapters;
+using UniTask.Api.Tasks;
 using Xunit;
 
 namespace UniTask.Tests;
