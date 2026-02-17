@@ -32,12 +32,10 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task ChangeTaskStatus_UpdatesTaskStatus_WhenTaskExists()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Task to Change Status",
-            Description = "Test Description",
-            Priority = "Medium"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Task to Change Status",
+            description: "Test Description",
+            priority: "Medium");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
@@ -47,13 +45,7 @@ public class TaskCommandHandlerTests : IDisposable
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var status = new Status
-            {
-                Name = "In Progress",
-                Description = "Work in progress",
-                Order = 1,
-                ProjectId = null
-            };
+            var status = Any.Status(name: "In Progress", description: "Work in progress", order: 1);
             db.Statuses.Add(status);
             await db.SaveChangesAsync();
 
@@ -89,19 +81,18 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AssignMemberToTask_UpdatesAssignedTo_WhenTaskExists()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Task to Assign",
-            Description = "Test Description",
-            Priority = "High"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Task to Assign",
+            description: "Test Description",
+            priority: "High");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(createdTask);
 
         // Act - Assign member to task
-        var assignMemberRequest = new { AssignedTo = "john.doe@example.com" };
+        var assignedTo = Any.Email();
+        var assignMemberRequest = new { AssignedTo = assignedTo };
         var response = await _client.PatchAsync($"/api/tasks/{createdTask.Id}/assign", 
             JsonContent.Create(assignMemberRequest));
 
@@ -109,14 +100,14 @@ public class TaskCommandHandlerTests : IDisposable
         response.EnsureSuccessStatusCode();
         var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(updatedTask);
-        Assert.Equal("john.doe@example.com", updatedTask.AssignedTo);
+        Assert.Equal(assignedTo, updatedTask.AssignedTo);
     }
 
     [Fact]
     public async Task AssignMemberToTask_ReturnsNotFound_WhenTaskDoesNotExist()
     {
         // Arrange
-        var assignMemberRequest = new { AssignedTo = "john.doe@example.com" };
+        var assignMemberRequest = new { AssignedTo = Any.Email() };
 
         // Act
         var response = await _client.PatchAsync("/api/tasks/999/assign", 
@@ -130,25 +121,25 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task UpdateTaskWithCommand_UpdatesTask_WhenTaskExists()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Original Task Title",
-            Description = "Original Description",
-            Priority = "Low"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Original Task Title",
+            description: "Original Description",
+            priority: "Low");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(createdTask);
 
         // Act - Update task
+        var dueDate = Any.DateTime(7, 14);
+        var assignedTo = Any.Email();
         var updateRequest = new
         {
             Title = "Updated Task Title",
             Description = "Updated Description",
             Priority = "Critical",
-            DueDate = DateTime.UtcNow.AddDays(7),
-            AssignedTo = "jane.smith@example.com"
+            DueDate = dueDate,
+            AssignedTo = assignedTo
         };
 
         var response = await _client.PutAsync($"/api/tasks/{createdTask.Id}/update", 
@@ -161,7 +152,7 @@ public class TaskCommandHandlerTests : IDisposable
         Assert.Equal("Updated Task Title", updatedTask.Title);
         Assert.Equal("Updated Description", updatedTask.Description);
         Assert.Equal("Critical", updatedTask.Priority);
-        Assert.Equal("jane.smith@example.com", updatedTask.AssignedTo);
+        Assert.Equal(assignedTo, updatedTask.AssignedTo);
     }
 
     [Fact]
@@ -187,11 +178,9 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_AddsLabelToTask_WhenBothExist()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Task for Label Test",
-            Priority = "Medium"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Task for Label Test",
+            priority: "Medium");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
@@ -199,17 +188,15 @@ public class TaskCommandHandlerTests : IDisposable
 
         // Arrange - Create a label
         int labelId;
+        string labelName;
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var label = new Label
-            {
-                Name = "Bug",
-                Color = "#FF0000"
-            };
+            var label = Any.Label(name: "Bug", color: "#FF0000");
             db.Labels.Add(label);
             await db.SaveChangesAsync();
             labelId = label.Id;
+            labelName = label.Name;
         }
 
         // Act - Add label to task
@@ -219,7 +206,7 @@ public class TaskCommandHandlerTests : IDisposable
         response.EnsureSuccessStatusCode();
         var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(updatedTask);
-        Assert.Contains(updatedTask.Labels, l => l.Id == labelId && l.Name == "Bug");
+        Assert.Contains(updatedTask.Labels, l => l.Id == labelId && l.Name == labelName);
     }
 
     [Fact]
@@ -230,11 +217,7 @@ public class TaskCommandHandlerTests : IDisposable
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var label = new Label
-            {
-                Name = "Feature",
-                Color = "#00FF00"
-            };
+            var label = Any.Label(name: "Feature");
             db.Labels.Add(label);
             await db.SaveChangesAsync();
             labelId = label.Id;
@@ -251,11 +234,9 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_ReturnsNotFound_WhenLabelDoesNotExist()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Task for Label Test",
-            Priority = "Medium"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Task for Label Test",
+            priority: "Medium");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
@@ -272,11 +253,9 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task RemoveTaskLabel_RemovesLabelFromTask_WhenBothExist()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Task for Label Removal Test",
-            Priority = "Low"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Task for Label Removal Test",
+            priority: "Low");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
@@ -287,11 +266,7 @@ public class TaskCommandHandlerTests : IDisposable
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var label = new Label
-            {
-                Name = "Documentation",
-                Color = "#0000FF"
-            };
+            var label = Any.Label(name: "Documentation");
             db.Labels.Add(label);
             await db.SaveChangesAsync();
             labelId = label.Id;
@@ -332,11 +307,9 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_DoesNotAddDuplicateLabel_WhenLabelAlreadyExists()
     {
         // Arrange - Create a task
-        var newTask = new TaskItemDto
-        {
-            Title = "Task for Duplicate Label Test",
-            Priority = "Medium"
-        };
+        var newTask = Any.TaskItemDto(
+            title: "Task for Duplicate Label Test",
+            priority: "Medium");
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
         var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
@@ -347,11 +320,7 @@ public class TaskCommandHandlerTests : IDisposable
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var label = new Label
-            {
-                Name = "Priority",
-                Color = "#FFFF00"
-            };
+            var label = Any.Label(name: "Priority");
             db.Labels.Add(label);
             await db.SaveChangesAsync();
             labelId = label.Id;
