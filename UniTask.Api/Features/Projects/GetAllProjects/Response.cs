@@ -1,6 +1,6 @@
 namespace UniTask.Api.Features.Projects.GetAllProjects;
 
-public class Response
+public class GetAllProjectsResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }

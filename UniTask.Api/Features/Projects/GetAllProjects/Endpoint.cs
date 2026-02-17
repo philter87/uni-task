@@ -4,13 +4,13 @@ namespace UniTask.Api.Features.Projects.GetAllProjects;
 
 [ApiController]
 [Route("api/projects")]
-public class Endpoint : ControllerBase
+public class GetAllProjectsController : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Response>>> GetAllProjects()
+    public async Task<ActionResult<IEnumerable<GetAllProjectsResponse>>> GetAllProjects()
     {
         // This will be implemented with a query in the future
         // For now, return empty list as placeholder
-        return Ok(new List<Response>());
+        return Ok(new List<GetAllProjectsResponse>());
     }
 }

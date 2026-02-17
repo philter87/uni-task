@@ -6,17 +6,17 @@ namespace UniTask.Api.Features.Tasks.CreateTask;
 
 [ApiController]
 [Route("api/tasks")]
-public class Endpoint : ControllerBase
+public class CreateTaskController : ControllerBase
 {
     private readonly ITaskAdapter _adapter;
 
-    public Endpoint(ITaskAdapter adapter)
+    public CreateTaskController(ITaskAdapter adapter)
     {
         _adapter = adapter;
     }
 
     [HttpPost]
-    public async Task<ActionResult<Response>> CreateTask([FromBody] Request request)
+    public async Task<ActionResult<CreateTaskResponse>> CreateTask([FromBody] CreateTaskCommand request)
     {
         var taskDto = new TaskItemDto
         {
@@ -37,7 +37,7 @@ public class Endpoint : ControllerBase
         
         var createdTask = await _adapter.CreateTaskAsync(taskDto);
         
-        var response = new Response
+        var response = new CreateTaskResponse
         {
             Id = createdTask.Id,
             Title = createdTask.Title,

@@ -31,7 +31,7 @@ public class ProjectsControllerTests : IDisposable
     public async Task CreateProject_ReturnsCreatedProject()
     {
         // Arrange
-        var command = new Request
+        var command = new CreateProjectCommand
         {
             Name = "Test Project",
             Description = "Test project description"
@@ -42,7 +42,7 @@ public class ProjectsControllerTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdProject = await response.Content.ReadFromJsonAsync<Response>();
+        var createdProject = await response.Content.ReadFromJsonAsync<CreateProjectResponse>();
         Assert.NotNull(createdProject);
         Assert.Equal("Test Project", createdProject.Name);
         Assert.Equal("Test project description", createdProject.Description);
@@ -54,7 +54,7 @@ public class ProjectsControllerTests : IDisposable
     public async Task CreateProject_WithOnlyName_ReturnsCreatedProject()
     {
         // Arrange
-        var command = new Request
+        var command = new CreateProjectCommand
         {
             Name = "Minimal Project"
         };
@@ -64,7 +64,7 @@ public class ProjectsControllerTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdProject = await response.Content.ReadFromJsonAsync<Response>();
+        var createdProject = await response.Content.ReadFromJsonAsync<CreateProjectResponse>();
         Assert.NotNull(createdProject);
         Assert.Equal("Minimal Project", createdProject.Name);
         Assert.Null(createdProject.Description);

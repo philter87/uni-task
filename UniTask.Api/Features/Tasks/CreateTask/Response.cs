@@ -1,6 +1,6 @@
 namespace UniTask.Api.Features.Tasks.CreateTask;
 
-public class Response
+public class CreateTaskResponse
 {
     public int Id { get; set; }
     public required string Title { get; set; }

@@ -5,18 +5,18 @@ using UniTask.Api.Events;
 
 namespace UniTask.Api.Features.Projects.CreateProject;
 
-public class Handler : IRequestHandler<Request, Response>
+public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand, CreateProjectResponse>
 {
     private readonly ITaskAdapter _adapter;
     private readonly IPublisher _publisher;
 
-    public Handler(ITaskAdapter adapter, IPublisher publisher)
+    public CreateProjectCommandHandler(ITaskAdapter adapter, IPublisher publisher)
     {
         _adapter = adapter;
         _publisher = publisher;
     }
 
-    public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
+    public async Task<CreateProjectResponse> Handle(CreateProjectCommand request, CancellationToken cancellationToken)
     {
         // Create the project DTO
         var projectDto = new ProjectDto
@@ -39,7 +39,7 @@ public class Handler : IRequestHandler<Request, Response>
 
         await _publisher.Publish(projectCreatedEvent, cancellationToken);
 
-        return new Response
+        return new CreateProjectResponse
         {
             Id = createdProject.Id,
             Name = createdProject.Name,

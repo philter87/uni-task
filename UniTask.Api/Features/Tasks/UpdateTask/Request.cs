@@ -1,6 +1,6 @@
 namespace UniTask.Api.Features.Tasks.UpdateTask;
 
-public class Request
+public class UpdateTaskCommand
 {
     public required string Title { get; set; }
     public string? Description { get; set; }

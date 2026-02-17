@@ -5,20 +5,20 @@ namespace UniTask.Api.Features.Tasks.GetTasks;
 
 [ApiController]
 [Route("api/tasks")]
-public class Endpoint : ControllerBase
+public class GetTasksController : ControllerBase
 {
     private readonly ITaskAdapter _adapter;
 
-    public Endpoint(ITaskAdapter adapter)
+    public GetTasksController(ITaskAdapter adapter)
     {
         _adapter = adapter;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Response>>> GetTasks()
+    public async Task<ActionResult<IEnumerable<GetTasksResponse>>> GetTasks()
     {
         var tasks = await _adapter.GetAllTasksAsync();
-        var response = tasks.Select(t => new Response
+        var response = tasks.Select(t => new GetTasksResponse
         {
             Id = t.Id,
             Title = t.Title,

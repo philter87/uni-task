@@ -6,17 +6,17 @@ namespace UniTask.Api.Features.Tasks.UpdateTask;
 
 [ApiController]
 [Route("api/tasks")]
-public class Endpoint : ControllerBase
+public class UpdateTaskController : ControllerBase
 {
     private readonly ITaskAdapter _adapter;
 
-    public Endpoint(ITaskAdapter adapter)
+    public UpdateTaskController(ITaskAdapter adapter)
     {
         _adapter = adapter;
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTask(int id, [FromBody] Request request)
+    public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskCommand request)
     {
         var taskDto = new TaskItemDto
         {

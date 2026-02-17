@@ -5,11 +5,11 @@ namespace UniTask.Api.Features.Tasks.DeleteTask;
 
 [ApiController]
 [Route("api/tasks")]
-public class Endpoint : ControllerBase
+public class DeleteTaskController : ControllerBase
 {
     private readonly ITaskAdapter _adapter;
 
-    public Endpoint(ITaskAdapter adapter)
+    public DeleteTaskController(ITaskAdapter adapter)
     {
         _adapter = adapter;
     }
