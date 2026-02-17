@@ -13,9 +13,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tasks.db"));
 
-// Register services
-builder.Services.AddScoped<IChangeEventService, ChangeEventService>();
-
 // Register adapter
 builder.Services.AddScoped<ITaskAdapter, LocalAdapter>();
 
