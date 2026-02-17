@@ -126,6 +126,83 @@ builder.Services.AddScoped<ITaskAdapter, LocalAdapter>();
 // builder.Services.AddScoped<ITaskAdapter, GithubAdapter>();
 ```
 
+## Folder Structure
+
+The project follows a **feature-based** organization combined with **model co-location**, where related code is grouped by feature rather than by technical layer. This approach makes the codebase more maintainable and easier to navigate.
+
+### Api Folder Organization
+
+The `UniTask.Api/Api` folder is divided into three main areas:
+
+```
+UniTask.Api/
+└── Api/
+    ├── Projects/          # Project feature
+    │   ├── Create/        # CreateProject CQRS components
+    │   ├── Project.cs     # Project entity model
+    │   ├── ProjectDto.cs  # Project DTO
+    │   └── ProjectsController.cs
+    │
+    ├── Tasks/             # Task feature
+    │   ├── TaskItem.cs    # TaskItem entity model
+    │   ├── TaskItemDto.cs # TaskItem DTO
+    │   └── TasksController.cs
+    │
+    └── Shared/            # Shared components across features
+        ├── Adapters/      # Adapter pattern implementations
+        │   ├── ITaskAdapter.cs
+        │   └── LocalAdapter.cs
+        ├── TaskDbContext.cs
+        └── [Other shared models and DTOs]
+```
+
+### Feature Folders (Projects, Tasks)
+
+Each feature folder contains:
+
+- **Entity Model** (`*.cs`): The domain model representing the database entity
+  - Example: `Project.cs`, `TaskItem.cs`
+  
+- **DTO** (`*Dto.cs`): Data Transfer Object for API communication
+  - Example: `ProjectDto.cs`, `TaskItemDto.cs`
+  
+- **Controller** (`*Controller.cs`): API endpoints for the feature
+  - Example: `ProjectsController.cs`, `TasksController.cs`
+  
+- **CQRS Folders**: Sub-folders for commands, queries, and events
+  - Example: `Projects/Create/` contains:
+    - `CreateProjectCommand.cs` - The command
+    - `CreateProjectCommandHandler.cs` - Command handler
+    - `ProjectCreatedEvent.cs` - Event raised after creation
+    - `ProjectCreatedEventHandler.cs` - Event handler
+
+### Shared Folder
+
+Contains components used across multiple features:
+
+- **Adapters/**: Adapter pattern implementations for backend flexibility
+  - `ITaskAdapter.cs` - Interface defining task operations
+  - `LocalAdapter.cs` - Local database implementation
+  
+- **Shared Models and DTOs**: Common entities like:
+  - `Status.cs` / `StatusDto.cs` - Task statuses
+  - `TaskType.cs` / `TaskTypeDto.cs` - Task types
+  - `Sprint.cs` / `SprintDto.cs` - Sprints
+  - `Comment.cs` / `CommentDto.cs` - Comments
+  - `Label.cs` / `LabelDto.cs` - Labels
+  - `ProjectMember.cs` - Project members
+  - `TaskChange.cs` - Task change tracking
+  
+- **TaskDbContext.cs**: Entity Framework database context
+
+### Benefits of This Structure
+
+1. **Feature Cohesion**: All code related to a feature lives together, making it easy to find and modify
+2. **Model Co-location**: Models and DTOs are next to the code that uses them
+3. **Clear Boundaries**: Easy to see what belongs to which feature
+4. **Scalability**: New features can be added as new folders without affecting existing code
+5. **CQRS Support**: Each feature can have its own commands, queries, and events organized in sub-folders
+
 ## Testing with the Any Class
 
 This project uses the `Any` class in test projects to generate random test data, making tests more maintainable and less brittle. The `Any` class is a static helper that provides methods to create random primitive values and complex objects with randomized properties.
