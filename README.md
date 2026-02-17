@@ -1,7 +1,58 @@
 # uni-task
 A unified TaskManager for Azure DevOps boards and GitHub issues
 
-## Architecture: Adapter Pattern
+## Architecture
+
+This project combines two architectural patterns to provide a clean, maintainable, and extensible codebase:
+
+### 1. CQRS Pattern with MediatR
+
+The application uses **Command Query Responsibility Segregation (CQRS)** to separate read operations (queries) from write operations (commands). This is implemented using **MediatR**, a simple mediator implementation in .NET.
+
+#### Commands, Queries, and Events
+
+Every controller in the app should either create a **Command** or a **Query**:
+
+- **Commands**: Represent actions that change system state. They are named as imperative orders:
+  - `CreateProject`, `CreateTask`, `ChangeTaskStatus`
+  
+- **Queries**: Retrieve data without modifying state:
+  - `GetAllProjects`, `GetTaskById`, `GetTasksByStatus`
+
+- **Events**: Represent things that have already happened (past tense). They are created by CommandHandlers after successful operations:
+  - `ProjectCreated`, `TaskCreated`, `TaskStatusChanged`
+
+#### Flow
+
+```
+Controller → Command/Query → Handler → Adapter → Event (for commands)
+                                           ↓
+                                      Event Handler
+```
+
+1. **Controllers** receive HTTP requests and dispatch Commands or Queries via MediatR
+2. **Handlers** process the Commands/Queries:
+   - **CommandHandlers** interact with Adapters and create Events when operations succeed
+   - **QueryHandlers** retrieve and return data
+3. **Events** are dispatched by MediatR and can be handled by multiple **EventHandlers**
+4. **Adapters** handle the actual data persistence or external API integration
+
+**Example: CreateProject Flow**
+
+```
+ProjectsController 
+    ↓ sends CreateProjectCommand
+CreateProjectCommandHandler
+    ↓ calls adapter
+LocalAdapter
+    ↓ saves to database
+CreateProjectCommandHandler
+    ↓ publishes ProjectCreatedEvent
+ProjectCreatedEventHandler
+    ↓ performs additional actions (logging, notifications, etc.)
+```
+
+### 2. Adapter Pattern
 
 This project uses an **Adapter Pattern** to enable seamless integration with multiple task management backends (local database, GitHub Issues, Azure DevOps Boards, etc.) while maintaining a consistent API for the frontend.
 
@@ -14,12 +65,12 @@ The adapter layer decouples the API controller from specific task management imp
 - **Easy Extension**: Add new task manager integrations by implementing the `ITaskAdapter` interface
 - **Clean Separation**: Business logic stays in adapters, controllers remain thin and focused on HTTP concerns
 
-### How It Works
+#### How It Works
 
 ```
-Frontend ←→ TasksController ←→ ITaskAdapter ←→ [LocalAdapter | GithubAdapter | AzureDevOpsAdapter]
-                                                          ↓              ↓               ↓
-                                                    Local DB      GitHub API    Azure DevOps API
+Frontend ←→ Controller ←→ Command/Query ←→ Handler ←→ ITaskAdapter ←→ [LocalAdapter | GithubAdapter | AzureDevOpsAdapter]
+                                                                              ↓              ↓               ↓
+                                                                        Local DB      GitHub API    Azure DevOps API
 ```
 
 1. **DTOs (Data Transfer Objects)**: Plain objects that define the contract between frontend and backend

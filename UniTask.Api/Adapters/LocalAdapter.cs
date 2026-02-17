@@ -2,16 +2,19 @@ using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Data;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
+using UniTask.Api.Services;
 
 namespace UniTask.Api.Adapters;
 
 public class LocalAdapter : ITaskAdapter
 {
     private readonly TaskDbContext _context;
+    private readonly IChangeEventService _changeEventService;
 
-    public LocalAdapter(TaskDbContext context)
+    public LocalAdapter(TaskDbContext context, IChangeEventService changeEventService)
     {
         _context = context;
+        _changeEventService = changeEventService;
     }
 
     public async Task<IEnumerable<TaskItemDto>> GetAllTasksAsync()
@@ -50,6 +53,14 @@ public class LocalAdapter : ITaskAdapter
         _context.Tasks.Add(taskItem);
         await _context.SaveChangesAsync();
 
+        // Create change event
+        await _changeEventService.CreateChangeEventAsync(
+            taskItem.ProjectId,
+            ChangeEventEntityType.Task,
+            taskItem.Id,
+            ChangeEventOperation.Created,
+            null);
+
         return MapToDto(taskItem);
     }
 
@@ -77,6 +88,15 @@ public class LocalAdapter : ITaskAdapter
         try
         {
             await _context.SaveChangesAsync();
+            
+            // Create change event
+            await _changeEventService.CreateChangeEventAsync(
+                existingTask.ProjectId,
+                ChangeEventEntityType.Task,
+                existingTask.Id,
+                ChangeEventOperation.Updated,
+                null);
+            
             return true;
         }
         catch (DbUpdateConcurrencyException)
@@ -97,9 +117,83 @@ public class LocalAdapter : ITaskAdapter
             return false;
         }
 
+        var projectId = task.ProjectId;
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
+        
+        // Create change event
+        await _changeEventService.CreateChangeEventAsync(
+            projectId,
+            ChangeEventEntityType.Task,
+            id,
+            ChangeEventOperation.Deleted,
+            null);
+        
         return true;
+    }
+
+    public async Task<ProjectDto> CreateProjectAsync(ProjectDto projectDto)
+    {
+        var project = new Project
+        {
+            Name = projectDto.Name,
+            Description = projectDto.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Projects.Add(project);
+        await _context.SaveChangesAsync();
+
+        // Create change event
+        await _changeEventService.CreateChangeEventAsync(
+            project.Id,
+            ChangeEventEntityType.Project,
+            project.Id,
+            ChangeEventOperation.Created,
+            null);
+
+        return new ProjectDto
+        {
+            Id = project.Id,
+            Name = project.Name,
+            Description = project.Description,
+            CreatedAt = project.CreatedAt,
+            UpdatedAt = project.UpdatedAt
+        };
+    }
+
+    public async Task<IEnumerable<ProjectDto>> GetAllProjectsAsync()
+    {
+        var projects = await _context.Projects.ToListAsync();
+        
+        return projects.Select(p => new ProjectDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Description = p.Description,
+            CreatedAt = p.CreatedAt,
+            UpdatedAt = p.UpdatedAt
+        });
+    }
+
+    public async Task<ProjectDto?> GetProjectByIdAsync(int id)
+    {
+        var project = await _context.Projects.FindAsync(id);
+        
+        if (project == null)
+        {
+            return null;
+        }
+
+        return new ProjectDto
+        {
+            Id = project.Id,
+            Name = project.Name,
+            Description = project.Description,
+            CreatedAt = project.CreatedAt,
+            UpdatedAt = project.UpdatedAt
+        };
     }
 
     private async Task<bool> TaskExists(int id)

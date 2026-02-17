@@ -9,4 +9,9 @@ public interface ITaskAdapter
     Task<TaskItemDto> CreateTaskAsync(TaskItemDto taskDto);
     Task<bool> UpdateTaskAsync(int id, TaskItemDto taskDto);
     Task<bool> DeleteTaskAsync(int id);
+    
+    // Project operations
+    Task<ProjectDto> CreateProjectAsync(ProjectDto projectDto);
+    Task<IEnumerable<ProjectDto>> GetAllProjectsAsync();
+    Task<ProjectDto?> GetProjectByIdAsync(int id);
 }
