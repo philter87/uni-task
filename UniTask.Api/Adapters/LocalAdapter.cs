@@ -2,19 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Data;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
-using UniTask.Api.Services;
 
 namespace UniTask.Api.Adapters;
 
 public class LocalAdapter : ITaskAdapter
 {
     private readonly TaskDbContext _context;
-    private readonly IChangeEventService _changeEventService;
 
-    public LocalAdapter(TaskDbContext context, IChangeEventService changeEventService)
+    public LocalAdapter(TaskDbContext context)
     {
         _context = context;
-        _changeEventService = changeEventService;
     }
 
     public async Task<IEnumerable<TaskItemDto>> GetAllTasksAsync()
@@ -53,14 +50,6 @@ public class LocalAdapter : ITaskAdapter
         _context.Tasks.Add(taskItem);
         await _context.SaveChangesAsync();
 
-        // Create change event
-        await _changeEventService.CreateChangeEventAsync(
-            taskItem.ProjectId,
-            ChangeEventEntityType.Task,
-            taskItem.Id,
-            ChangeEventOperation.Created,
-            null);
-
         return MapToDto(taskItem);
     }
 
@@ -89,14 +78,6 @@ public class LocalAdapter : ITaskAdapter
         {
             await _context.SaveChangesAsync();
             
-            // Create change event
-            await _changeEventService.CreateChangeEventAsync(
-                existingTask.ProjectId,
-                ChangeEventEntityType.Task,
-                existingTask.Id,
-                ChangeEventOperation.Updated,
-                null);
-            
             return true;
         }
         catch (DbUpdateConcurrencyException)
@@ -117,17 +98,8 @@ public class LocalAdapter : ITaskAdapter
             return false;
         }
 
-        var projectId = task.ProjectId;
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
-        
-        // Create change event
-        await _changeEventService.CreateChangeEventAsync(
-            projectId,
-            ChangeEventEntityType.Task,
-            id,
-            ChangeEventOperation.Deleted,
-            null);
         
         return true;
     }
@@ -144,14 +116,6 @@ public class LocalAdapter : ITaskAdapter
 
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
-
-        // Create change event
-        await _changeEventService.CreateChangeEventAsync(
-            project.Id,
-            ChangeEventEntityType.Project,
-            project.Id,
-            ChangeEventOperation.Created,
-            null);
 
         return new ProjectDto
         {

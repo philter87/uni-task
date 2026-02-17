@@ -52,38 +52,6 @@ public class ProjectsControllerTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateProject_CreatesChangeEvent()
-    {
-        // Arrange
-        var command = new CreateProjectCommand
-        {
-            Name = "Project with Event",
-            Description = "This should create a change event"
-        };
-
-        // Act - Create the project
-        var createResponse = await _client.PostAsJsonAsync("/api/projects", command);
-        var createdProject = await createResponse.Content.ReadFromJsonAsync<ProjectDto>();
-        Assert.NotNull(createdProject);
-
-        // Get change events
-        var eventsResponse = await _client.GetAsync("/api/changeevents");
-        
-        // Assert
-        eventsResponse.EnsureSuccessStatusCode();
-        var events = await eventsResponse.Content.ReadFromJsonAsync<List<ChangeEventDto>>();
-        Assert.NotNull(events);
-        
-        var projectEvent = events.FirstOrDefault(e => 
-            e.EntityType == "Project" && 
-            e.EntityId == createdProject.Id &&
-            e.Operation == "Created");
-        
-        Assert.NotNull(projectEvent);
-        Assert.Equal(createdProject.Id, projectEvent.ProjectId);
-    }
-
-    [Fact]
     public async Task CreateProject_WithOnlyName_ReturnsCreatedProject()
     {
         // Arrange
