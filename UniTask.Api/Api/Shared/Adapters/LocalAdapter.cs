@@ -104,6 +104,90 @@ public class LocalAdapter : ITaskAdapter
         return true;
     }
 
+    public async Task<TaskItemDto?> ChangeTaskStatusAsync(int taskId, int statusId)
+    {
+        var task = await _context.Tasks.FindAsync(taskId);
+        if (task == null)
+        {
+            return null;
+        }
+
+        task.StatusId = statusId;
+        task.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return await GetTaskByIdAsync(taskId);
+    }
+
+    public async Task<TaskItemDto?> AssignMemberToTaskAsync(int taskId, string assignedTo)
+    {
+        var task = await _context.Tasks.FindAsync(taskId);
+        if (task == null)
+        {
+            return null;
+        }
+
+        task.AssignedTo = assignedTo;
+        task.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return await GetTaskByIdAsync(taskId);
+    }
+
+    public async Task<TaskItemDto?> AddLabelToTaskAsync(int taskId, int labelId)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Labels)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+        
+        if (task == null)
+        {
+            return null;
+        }
+
+        var label = await _context.Labels.FindAsync(labelId);
+        if (label == null)
+        {
+            return null;
+        }
+
+        // Check if the label is already added
+        if (!task.Labels.Any(l => l.Id == labelId))
+        {
+            task.Labels.Add(label);
+            task.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return await GetTaskByIdAsync(taskId);
+        }
+
+        // Label already exists, return task without making changes
+        return MapToDto(task);
+    }
+
+    public async Task<TaskItemDto?> RemoveLabelFromTaskAsync(int taskId, int labelId)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Labels)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+        
+        if (task == null)
+        {
+            return null;
+        }
+
+        var label = task.Labels.FirstOrDefault(l => l.Id == labelId);
+        if (label != null)
+        {
+            task.Labels.Remove(label);
+            task.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return await GetTaskByIdAsync(taskId);
+    }
+
     public async Task<ProjectDto> CreateProjectAsync(ProjectDto projectDto)
     {
         var project = new Project

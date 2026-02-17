@@ -11,6 +11,12 @@ public interface ITaskAdapter
     Task<bool> UpdateTaskAsync(int id, TaskItemDto taskDto);
     Task<bool> DeleteTaskAsync(int id);
     
+    // Task operations
+    Task<TaskItemDto?> ChangeTaskStatusAsync(int taskId, int statusId);
+    Task<TaskItemDto?> AssignMemberToTaskAsync(int taskId, string assignedTo);
+    Task<TaskItemDto?> AddLabelToTaskAsync(int taskId, int labelId);
+    Task<TaskItemDto?> RemoveLabelFromTaskAsync(int taskId, int labelId);
+    
     // Project operations
     Task<ProjectDto> CreateProjectAsync(ProjectDto projectDto);
     Task<IEnumerable<ProjectDto>> GetAllProjectsAsync();

@@ -68,6 +68,15 @@ public static class Any
     }
 
     /// <summary>
+    /// Generates a random hex color code.
+    /// </summary>
+    /// <returns>A random hex color code in the format #RRGGBB</returns>
+    public static string Color()
+    {
+        return $"#{Int(0, 16777215):X6}";
+    }
+
+    /// <summary>
     /// Creates a Project with random values.
     /// </summary>
     /// <param name="name">Optional name (randomly generated if not provided)</param>
@@ -193,6 +202,23 @@ public static class Any
             Description = description ?? String(15),
             Order = order ?? Int(0, 10),
             ProjectId = projectId
+        };
+    }
+
+    /// <summary>
+    /// Creates a Label with random values.
+    /// </summary>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <param name="color">Optional color (randomly generated if not provided)</param>
+    /// <returns>A Label with random data</returns>
+    public static Label Label(
+        string? name = null,
+        string? color = null)
+    {
+        return new Label
+        {
+            Name = name ?? $"Label {String(6)}",
+            Color = color ?? Color()
         };
     }
 
@@ -349,7 +375,7 @@ public static class Any
         {
             Id = id,
             Name = name ?? $"Label {String(6)}",
-            Color = color ?? $"#{Int(0, 16777215):X6}" // Random hex color
+            Color = color ?? Color()
         };
     }
 
