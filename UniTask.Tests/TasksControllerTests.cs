@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using UniTask.Api.Data;
+using UniTask.Api.Infrastructure.Persistence;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
 using Xunit;
@@ -173,7 +173,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             // Remove all existing DbContext-related registrations
             var descriptors = services.Where(d => 
-                d.ServiceType == typeof(DbContextOptions<TaskDbContext>) ||
+                d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
                 d.ServiceType == typeof(DbContextOptions) ||
                 d.ServiceType.Name.Contains("DbContext")).ToList();
             
@@ -183,7 +183,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
 
             // Add InMemory database for testing with unique name
-            services.AddDbContext<TaskDbContext>(options =>
+            services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseInMemoryDatabase(_dbName);
             });
@@ -199,7 +199,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         // Ensure database is created
         using (var scope = host.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             db.Database.EnsureCreated();
         }
 

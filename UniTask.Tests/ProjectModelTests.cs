@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Data;
+using UniTask.Api.Infrastructure.Persistence;
 using UniTask.Api.Models;
 using Xunit;
 
@@ -10,15 +10,15 @@ namespace UniTask.Tests;
 
 public class ProjectModelTests : IDisposable
 {
-    private readonly TaskDbContext _context;
+    private readonly AppDbContext _context;
 
     public ProjectModelTests()
     {
-        var options = new DbContextOptionsBuilder<TaskDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        _context = new TaskDbContext(options);
+        _context = new AppDbContext(options);
         _context.Database.EnsureCreated();
     }
 

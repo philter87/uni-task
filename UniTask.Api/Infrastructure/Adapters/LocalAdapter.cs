@@ -1,15 +1,15 @@
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Data;
+using UniTask.Api.Infrastructure.Persistence;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
 
-namespace UniTask.Api.Adapters;
+namespace UniTask.Api.Infrastructure.Adapters;
 
 public class LocalAdapter : ITaskAdapter
 {
-    private readonly TaskDbContext _context;
+    private readonly AppDbContext _context;
 
-    public LocalAdapter(TaskDbContext context)
+    public LocalAdapter(AppDbContext context)
     {
         _context = context;
     }

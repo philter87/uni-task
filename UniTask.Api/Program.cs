@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Adapters;
-using UniTask.Api.Data;
+using UniTask.Api.Infrastructure.Adapters;
+using UniTask.Api.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure DbContext with SQLite
-builder.Services.AddDbContext<TaskDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tasks.db"));
 
 // Register adapter
@@ -50,7 +50,7 @@ if (app.Environment.IsDevelopment())
     // Ensure database is created (only for SQLite)
     using (var scope = app.Services.CreateScope())
     {
-        var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
     }
 }

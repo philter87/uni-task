@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Models;
 
-namespace UniTask.Api.Data;
+namespace UniTask.Api.Infrastructure.Persistence;
 
-public class TaskDbContext : DbContext
+public class AppDbContext : DbContext
 {
-    public TaskDbContext(DbContextOptions<TaskDbContext> options)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }

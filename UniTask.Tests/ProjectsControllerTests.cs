@@ -5,8 +5,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
-using UniTask.Api.Commands;
-using UniTask.Api.DTOs;
+using UniTask.Api.Features.Projects.CreateProject;
 using Xunit;
 
 namespace UniTask.Tests;
@@ -32,7 +31,7 @@ public class ProjectsControllerTests : IDisposable
     public async Task CreateProject_ReturnsCreatedProject()
     {
         // Arrange
-        var command = new CreateProjectCommand
+        var command = new Request
         {
             Name = "Test Project",
             Description = "Test project description"
@@ -43,7 +42,7 @@ public class ProjectsControllerTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdProject = await response.Content.ReadFromJsonAsync<ProjectDto>();
+        var createdProject = await response.Content.ReadFromJsonAsync<Response>();
         Assert.NotNull(createdProject);
         Assert.Equal("Test Project", createdProject.Name);
         Assert.Equal("Test project description", createdProject.Description);
@@ -55,7 +54,7 @@ public class ProjectsControllerTests : IDisposable
     public async Task CreateProject_WithOnlyName_ReturnsCreatedProject()
     {
         // Arrange
-        var command = new CreateProjectCommand
+        var command = new Request
         {
             Name = "Minimal Project"
         };
@@ -65,7 +64,7 @@ public class ProjectsControllerTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdProject = await response.Content.ReadFromJsonAsync<ProjectDto>();
+        var createdProject = await response.Content.ReadFromJsonAsync<Response>();
         Assert.NotNull(createdProject);
         Assert.Equal("Minimal Project", createdProject.Name);
         Assert.Null(createdProject.Description);

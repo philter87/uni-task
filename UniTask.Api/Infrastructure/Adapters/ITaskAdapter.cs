@@ -1,6 +1,6 @@
 using UniTask.Api.DTOs;
 
-namespace UniTask.Api.Adapters;
+namespace UniTask.Api.Infrastructure.Adapters;
 
 public interface ITaskAdapter
 {

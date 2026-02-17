@@ -1,23 +1,22 @@
 using MediatR;
-using UniTask.Api.Adapters;
-using UniTask.Api.Commands;
+using UniTask.Api.Infrastructure.Adapters;
 using UniTask.Api.DTOs;
 using UniTask.Api.Events;
 
-namespace UniTask.Api.Handlers;
+namespace UniTask.Api.Features.Projects.CreateProject;
 
-public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand, ProjectDto>
+public class Handler : IRequestHandler<Request, Response>
 {
     private readonly ITaskAdapter _adapter;
     private readonly IPublisher _publisher;
 
-    public CreateProjectCommandHandler(ITaskAdapter adapter, IPublisher publisher)
+    public Handler(ITaskAdapter adapter, IPublisher publisher)
     {
         _adapter = adapter;
         _publisher = publisher;
     }
 
-    public async Task<ProjectDto> Handle(CreateProjectCommand request, CancellationToken cancellationToken)
+    public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
     {
         // Create the project DTO
         var projectDto = new ProjectDto
@@ -40,6 +39,13 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
 
         await _publisher.Publish(projectCreatedEvent, cancellationToken);
 
-        return createdProject;
+        return new Response
+        {
+            Id = createdProject.Id,
+            Name = createdProject.Name,
+            Description = createdProject.Description,
+            CreatedAt = createdProject.CreatedAt,
+            UpdatedAt = createdProject.UpdatedAt
+        };
     }
 }

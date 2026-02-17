@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Adapters;
-using UniTask.Api.Data;
+using UniTask.Api.Infrastructure.Adapters;
+using UniTask.Api.Infrastructure.Persistence;
 using UniTask.Api.DTOs;
 using UniTask.Api.Models;
 using Xunit;
@@ -12,16 +12,16 @@ namespace UniTask.Tests;
 
 public class LocalAdapterTests : IDisposable
 {
-    private readonly TaskDbContext _context;
+    private readonly AppDbContext _context;
     private readonly LocalAdapter _adapter;
 
     public LocalAdapterTests()
     {
-        var options = new DbContextOptionsBuilder<TaskDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         
-        _context = new TaskDbContext(options);
+        _context = new AppDbContext(options);
         _adapter = new LocalAdapter(_context);
     }
 
