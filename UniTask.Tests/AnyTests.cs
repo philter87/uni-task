@@ -1,4 +1,4 @@
-using UniTask.Api.Models;
+using UniTask.Api.Tasks;
 using Xunit;
 
 namespace UniTask.Tests;

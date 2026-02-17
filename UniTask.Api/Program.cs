@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Adapters;
-using UniTask.Api.Data;
+using UniTask.Api.Shared;
+using UniTask.Api.Shared.Adapters;
 
 var builder = WebApplication.CreateBuilder(args);
 
