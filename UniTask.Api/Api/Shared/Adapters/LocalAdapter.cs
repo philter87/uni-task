@@ -70,6 +70,7 @@ public class LocalAdapter : ITaskAdapter
         existingTask.ProjectId = taskDto.ProjectId;
         existingTask.TaskTypeId = taskDto.TaskTypeId;
         existingTask.SprintId = taskDto.SprintId;
+        existingTask.ParentId = taskDto.ParentId;
         existingTask.DurationMin = taskDto.DurationMin;
         existingTask.RemainingMin = taskDto.RemainingMin;
         existingTask.UpdatedAt = DateTime.UtcNow;
@@ -194,6 +195,7 @@ public class LocalAdapter : ITaskAdapter
         {
             Name = projectDto.Name,
             Description = projectDto.Description,
+            ExternalId = projectDto.ExternalId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -204,6 +206,7 @@ public class LocalAdapter : ITaskAdapter
         return new ProjectDto
         {
             Id = project.Id,
+            ExternalId = project.ExternalId,
             Name = project.Name,
             Description = project.Description,
             CreatedAt = project.CreatedAt,
@@ -218,6 +221,7 @@ public class LocalAdapter : ITaskAdapter
         return projects.Select(p => new ProjectDto
         {
             Id = p.Id,
+            ExternalId = p.ExternalId,
             Name = p.Name,
             Description = p.Description,
             CreatedAt = p.CreatedAt,
@@ -237,6 +241,7 @@ public class LocalAdapter : ITaskAdapter
         return new ProjectDto
         {
             Id = project.Id,
+            ExternalId = project.ExternalId,
             Name = project.Name,
             Description = project.Description,
             CreatedAt = project.CreatedAt,
@@ -257,24 +262,26 @@ public class LocalAdapter : ITaskAdapter
         return new TaskItemDto
         {
             Id = task.Id,
+            ExternalId = task.ExternalId,
             Title = task.Title,
             Description = task.Description,
             ProjectId = task.ProjectId,
             TaskTypeId = task.TaskTypeId,
             StatusId = task.StatusId,
             SprintId = task.SprintId,
+            ParentId = task.ParentId,
             Priority = task.Priority.ToString(),
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             DueDate = task.DueDate,
             AssignedTo = task.AssignedTo,
             Source = task.Source,
-            ExternalId = task.ExternalId,
             DurationMin = task.DurationMin,
             RemainingMin = task.RemainingMin,
             Project = task.Project == null ? null : new ProjectDto
             {
                 Id = task.Project.Id,
+                ExternalId = task.Project.ExternalId,
                 Name = task.Project.Name,
                 Description = task.Project.Description,
                 CreatedAt = task.Project.CreatedAt,
@@ -283,6 +290,7 @@ public class LocalAdapter : ITaskAdapter
             TaskType = task.TaskType == null ? null : new TaskTypeDto
             {
                 Id = task.TaskType.Id,
+                ExternalId = task.TaskType.ExternalId,
                 Name = task.TaskType.Name,
                 Description = task.TaskType.Description,
                 ProjectId = task.TaskType.ProjectId
@@ -290,6 +298,7 @@ public class LocalAdapter : ITaskAdapter
             Status = task.Status == null ? null : new StatusDto
             {
                 Id = task.Status.Id,
+                ExternalId = task.Status.ExternalId,
                 Name = task.Status.Name,
                 Description = task.Status.Description,
                 Order = task.Status.Order,
@@ -298,6 +307,7 @@ public class LocalAdapter : ITaskAdapter
             Sprint = task.Sprint == null ? null : new SprintDto
             {
                 Id = task.Sprint.Id,
+                ExternalId = task.Sprint.ExternalId,
                 Name = task.Sprint.Name,
                 Goal = task.Sprint.Goal,
                 StartDate = task.Sprint.StartDate,
@@ -316,6 +326,7 @@ public class LocalAdapter : ITaskAdapter
             Labels = task.Labels.Select(l => new LabelDto
             {
                 Id = l.Id,
+                ExternalId = l.ExternalId,
                 Name = l.Name,
                 Color = l.Color
             }).ToList()
@@ -330,19 +341,20 @@ public class LocalAdapter : ITaskAdapter
         return new TaskItem
         {
             Id = dto.Id,
+            ExternalId = dto.ExternalId,
             Title = dto.Title,
             Description = dto.Description,
             ProjectId = dto.ProjectId,
             TaskTypeId = dto.TaskTypeId,
             StatusId = dto.StatusId,
             SprintId = dto.SprintId,
+            ParentId = dto.ParentId,
             Priority = ParsePriority(dto.Priority),
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt,
             DueDate = dto.DueDate,
             AssignedTo = dto.AssignedTo,
             Source = dto.Source,
-            ExternalId = dto.ExternalId,
             DurationMin = dto.DurationMin,
             RemainingMin = dto.RemainingMin
         };
