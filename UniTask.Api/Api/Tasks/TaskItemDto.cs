@@ -32,4 +32,5 @@ public class TaskItemDto
     public SprintDto? Sprint { get; set; }
     public List<CommentDto> Comments { get; set; } = new();
     public List<LabelDto> Labels { get; set; } = new();
+    public List<AttachmentDto> Attachments { get; set; } = new();
 }

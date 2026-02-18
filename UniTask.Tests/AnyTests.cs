@@ -149,4 +149,56 @@ public class AnyTests
         Assert.NotNull(result.Name);
         Assert.InRange(result.Order, 0, 10);
     }
+
+    [Fact]
+    public void Attachment_GeneratesValidAttachment()
+    {
+        // Act
+        var result = Any.Attachment();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Name);
+        Assert.NotEmpty(result.Name);
+        Assert.NotNull(result.Url);
+        Assert.NotEmpty(result.Url);
+        Assert.NotNull(result.InternalName);
+        Assert.NotEmpty(result.InternalName);
+        Assert.NotNull(result.FileType);
+        Assert.NotEmpty(result.FileType);
+        Assert.Equal(1, result.TaskItemId);
+    }
+
+    [Fact]
+    public void Attachment_AllowsOverridingProperties()
+    {
+        // Act
+        var result = Any.Attachment(
+            name: "custom-file.txt",
+            fileType: "text/plain",
+            taskItemId: 99);
+
+        // Assert
+        Assert.Equal("custom-file.txt", result.Name);
+        Assert.Equal("text/plain", result.FileType);
+        Assert.Equal(99, result.TaskItemId);
+    }
+
+    [Fact]
+    public void AttachmentDto_GeneratesValidAttachmentDto()
+    {
+        // Act
+        var result = Any.AttachmentDto();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Name);
+        Assert.NotEmpty(result.Name);
+        Assert.NotNull(result.Url);
+        Assert.NotEmpty(result.Url);
+        Assert.NotNull(result.InternalName);
+        Assert.NotEmpty(result.InternalName);
+        Assert.NotNull(result.FileType);
+        Assert.NotEmpty(result.FileType);
+    }
 }
