@@ -1,5 +1,6 @@
 using UniTask.Api.Projects;
 using UniTask.Api.Shared;
+using System.ComponentModel.DataAnnotations;
 
 namespace UniTask.Api.Tasks;
 
@@ -16,6 +17,7 @@ public class TaskItemDto
     public int? BoardId { get; set; }
     public int? ParentId { get; set; }
     
+    [Range(0, 10)]
     public double Priority { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

@@ -1,4 +1,5 @@
 using MediatR;
+using System.ComponentModel.DataAnnotations;
 
 namespace UniTask.Api.Tasks.Update;
 
@@ -11,6 +12,7 @@ public class UpdateTaskCommand : IRequest<TaskItemDto>
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
     public int? BoardId { get; set; }
+    [Range(0, 10)]
     public double Priority { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
