@@ -109,7 +109,7 @@ public static class Any
     /// <param name="projectId">Optional project ID</param>
     /// <param name="taskTypeId">Optional task type ID</param>
     /// <param name="statusId">Optional status ID</param>
-    /// <param name="sprintId">Optional sprint ID</param>
+    /// <param name="boardId">Optional board ID</param>
     /// <returns>A TaskItem with random data</returns>
     public static TaskItem TaskItem(
         string? title = null,
@@ -118,7 +118,7 @@ public static class Any
         int? projectId = null,
         int? taskTypeId = null,
         int? statusId = null,
-        int? sprintId = null)
+        int? boardId = null)
     {
         return new TaskItem
         {
@@ -128,7 +128,7 @@ public static class Any
             ProjectId = projectId,
             TaskTypeId = taskTypeId,
             StatusId = statusId,
-            SprintId = sprintId,
+            BoardId = boardId,
             CreatedAt = DateTime(),
             UpdatedAt = DateTime()
         };
@@ -155,15 +155,15 @@ public static class Any
     }
 
     /// <summary>
-    /// Creates a Sprint with random values.
+    /// Creates a Board with random values.
     /// </summary>
     /// <param name="name">Optional name (randomly generated if not provided)</param>
     /// <param name="goal">Optional goal (randomly generated if not provided)</param>
     /// <param name="projectId">Project ID (default: 1)</param>
     /// <param name="startDate">Optional start date (randomly generated if not provided)</param>
     /// <param name="endDate">Optional end date (randomly generated if not provided)</param>
-    /// <returns>A Sprint with random data</returns>
-    public static Sprint Sprint(
+    /// <returns>A Board with random data</returns>
+    public static Board Board(
         string? name = null,
         string? goal = null,
         int projectId = 1,
@@ -171,9 +171,9 @@ public static class Any
         DateTime? endDate = null)
     {
         var start = startDate ?? DateTime(0, 60);
-        return new Sprint
+        return new Board
         {
-            Name = name ?? $"Sprint {String(5)}",
+            Name = name ?? $"Board {String(5)}",
             Goal = goal ?? String(25),
             ProjectId = projectId,
             StartDate = start,
@@ -187,20 +187,20 @@ public static class Any
     /// <param name="name">Optional name (randomly generated if not provided)</param>
     /// <param name="description">Optional description (randomly generated if not provided)</param>
     /// <param name="order">Optional order (randomly generated if not provided)</param>
-    /// <param name="projectId">Optional project ID</param>
+    /// <param name="taskTypeId">Optional task type ID</param>
     /// <returns>A Status with random data</returns>
     public static Status Status(
         string? name = null,
         string? description = null,
         int? order = null,
-        int? projectId = null)
+        int? taskTypeId = null)
     {
         return new Status
         {
             Name = name ?? $"Status {String(6)}",
             Description = description ?? String(15),
             Order = order ?? Int(0, 10),
-            ProjectId = projectId
+            TaskTypeId = taskTypeId
         };
     }
 
@@ -286,14 +286,14 @@ public static class Any
     /// <param name="name">Optional name (randomly generated if not provided)</param>
     /// <param name="description">Optional description (randomly generated if not provided)</param>
     /// <param name="order">Optional order (randomly generated if not provided)</param>
-    /// <param name="projectId">Optional project ID</param>
+    /// <param name="taskTypeId">Optional task type ID</param>
     /// <returns>A StatusDto with random data</returns>
     public static StatusDto StatusDto(
         int id = 0,
         string? name = null,
         string? description = null,
         int? order = null,
-        int? projectId = null)
+        int? taskTypeId = null)
     {
         return new StatusDto
         {
@@ -301,7 +301,7 @@ public static class Any
             Name = name ?? $"Status {String(6)}",
             Description = description ?? String(15),
             Order = order ?? Int(0, 10),
-            ProjectId = projectId
+            TaskTypeId = taskTypeId
         };
     }
 
@@ -329,7 +329,7 @@ public static class Any
     }
 
     /// <summary>
-    /// Creates a SprintDto with random values.
+    /// Creates a BoardDto with random values.
     /// </summary>
     /// <param name="id">Optional ID (default: 0)</param>
     /// <param name="name">Optional name (randomly generated if not provided)</param>
@@ -337,8 +337,8 @@ public static class Any
     /// <param name="projectId">Project ID (default: 1)</param>
     /// <param name="startDate">Optional start date (randomly generated if not provided)</param>
     /// <param name="endDate">Optional end date (randomly generated if not provided)</param>
-    /// <returns>A SprintDto with random data</returns>
-    public static SprintDto SprintDto(
+    /// <returns>A BoardDto with random data</returns>
+    public static BoardDto BoardDto(
         int id = 0,
         string? name = null,
         string? goal = null,
@@ -347,10 +347,10 @@ public static class Any
         DateTime? endDate = null)
     {
         var start = startDate ?? DateTime(0, 60);
-        return new SprintDto
+        return new BoardDto
         {
             Id = id,
-            Name = name ?? $"Sprint {String(5)}",
+            Name = name ?? $"Board {String(5)}",
             Goal = goal ?? String(25),
             ProjectId = projectId,
             StartDate = start,
@@ -446,7 +446,7 @@ public static class Any
     /// <param name="projectId">Optional project ID</param>
     /// <param name="taskTypeId">Optional task type ID</param>
     /// <param name="statusId">Optional status ID</param>
-    /// <param name="sprintId">Optional sprint ID</param>
+    /// <param name="boardId">Optional board ID</param>
     /// <param name="createdAt">Optional creation date (randomly generated if not provided)</param>
     /// <param name="updatedAt">Optional update date (randomly generated if not provided)</param>
     /// <param name="dueDate">Optional due date</param>
@@ -464,7 +464,7 @@ public static class Any
         int? projectId = null,
         int? taskTypeId = null,
         int? statusId = null,
-        int? sprintId = null,
+        int? boardId = null,
         DateTime? createdAt = null,
         DateTime? updatedAt = null,
         DateTime? dueDate = null,
@@ -484,7 +484,7 @@ public static class Any
             ProjectId = projectId,
             TaskTypeId = taskTypeId,
             StatusId = statusId,
-            SprintId = sprintId,
+            BoardId = boardId,
             CreatedAt = created,
             UpdatedAt = updatedAt ?? created,
             DueDate = dueDate,

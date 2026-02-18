@@ -14,7 +14,7 @@ public class TaskItem
     public int? ProjectId { get; set; }
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
-    public int? SprintId { get; set; }
+    public int? BoardId { get; set; }
     public int? ParentId { get; set; }
     
     public double Priority { get; set; }
@@ -33,7 +33,7 @@ public class TaskItem
     public Project? Project { get; set; }
     public TaskType? TaskType { get; set; }
     public Status? Status { get; set; }
-    public Sprint? Sprint { get; set; }
+    public Board? Board { get; set; }
     public TaskItem? Parent { get; set; }
     public ICollection<TaskItem> Children { get; set; } = new List<TaskItem>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();

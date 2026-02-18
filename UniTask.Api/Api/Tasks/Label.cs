@@ -9,4 +9,5 @@ public class Label
 
     // Navigation properties
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+    public ICollection<LabelValue> Values { get; set; } = new List<LabelValue>();
 }

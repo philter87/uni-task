@@ -13,7 +13,7 @@ public class TaskItemDto
     public int? ProjectId { get; set; }
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
-    public int? SprintId { get; set; }
+    public int? BoardId { get; set; }
     public int? ParentId { get; set; }
     
     public double Priority { get; set; }
@@ -29,7 +29,7 @@ public class TaskItemDto
     public ProjectDto? Project { get; set; }
     public TaskTypeDto? TaskType { get; set; }
     public StatusDto? Status { get; set; }
-    public SprintDto? Sprint { get; set; }
+    public BoardDto? Board { get; set; }
     public List<CommentDto> Comments { get; set; } = new();
     public List<LabelDto> Labels { get; set; } = new();
     public List<AttachmentDto> Attachments { get; set; } = new();

@@ -122,7 +122,7 @@ public class TasksController : ControllerBase
                 ProjectId = request.ProjectId,
                 TaskTypeId = request.TaskTypeId,
                 StatusId = request.StatusId,
-                SprintId = request.SprintId,
+                BoardId = request.BoardId,
                 Priority = request.Priority,
                 DueDate = request.DueDate,
                 AssignedTo = request.AssignedTo,
@@ -197,7 +197,7 @@ public class UpdateTaskRequest
     public int? ProjectId { get; set; }
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
-    public int? SprintId { get; set; }
+    public int? BoardId { get; set; }
     public double Priority { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }

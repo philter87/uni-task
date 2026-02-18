@@ -20,7 +20,8 @@ public class TaskDbContext : DbContext
     public DbSet<Status> Statuses { get; set; } = null!;
     public DbSet<Comment> Comments { get; set; } = null!;
     public DbSet<Label> Labels { get; set; } = null!;
-    public DbSet<Sprint> Sprints { get; set; } = null!;
+    public DbSet<LabelValue> LabelValues { get; set; } = null!;
+    public DbSet<Board> Boards { get; set; } = null!;
     public DbSet<TaskChange> TaskChanges { get; set; } = null!;
     public DbSet<TaskItemRelation> TaskItemRelations { get; set; } = null!;
     public DbSet<Attachment> Attachments { get; set; } = null!;
@@ -49,7 +50,7 @@ public class TaskDbContext : DbContext
                 .HasForeignKey(e => e.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasMany(e => e.Sprints)
+            entity.HasMany(e => e.Boards)
                 .WithOne(e => e.Project)
                 .HasForeignKey(e => e.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -80,6 +81,11 @@ public class TaskDbContext : DbContext
                 .WithOne(e => e.TaskType)
                 .HasForeignKey(e => e.TaskTypeId)
                 .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasMany(e => e.Statuses)
+                .WithOne(e => e.TaskType)
+                .HasForeignKey(e => e.TaskTypeId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Status configuration
@@ -89,11 +95,6 @@ public class TaskDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
-            
-            entity.HasOne(e => e.Project)
-                .WithMany(e => e.Statuses)
-                .HasForeignKey(e => e.ProjectId)
-                .OnDelete(DeleteBehavior.SetNull);
             
             entity.HasMany(e => e.Tasks)
                 .WithOne(e => e.Status)
@@ -141,10 +142,22 @@ public class TaskDbContext : DbContext
             entity.HasMany(e => e.Tasks)
                 .WithMany(e => e.Labels)
                 .UsingEntity(j => j.ToTable("TaskLabels"));
+            
+            entity.HasMany(e => e.Values)
+                .WithOne(e => e.Label)
+                .HasForeignKey(e => e.LabelId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Sprint configuration
-        modelBuilder.Entity<Sprint>(entity =>
+        // LabelValue configuration
+        modelBuilder.Entity<LabelValue>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+        });
+
+        // Board configuration
+        modelBuilder.Entity<Board>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -152,8 +165,8 @@ public class TaskDbContext : DbContext
             entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             entity.HasMany(e => e.Tasks)
-                .WithOne(e => e.Sprint)
-                .HasForeignKey(e => e.SprintId)
+                .WithOne(e => e.Board)
+                .HasForeignKey(e => e.BoardId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 

@@ -24,7 +24,7 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskI
             ProjectId = request.ProjectId,
             TaskTypeId = request.TaskTypeId,
             StatusId = request.StatusId,
-            SprintId = request.SprintId,
+            BoardId = request.BoardId,
             Priority = request.Priority,
             DueDate = request.DueDate,
             AssignedTo = request.AssignedTo,

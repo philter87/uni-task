@@ -15,4 +15,5 @@ public class TaskType
     // Navigation properties
     public Project? Project { get; set; }
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+    public ICollection<Status> Statuses { get; set; } = new List<Status>();
 }

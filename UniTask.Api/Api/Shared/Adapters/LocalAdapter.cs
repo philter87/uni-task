@@ -20,7 +20,7 @@ public class LocalAdapter : ITaskAdapter
             .Include(t => t.Project)
             .Include(t => t.TaskType)
             .Include(t => t.Status)
-            .Include(t => t.Sprint)
+            .Include(t => t.Board)
             .Include(t => t.Labels)
             .ToListAsync();
 
@@ -33,7 +33,7 @@ public class LocalAdapter : ITaskAdapter
             .Include(t => t.Project)
             .Include(t => t.TaskType)
             .Include(t => t.Status)
-            .Include(t => t.Sprint)
+            .Include(t => t.Board)
             .Include(t => t.Labels)
             .Include(t => t.Comments)
             .FirstOrDefaultAsync(t => t.Id == id);
@@ -69,7 +69,7 @@ public class LocalAdapter : ITaskAdapter
         existingTask.AssignedTo = taskDto.AssignedTo;
         existingTask.ProjectId = taskDto.ProjectId;
         existingTask.TaskTypeId = taskDto.TaskTypeId;
-        existingTask.SprintId = taskDto.SprintId;
+        existingTask.BoardId = taskDto.BoardId;
         existingTask.ParentId = taskDto.ParentId;
         existingTask.DurationHours = taskDto.DurationHours;
         existingTask.DurationRemainingHours = taskDto.DurationRemainingHours;
@@ -268,7 +268,7 @@ public class LocalAdapter : ITaskAdapter
             ProjectId = task.ProjectId,
             TaskTypeId = task.TaskTypeId,
             StatusId = task.StatusId,
-            SprintId = task.SprintId,
+            BoardId = task.BoardId,
             ParentId = task.ParentId,
             Priority = task.Priority,
             CreatedAt = task.CreatedAt,
@@ -302,17 +302,17 @@ public class LocalAdapter : ITaskAdapter
                 Name = task.Status.Name,
                 Description = task.Status.Description,
                 Order = task.Status.Order,
-                ProjectId = task.Status.ProjectId
+                TaskTypeId = task.Status.TaskTypeId
             },
-            Sprint = task.Sprint == null ? null : new SprintDto
+            Board = task.Board == null ? null : new BoardDto
             {
-                Id = task.Sprint.Id,
-                ExternalId = task.Sprint.ExternalId,
-                Name = task.Sprint.Name,
-                Goal = task.Sprint.Goal,
-                StartDate = task.Sprint.StartDate,
-                EndDate = task.Sprint.EndDate,
-                ProjectId = task.Sprint.ProjectId
+                Id = task.Board.Id,
+                ExternalId = task.Board.ExternalId,
+                Name = task.Board.Name,
+                Goal = task.Board.Goal,
+                StartDate = task.Board.StartDate,
+                EndDate = task.Board.EndDate,
+                ProjectId = task.Board.ProjectId
             },
             Comments = task.Comments.Select(c => new CommentDto
             {
@@ -354,7 +354,7 @@ public class LocalAdapter : ITaskAdapter
             ProjectId = dto.ProjectId,
             TaskTypeId = dto.TaskTypeId,
             StatusId = dto.StatusId,
-            SprintId = dto.SprintId,
+            BoardId = dto.BoardId,
             ParentId = dto.ParentId,
             Priority = dto.Priority,
             CreatedAt = dto.CreatedAt,

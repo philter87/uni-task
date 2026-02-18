@@ -127,10 +127,10 @@ public class AnyTests
     }
 
     [Fact]
-    public void Sprint_GeneratesValidSprint()
+    public void Board_GeneratesValidBoard()
     {
         // Act
-        var result = Any.Sprint();
+        var result = Any.Board();
 
         // Assert
         Assert.NotNull(result);

@@ -11,9 +11,9 @@ public class Status
     public int Order { get; set; }
     
     // Foreign Keys
-    public int? ProjectId { get; set; }
+    public int? TaskTypeId { get; set; }
 
     // Navigation properties
-    public Project? Project { get; set; }
+    public TaskType? TaskType { get; set; }
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 }
