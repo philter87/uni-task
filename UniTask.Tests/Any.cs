@@ -222,6 +222,35 @@ public static class Any
         };
     }
 
+    /// <summary>
+    /// Creates an Attachment with random values.
+    /// </summary>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <param name="url">Optional URL (randomly generated if not provided)</param>
+    /// <param name="internalName">Optional internal name (randomly generated if not provided)</param>
+    /// <param name="fileType">Optional file type (randomly generated if not provided)</param>
+    /// <param name="externalId">Optional external ID</param>
+    /// <param name="taskItemId">Task item ID (default: 1)</param>
+    /// <returns>An Attachment with random data</returns>
+    public static Attachment Attachment(
+        string? name = null,
+        string? url = null,
+        string? internalName = null,
+        string? fileType = null,
+        string? externalId = null,
+        int taskItemId = 1)
+    {
+        return new Attachment
+        {
+            Name = name ?? $"File {String(8)}.pdf",
+            Url = url ?? $"https://example.com/files/{String(16)}",
+            InternalName = internalName ?? $"{String(32)}.pdf",
+            FileType = fileType ?? "application/pdf",
+            ExternalId = externalId,
+            TaskItemId = taskItemId
+        };
+    }
+
     // DTO Factory Methods
 
     /// <summary>
@@ -376,6 +405,35 @@ public static class Any
             Id = id,
             Name = name ?? $"Label {String(6)}",
             Color = color ?? Color()
+        };
+    }
+
+    /// <summary>
+    /// Creates an AttachmentDto with random values.
+    /// </summary>
+    /// <param name="id">Optional ID (default: 0)</param>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <param name="url">Optional URL (randomly generated if not provided)</param>
+    /// <param name="internalName">Optional internal name (randomly generated if not provided)</param>
+    /// <param name="fileType">Optional file type (randomly generated if not provided)</param>
+    /// <param name="externalId">Optional external ID</param>
+    /// <returns>An AttachmentDto with random data</returns>
+    public static AttachmentDto AttachmentDto(
+        int id = 0,
+        string? name = null,
+        string? url = null,
+        string? internalName = null,
+        string? fileType = null,
+        string? externalId = null)
+    {
+        return new AttachmentDto
+        {
+            Id = id,
+            Name = name ?? $"File {String(8)}.pdf",
+            Url = url ?? $"https://example.com/files/{String(16)}",
+            InternalName = internalName ?? $"{String(32)}.pdf",
+            FileType = fileType ?? "application/pdf",
+            ExternalId = externalId
         };
     }
 

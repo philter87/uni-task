@@ -21,6 +21,7 @@ public class TaskDbContext : DbContext
     public DbSet<Sprint> Sprints { get; set; } = null!;
     public DbSet<TaskChange> TaskChanges { get; set; } = null!;
     public DbSet<TaskItemRelation> TaskItemRelations { get; set; } = null!;
+    public DbSet<Attachment> Attachments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -105,6 +106,22 @@ public class TaskDbContext : DbContext
             
             entity.HasOne(e => e.TaskItem)
                 .WithMany(e => e.Comments)
+                .HasForeignKey(e => e.TaskItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Attachment configuration
+        modelBuilder.Entity<Attachment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Url).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.InternalName).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.FileType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
+            
+            entity.HasOne(e => e.TaskItem)
+                .WithMany(e => e.Attachments)
                 .HasForeignKey(e => e.TaskItemId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
