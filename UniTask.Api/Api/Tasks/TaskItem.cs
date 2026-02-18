@@ -14,6 +14,7 @@ public class TaskItem
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
     public int? SprintId { get; set; }
+    public int? ParentId { get; set; }
     
     public TaskPriority Priority { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -32,9 +33,13 @@ public class TaskItem
     public TaskType? TaskType { get; set; }
     public Status? Status { get; set; }
     public Sprint? Sprint { get; set; }
+    public TaskItem? Parent { get; set; }
+    public ICollection<TaskItem> Children { get; set; } = new List<TaskItem>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Label> Labels { get; set; } = new List<Label>();
     public ICollection<TaskChange> Changes { get; set; } = new List<TaskChange>();
+    public ICollection<TaskItemRelation> RelationsFrom { get; set; } = new List<TaskItemRelation>();
+    public ICollection<TaskItemRelation> RelationsTo { get; set; } = new List<TaskItemRelation>();
     
     // Deprecated - keeping for backwards compatibility during migration
     [Obsolete("Use StatusId and Status navigation property instead")]

@@ -20,6 +20,7 @@ public class TaskDbContext : DbContext
     public DbSet<Label> Labels { get; set; } = null!;
     public DbSet<Sprint> Sprints { get; set; } = null!;
     public DbSet<TaskChange> TaskChanges { get; set; } = null!;
+    public DbSet<TaskItemRelation> TaskItemRelations { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +32,7 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             entity.HasMany(e => e.Tasks)
                 .WithOne(e => e.Project)
@@ -62,6 +64,7 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             entity.HasOne(e => e.Project)
                 .WithMany(e => e.TaskTypes)
@@ -80,6 +83,7 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             entity.HasOne(e => e.Project)
                 .WithMany(e => e.Statuses)
@@ -111,6 +115,7 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Color).HasMaxLength(7); // For hex colors like #FFFFFF
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             entity.HasMany(e => e.Tasks)
                 .WithMany(e => e.Labels)
@@ -123,6 +128,7 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Goal).HasMaxLength(1000);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             entity.HasMany(e => e.Tasks)
                 .WithOne(e => e.Sprint)
@@ -155,6 +161,30 @@ public class TaskDbContext : DbContext
             entity.Property(e => e.AssignedTo).HasMaxLength(100);
             entity.Property(e => e.Source).HasMaxLength(50);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
+            
+            // Parent-Child relationship (self-referencing)
+            entity.HasOne(e => e.Parent)
+                .WithMany(e => e.Children)
+                .HasForeignKey(e => e.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // TaskItemRelation configuration
+        modelBuilder.Entity<TaskItemRelation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FromRelationType).HasConversion<string>();
+            entity.Property(e => e.ToRelationType).HasConversion<string>();
+            
+            entity.HasOne(e => e.FromTask)
+                .WithMany(e => e.RelationsFrom)
+                .HasForeignKey(e => e.FromTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.ToTask)
+                .WithMany(e => e.RelationsTo)
+                .HasForeignKey(e => e.ToTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
