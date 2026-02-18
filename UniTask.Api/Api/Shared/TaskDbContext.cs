@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Projects;
+using UniTask.Api.PullRequests;
 using UniTask.Api.Tasks;
 
 namespace UniTask.Api.Shared;
@@ -22,6 +23,8 @@ public class TaskDbContext : DbContext
     public DbSet<TaskChange> TaskChanges { get; set; } = null!;
     public DbSet<TaskItemRelation> TaskItemRelations { get; set; } = null!;
     public DbSet<Attachment> Attachments { get; set; } = null!;
+    public DbSet<PullRequest> PullRequests { get; set; } = null!;
+    public DbSet<MergeStatus> MergeStatuses { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -201,6 +204,38 @@ public class TaskDbContext : DbContext
             entity.HasOne(e => e.ToTask)
                 .WithMany(e => e.RelationsTo)
                 .HasForeignKey(e => e.ToTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // MergeStatus configuration
+        modelBuilder.Entity<MergeStatus>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            
+            entity.HasMany(e => e.PullRequests)
+                .WithOne(e => e.MergeStatus)
+                .HasForeignKey(e => e.MergeStatusId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // PullRequest configuration
+        modelBuilder.Entity<PullRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
+            entity.Property(e => e.CreatedBy).HasMaxLength(100);
+            entity.Property(e => e.UpdatedBy).HasMaxLength(100);
+            entity.Property(e => e.Repository).HasMaxLength(200);
+            entity.Property(e => e.SourceBranch).HasMaxLength(200);
+            entity.Property(e => e.TargetBranch).HasMaxLength(200);
+            
+            entity.HasOne(e => e.TaskItem)
+                .WithMany(e => e.PullRequests)
+                .HasForeignKey(e => e.TaskItemId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

@@ -1,4 +1,5 @@
 using UniTask.Api.Projects;
+using UniTask.Api.PullRequests;
 using UniTask.Api.Shared;
 
 namespace UniTask.Api.Tasks;
@@ -41,6 +42,7 @@ public class TaskItem
     public ICollection<TaskItemRelation> RelationsFrom { get; set; } = new List<TaskItemRelation>();
     public ICollection<TaskItemRelation> RelationsTo { get; set; } = new List<TaskItemRelation>();
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
+    public ICollection<PullRequest> PullRequests { get; set; } = new List<PullRequest>();
     
     // Deprecated - keeping for backwards compatibility during migration
     [Obsolete("Use StatusId and Status navigation property instead")]
