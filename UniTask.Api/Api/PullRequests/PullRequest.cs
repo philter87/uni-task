@@ -22,5 +22,5 @@ public class PullRequest
     
     // Navigation properties
     public MergeStatus? MergeStatus { get; set; }
-    public required TaskItem TaskItem { get; set; }
+    public TaskItem TaskItem { get; set; } = null!;
 }
