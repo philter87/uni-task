@@ -6,6 +6,7 @@ namespace UniTask.Api.Tasks;
 public class TaskItemDto
 {
     public int Id { get; set; }
+    public string? ExternalId { get; set; }
     public required string Title { get; set; }
     public string? Description { get; set; }
     
@@ -13,6 +14,7 @@ public class TaskItemDto
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
     public int? SprintId { get; set; }
+    public int? ParentId { get; set; }
     
     public string Priority { get; set; } = "Medium";
     public DateTime CreatedAt { get; set; }
@@ -20,7 +22,6 @@ public class TaskItemDto
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public string? Source { get; set; }
-    public string? ExternalId { get; set; }
     
     public int? DurationMin { get; set; }
     public int? RemainingMin { get; set; }

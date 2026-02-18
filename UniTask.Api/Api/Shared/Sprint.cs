@@ -6,6 +6,7 @@ namespace UniTask.Api.Shared;
 public class Sprint
 {
     public int Id { get; set; }
+    public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public string? Goal { get; set; }
     public DateTime? StartDate { get; set; }
