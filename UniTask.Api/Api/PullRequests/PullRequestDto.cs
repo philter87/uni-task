@@ -15,5 +15,5 @@ public class PullRequestDto
     public string? TargetBranch { get; set; }
     public int? MergeStatusId { get; set; }
     public MergeStatusDto? MergeStatus { get; set; }
-    public int? TaskItemId { get; set; }
+    public int TaskItemId { get; set; }
 }

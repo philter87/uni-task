@@ -18,9 +18,9 @@ public class PullRequest
     
     // Foreign Keys
     public int? MergeStatusId { get; set; }
-    public int? TaskItemId { get; set; }
+    public int TaskItemId { get; set; }
     
     // Navigation properties
     public MergeStatus? MergeStatus { get; set; }
-    public TaskItem? TaskItem { get; set; }
+    public required TaskItem TaskItem { get; set; }
 }
