@@ -64,15 +64,15 @@ public class LocalAdapter : ITaskAdapter
         existingTask.Title = taskDto.Title;
         existingTask.Description = taskDto.Description;
         existingTask.StatusId = taskDto.StatusId;
-        existingTask.Priority = ParsePriority(taskDto.Priority);
+        existingTask.Priority = taskDto.Priority;
         existingTask.DueDate = taskDto.DueDate;
         existingTask.AssignedTo = taskDto.AssignedTo;
         existingTask.ProjectId = taskDto.ProjectId;
         existingTask.TaskTypeId = taskDto.TaskTypeId;
         existingTask.SprintId = taskDto.SprintId;
         existingTask.ParentId = taskDto.ParentId;
-        existingTask.DurationMin = taskDto.DurationMin;
-        existingTask.RemainingMin = taskDto.RemainingMin;
+        existingTask.DurationHours = taskDto.DurationHours;
+        existingTask.DurationRemainingHours = taskDto.DurationRemainingHours;
         existingTask.UpdatedAt = DateTime.UtcNow;
 
         try
@@ -270,14 +270,14 @@ public class LocalAdapter : ITaskAdapter
             StatusId = task.StatusId,
             SprintId = task.SprintId,
             ParentId = task.ParentId,
-            Priority = task.Priority.ToString(),
+            Priority = task.Priority,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             DueDate = task.DueDate,
             AssignedTo = task.AssignedTo,
-            Source = task.Source,
-            DurationMin = task.DurationMin,
-            RemainingMin = task.RemainingMin,
+            Source = task.Source?.ToString(),
+            DurationHours = task.DurationHours,
+            DurationRemainingHours = task.DurationRemainingHours,
             Project = task.Project == null ? null : new ProjectDto
             {
                 Id = task.Project.Id,
@@ -338,6 +338,13 @@ public class LocalAdapter : ITaskAdapter
     /// </summary>
     private static TaskItem MapToEntity(TaskItemDto dto)
     {
+        TaskSource? source = null;
+        if (!string.IsNullOrEmpty(dto.Source))
+        {
+            Enum.TryParse<TaskSource>(dto.Source, true, out var parsedSource);
+            source = parsedSource;
+        }
+
         return new TaskItem
         {
             Id = dto.Id,
@@ -349,25 +356,14 @@ public class LocalAdapter : ITaskAdapter
             StatusId = dto.StatusId,
             SprintId = dto.SprintId,
             ParentId = dto.ParentId,
-            Priority = ParsePriority(dto.Priority),
+            Priority = dto.Priority,
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt,
             DueDate = dto.DueDate,
             AssignedTo = dto.AssignedTo,
-            Source = dto.Source,
-            DurationMin = dto.DurationMin,
-            RemainingMin = dto.RemainingMin
+            Source = source,
+            DurationHours = dto.DurationHours,
+            DurationRemainingHours = dto.DurationRemainingHours
         };
-    }
-
-    /// <summary>
-    /// Parses a priority string to TaskPriority enum value.
-    /// Performs case-insensitive parsing and defaults to Medium for invalid values.
-    /// </summary>
-    private static TaskPriority ParsePriority(string priority)
-    {
-        return Enum.TryParse<TaskPriority>(priority, true, out var result) 
-            ? result 
-            : TaskPriority.Medium;
     }
 }

@@ -1,8 +1,6 @@
-using UniTask.Api.Tasks;
+namespace UniTask.Api.Tasks;
 
-namespace UniTask.Api.Shared;
-
-public class Attachment
+public class AttachmentDto
 {
     public int Id { get; set; }
     public string? ExternalId { get; set; }
@@ -10,10 +8,4 @@ public class Attachment
     public required string Url { get; set; }
     public required string InternalName { get; set; }
     public required string FileType { get; set; }
-    
-    // Foreign Key
-    public int TaskItemId { get; set; }
-    
-    // Navigation property
-    public TaskItem TaskItem { get; set; } = null!;
 }

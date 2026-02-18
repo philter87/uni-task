@@ -126,8 +126,8 @@ public class TasksController : ControllerBase
                 Priority = request.Priority,
                 DueDate = request.DueDate,
                 AssignedTo = request.AssignedTo,
-                DurationMin = request.DurationMin,
-                RemainingMin = request.RemainingMin
+                DurationHours = request.DurationHours,
+                DurationRemainingHours = request.DurationRemainingHours
             };
 
             var result = await _mediator.Send(command);
@@ -198,9 +198,9 @@ public class UpdateTaskRequest
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
     public int? SprintId { get; set; }
-    public string Priority { get; set; } = "Medium";
+    public double Priority { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
-    public int? DurationMin { get; set; }
-    public int? RemainingMin { get; set; }
+    public double? DurationHours { get; set; }
+    public double? DurationRemainingHours { get; set; }
 }

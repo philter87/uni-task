@@ -48,7 +48,7 @@ public class LocalAdapterTests : IDisposable
         var taskDto = Any.TaskItemDto(
             title: "Test Task",
             description: "Test Description",
-            priority: "High");
+            priority: 8.5);
 
         // Act
         var result = await _adapter.CreateTaskAsync(taskDto);
@@ -58,7 +58,7 @@ public class LocalAdapterTests : IDisposable
         Assert.True(result.Id > 0);
         Assert.Equal("Test Task", result.Title);
         Assert.Equal("Test Description", result.Description);
-        Assert.Equal("High", result.Priority);
+        Assert.Equal(8.5, result.Priority);
         Assert.True(result.CreatedAt > DateTime.MinValue);
         Assert.True(result.UpdatedAt > DateTime.MinValue);
 
@@ -66,7 +66,7 @@ public class LocalAdapterTests : IDisposable
         var dbTask = await _context.Tasks.FindAsync(result.Id);
         Assert.NotNull(dbTask);
         Assert.Equal("Test Task", dbTask.Title);
-        Assert.Equal(TaskPriority.High, dbTask.Priority);
+        Assert.Equal(8.5, dbTask.Priority);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class LocalAdapterTests : IDisposable
         var task = Any.TaskItem(
             title: "Existing Task",
             description: "Existing Description",
-            priority: TaskPriority.Medium);
+            priority: 5.0);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -87,7 +87,7 @@ public class LocalAdapterTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal(task.Id, result.Id);
         Assert.Equal("Existing Task", result.Title);
-        Assert.Equal("Medium", result.Priority);
+        Assert.Equal(5.0, result.Priority);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class LocalAdapterTests : IDisposable
         var task = Any.TaskItem(
             title: "Original Title",
             description: "Original Description",
-            priority: TaskPriority.Low);
+            priority: 2.0);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -115,7 +115,7 @@ public class LocalAdapterTests : IDisposable
             id: task.Id,
             title: "Updated Title",
             description: "Updated Description",
-            priority: "Critical");
+            priority: 9.5);
 
         // Act
         var result = await _adapter.UpdateTaskAsync(task.Id, updateDto);
@@ -128,7 +128,7 @@ public class LocalAdapterTests : IDisposable
         Assert.NotNull(dbTask);
         Assert.Equal("Updated Title", dbTask.Title);
         Assert.Equal("Updated Description", dbTask.Description);
-        Assert.Equal(TaskPriority.Critical, dbTask.Priority);
+        Assert.Equal(9.5, dbTask.Priority);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class LocalAdapterTests : IDisposable
         var updateDto = Any.TaskItemDto(
             id: 999,
             title: "Updated Title",
-            priority: "High");
+            priority: 8.0);
 
         // Act
         var result = await _adapter.UpdateTaskAsync(999, updateDto);
@@ -153,7 +153,7 @@ public class LocalAdapterTests : IDisposable
         // Arrange
         var task = Any.TaskItem(
             title: "Task to Delete",
-            priority: TaskPriority.Medium);
+            priority: 5.0);
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
@@ -192,7 +192,7 @@ public class LocalAdapterTests : IDisposable
 
         var task = Any.TaskItem(
             title: "Task with Relations",
-            priority: TaskPriority.High,
+            priority: 8.0,
             projectId: project.Id,
             statusId: status.Id);
         _context.Tasks.Add(task);
@@ -213,12 +213,12 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateTaskAsync_ParsesPriorityCorrectly()
+    public async Task CreateTaskAsync_StoresPriorityCorrectly()
     {
         // Arrange
         var taskDto = Any.TaskItemDto(
             title: "Priority Test",
-            priority: "low"); // Test case-insensitive parsing
+            priority: 2.5);
 
         // Act
         var result = await _adapter.CreateTaskAsync(taskDto);
@@ -226,16 +226,16 @@ public class LocalAdapterTests : IDisposable
         // Assert
         var dbTask = await _context.Tasks.FindAsync(result.Id);
         Assert.NotNull(dbTask);
-        Assert.Equal(TaskPriority.Low, dbTask.Priority);
+        Assert.Equal(2.5, dbTask.Priority);
     }
 
     [Fact]
-    public async Task CreateTaskAsync_UsesDefaultPriorityForInvalidValue()
+    public async Task CreateTaskAsync_HandlesZeroPriority()
     {
         // Arrange
         var taskDto = Any.TaskItemDto(
-            title: "Invalid Priority Test",
-            priority: "InvalidPriority");
+            title: "Zero Priority Test",
+            priority: 0);
 
         // Act
         var result = await _adapter.CreateTaskAsync(taskDto);
@@ -243,6 +243,6 @@ public class LocalAdapterTests : IDisposable
         // Assert
         var dbTask = await _context.Tasks.FindAsync(result.Id);
         Assert.NotNull(dbTask);
-        Assert.Equal(TaskPriority.Medium, dbTask.Priority); // Should default to Medium
+        Assert.Equal(0, dbTask.Priority);
     }
 }

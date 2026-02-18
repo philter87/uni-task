@@ -114,7 +114,7 @@ public static class Any
     public static TaskItem TaskItem(
         string? title = null,
         string? description = null,
-        TaskPriority? priority = null,
+        double? priority = null,
         int? projectId = null,
         int? taskTypeId = null,
         int? statusId = null,
@@ -124,14 +124,13 @@ public static class Any
         {
             Title = title ?? $"Task {String(10)}",
             Description = description ?? String(30),
-            Priority = priority ?? Enum<TaskPriority>(),
+            Priority = priority ?? Random.Shared.NextDouble() * 10,
             ProjectId = projectId,
             TaskTypeId = taskTypeId,
             StatusId = statusId,
             SprintId = sprintId,
             CreatedAt = DateTime(),
-            UpdatedAt = DateTime(),
-            OldStatus = Enum<UniTask.Api.Tasks.TaskStatus>()
+            UpdatedAt = DateTime()
         };
     }
 
@@ -443,7 +442,7 @@ public static class Any
     /// <param name="id">Optional ID (default: 0)</param>
     /// <param name="title">Optional title (randomly generated if not provided)</param>
     /// <param name="description">Optional description (randomly generated if not provided)</param>
-    /// <param name="priority">Optional priority (default: "Medium")</param>
+    /// <param name="priority">Optional priority (randomly generated if not provided)</param>
     /// <param name="projectId">Optional project ID</param>
     /// <param name="taskTypeId">Optional task type ID</param>
     /// <param name="statusId">Optional status ID</param>
@@ -454,14 +453,14 @@ public static class Any
     /// <param name="assignedTo">Optional assignee</param>
     /// <param name="source">Optional source</param>
     /// <param name="externalId">Optional external ID</param>
-    /// <param name="durationMin">Optional duration in minutes</param>
-    /// <param name="remainingMin">Optional remaining time in minutes</param>
+    /// <param name="durationHours">Optional duration in hours</param>
+    /// <param name="durationRemainingHours">Optional remaining time in hours</param>
     /// <returns>A TaskItemDto with random data</returns>
     public static TaskItemDto TaskItemDto(
         int id = 0,
         string? title = null,
         string? description = null,
-        string? priority = null,
+        double? priority = null,
         int? projectId = null,
         int? taskTypeId = null,
         int? statusId = null,
@@ -472,17 +471,16 @@ public static class Any
         string? assignedTo = null,
         string? source = null,
         string? externalId = null,
-        int? durationMin = null,
-        int? remainingMin = null)
+        double? durationHours = null,
+        double? durationRemainingHours = null)
     {
         var created = createdAt ?? DateTime();
-        var priorities = new[] { "Low", "Medium", "High", "Critical" };
         return new TaskItemDto
         {
             Id = id,
             Title = title ?? $"Task {String(10)}",
             Description = description ?? String(30),
-            Priority = priority ?? priorities[Random.Shared.Next(priorities.Length)],
+            Priority = priority ?? Random.Shared.NextDouble() * 10,
             ProjectId = projectId,
             TaskTypeId = taskTypeId,
             StatusId = statusId,
@@ -493,8 +491,8 @@ public static class Any
             AssignedTo = assignedTo,
             Source = source,
             ExternalId = externalId,
-            DurationMin = durationMin,
-            RemainingMin = remainingMin
+            DurationHours = durationHours,
+            DurationRemainingHours = durationRemainingHours
         };
     }
 }

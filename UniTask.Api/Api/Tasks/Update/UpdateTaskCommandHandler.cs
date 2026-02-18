@@ -28,8 +28,8 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskI
             Priority = request.Priority,
             DueDate = request.DueDate,
             AssignedTo = request.AssignedTo,
-            DurationMin = request.DurationMin,
-            RemainingMin = request.RemainingMin
+            DurationHours = request.DurationHours,
+            DurationRemainingHours = request.DurationRemainingHours
         };
 
         var success = await _adapter.UpdateTaskAsync(request.TaskId, taskDto);

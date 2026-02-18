@@ -1,6 +1,6 @@
-using UniTask.Api.Tasks;
+using UniTask.Api.Shared;
 
-namespace UniTask.Api.Shared;
+namespace UniTask.Api.Tasks;
 
 public class TaskItemRelation
 {

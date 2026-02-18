@@ -1,7 +1,6 @@
 using UniTask.Api.Projects;
-using UniTask.Api.Tasks;
 
-namespace UniTask.Api.Shared;
+namespace UniTask.Api.Tasks;
 
 public class Status
 {

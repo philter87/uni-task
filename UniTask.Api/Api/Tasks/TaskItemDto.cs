@@ -16,15 +16,15 @@ public class TaskItemDto
     public int? SprintId { get; set; }
     public int? ParentId { get; set; }
     
-    public string Priority { get; set; } = "Medium";
+    public double Priority { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public string? Source { get; set; }
     
-    public int? DurationMin { get; set; }
-    public int? RemainingMin { get; set; }
+    public double? DurationHours { get; set; }
+    public double? DurationRemainingHours { get; set; }
     
     public ProjectDto? Project { get; set; }
     public TaskTypeDto? TaskType { get; set; }

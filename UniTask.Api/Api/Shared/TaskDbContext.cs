@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Projects;
 using UniTask.Api.PullRequests;
 using UniTask.Api.Tasks;
+using UniTask.Api.Shared;
 
 namespace UniTask.Api.Shared;
 
@@ -176,10 +177,8 @@ public class TaskDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(2000);
-            entity.Property(e => e.OldStatus).HasConversion<string>().HasColumnName("OldStatus");
-            entity.Property(e => e.Priority).HasConversion<string>();
+            entity.Property(e => e.Source).HasConversion<string>();
             entity.Property(e => e.AssignedTo).HasMaxLength(100);
-            entity.Property(e => e.Source).HasMaxLength(50);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
             
             // Parent-Child relationship (self-referencing)

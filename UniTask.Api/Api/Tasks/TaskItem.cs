@@ -17,17 +17,17 @@ public class TaskItem
     public int? SprintId { get; set; }
     public int? ParentId { get; set; }
     
-    public TaskPriority Priority { get; set; }
+    public double Priority { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
-    public string? Source { get; set; } // "AzureDevOps" or "GitHub"
+    public TaskSource? Source { get; set; }
     public string? ExternalId { get; set; }
     
     // New fields
-    public int? DurationMin { get; set; }
-    public int? RemainingMin { get; set; }
+    public double? DurationHours { get; set; }
+    public double? DurationRemainingHours { get; set; }
     
     // Navigation properties
     public Project? Project { get; set; }
@@ -43,23 +43,11 @@ public class TaskItem
     public ICollection<TaskItemRelation> RelationsTo { get; set; } = new List<TaskItemRelation>();
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
     public ICollection<PullRequest> PullRequests { get; set; } = new List<PullRequest>();
-    
-    // Deprecated - keeping for backwards compatibility during migration
-    [Obsolete("Use StatusId and Status navigation property instead")]
-    public TaskStatus OldStatus { get; set; }
 }
 
-public enum TaskStatus
+public enum TaskSource
 {
-    Todo,
-    InProgress,
-    Done
-}
-
-public enum TaskPriority
-{
-    Low,
-    Medium,
-    High,
-    Critical
+    Local,
+    AzureDevOps,
+    GitHub
 }
