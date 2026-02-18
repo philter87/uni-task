@@ -200,7 +200,7 @@ public class UpdateTaskRequest
     public int? StatusId { get; set; }
     public int? BoardId { get; set; }
     [Range(0, 10)]
-    public double Priority { get; set; }
+    public double Priority { get; set; } = 5.0;
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public double? DurationHours { get; set; }

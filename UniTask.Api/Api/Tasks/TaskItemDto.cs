@@ -18,7 +18,7 @@ public class TaskItemDto
     public int? ParentId { get; set; }
     
     [Range(0, 10)]
-    public double Priority { get; set; }
+    public double Priority { get; set; } = 5.0;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
