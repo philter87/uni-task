@@ -41,6 +41,7 @@ public class TaskItem
     public ICollection<TaskItem> Children { get; set; } = new List<TaskItem>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Label> Labels { get; set; } = new List<Label>();
+    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
     public ICollection<TaskChange> Changes { get; set; } = new List<TaskChange>();
     public ICollection<TaskItemRelation> RelationsFrom { get; set; } = new List<TaskItemRelation>();
     public ICollection<TaskItemRelation> RelationsTo { get; set; } = new List<TaskItemRelation>();

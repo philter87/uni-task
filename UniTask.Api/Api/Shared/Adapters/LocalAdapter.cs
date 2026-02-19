@@ -21,7 +21,8 @@ public class LocalAdapter : ITaskAdapter
             .Include(t => t.TaskType)
             .Include(t => t.Status)
             .Include(t => t.Board)
-            .Include(t => t.Labels)
+            .Include(t => t.Labels).ThenInclude(l => l.LabelType)
+            .Include(t => t.Tags)
             .ToListAsync();
 
         return tasks.Select(MapToDto);
@@ -34,7 +35,8 @@ public class LocalAdapter : ITaskAdapter
             .Include(t => t.TaskType)
             .Include(t => t.Status)
             .Include(t => t.Board)
-            .Include(t => t.Labels)
+            .Include(t => t.Labels).ThenInclude(l => l.LabelType)
+            .Include(t => t.Tags)
             .Include(t => t.Comments)
             .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -141,7 +143,7 @@ public class LocalAdapter : ITaskAdapter
     public async Task<TaskItemDto?> AddLabelToTaskAsync(int taskId, int labelId)
     {
         var task = await _context.Tasks
-            .Include(t => t.Labels)
+            .Include(t => t.Labels).ThenInclude(l => l.LabelType)
             .FirstOrDefaultAsync(t => t.Id == taskId);
         
         if (task == null)
@@ -171,7 +173,7 @@ public class LocalAdapter : ITaskAdapter
     public async Task<TaskItemDto?> RemoveLabelFromTaskAsync(int taskId, int labelId)
     {
         var task = await _context.Tasks
-            .Include(t => t.Labels)
+            .Include(t => t.Labels).ThenInclude(l => l.LabelType)
             .FirstOrDefaultAsync(t => t.Id == taskId);
         
         if (task == null)
@@ -328,9 +330,19 @@ public class LocalAdapter : ITaskAdapter
             Labels = task.Labels.Select(l => new LabelDto
             {
                 Id = l.Id,
-                ExternalId = l.ExternalId,
                 Name = l.Name,
-                Color = l.Color
+                TypeId = l.TypeId,
+                LabelType = l.LabelType == null ? null : new LabelTypeDto
+                {
+                    Id = l.LabelType.Id,
+                    Name = l.LabelType.Name,
+                    Color = l.LabelType.Color
+                }
+            }).ToList(),
+            Tags = task.Tags.Select(t => new TagDto
+            {
+                Id = t.Id,
+                Name = t.Name
             }).ToList()
         };
     }

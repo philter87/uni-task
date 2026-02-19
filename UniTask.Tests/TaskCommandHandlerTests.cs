@@ -192,7 +192,7 @@ public class TaskCommandHandlerTests : IDisposable
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var label = Any.Label(name: "Bug", color: "#FF0000");
+            var label = Any.Label(name: "Bug");
             db.Labels.Add(label);
             await db.SaveChangesAsync();
             labelId = label.Id;
