@@ -60,8 +60,9 @@ dist-ssr/
 # Frontend build output
 wwwroot/
 
-# OS generated files
-.DS_Store
+# Test Results
+TestResults/
+
 .DS_Store?
 ._*
 .Spotlight-V100
