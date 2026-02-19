@@ -3,6 +3,7 @@ using UniTask.Api.Projects;
 using UniTask.Api.PullRequests;
 using UniTask.Api.Tasks;
 using UniTask.Api.Shared;
+using UniTask.Api.Users;
 
 namespace UniTask.Api.Shared;
 
@@ -15,7 +16,10 @@ public class TaskDbContext : DbContext
 
     public DbSet<TaskItem> Tasks { get; set; } = null!;
     public DbSet<Project> Projects { get; set; } = null!;
+    public DbSet<Organisation> Organisations { get; set; } = null!;
+    public DbSet<OrganisationMember> OrganisationMembers { get; set; } = null!;
     public DbSet<ProjectMember> ProjectMembers { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
     public DbSet<TaskType> TaskTypes { get; set; } = null!;
     public DbSet<Status> Statuses { get; set; } = null!;
     public DbSet<Comment> Comments { get; set; } = null!;
@@ -40,6 +44,11 @@ public class TaskDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(2000);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
             
+            entity.HasOne(e => e.Organisation)
+                .WithMany(e => e.Projects)
+                .HasForeignKey(e => e.OrganisationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
             entity.HasMany(e => e.Tasks)
                 .WithOne(e => e.Project)
                 .HasForeignKey(e => e.ProjectId)
@@ -56,12 +65,51 @@ public class TaskDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Organisation configuration
+        modelBuilder.Entity<Organisation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
+        });
+
+        // OrganisationMember configuration
+        modelBuilder.Entity<OrganisationMember>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Role).HasMaxLength(50);
+
+            entity.HasOne(e => e.Organisation)
+                .WithMany(e => e.Members)
+                .HasForeignKey(e => e.OrganisationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // ProjectMember configuration
         modelBuilder.Entity<ProjectMember>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.UserId).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Role).HasMaxLength(50);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // User configuration
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.DisplayName).HasMaxLength(200);
+            entity.Property(e => e.ExternalId).HasMaxLength(100);
         });
 
         // TaskType configuration
