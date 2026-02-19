@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using UniTask.Api.Shared.Adapters;
 using UniTask.Api.Tasks.ChangeStatus;
 using UniTask.Api.Tasks.AssignMember;
@@ -122,12 +123,12 @@ public class TasksController : ControllerBase
                 ProjectId = request.ProjectId,
                 TaskTypeId = request.TaskTypeId,
                 StatusId = request.StatusId,
-                SprintId = request.SprintId,
+                BoardId = request.BoardId,
                 Priority = request.Priority,
                 DueDate = request.DueDate,
                 AssignedTo = request.AssignedTo,
-                DurationMin = request.DurationMin,
-                RemainingMin = request.RemainingMin
+                DurationHours = request.DurationHours,
+                DurationRemainingHours = request.DurationRemainingHours
             };
 
             var result = await _mediator.Send(command);
@@ -197,10 +198,11 @@ public class UpdateTaskRequest
     public int? ProjectId { get; set; }
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
-    public int? SprintId { get; set; }
-    public string Priority { get; set; } = "Medium";
+    public int? BoardId { get; set; }
+    [Range(0, 10)]
+    public double Priority { get; set; } = 5.0;
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
-    public int? DurationMin { get; set; }
-    public int? RemainingMin { get; set; }
+    public double? DurationHours { get; set; }
+    public double? DurationRemainingHours { get; set; }
 }

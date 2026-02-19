@@ -55,7 +55,7 @@ public class TasksControllerTests : IDisposable
         {
             Title = "Test Task",
             Description = "Test Description",
-            Priority = "Medium"
+            Priority = 5.0
         };
 
         // Act
@@ -77,7 +77,7 @@ public class TasksControllerTests : IDisposable
         var newTask = new TaskItemDto
         {
             Title = "Get Task Test",
-            Priority = "High"
+            Priority = 8.0
         };
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
@@ -112,7 +112,7 @@ public class TasksControllerTests : IDisposable
         var newTask = new TaskItemDto
         {
             Title = "Original Title",
-            Priority = "Low"
+            Priority = 2.0
         };
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
@@ -120,7 +120,7 @@ public class TasksControllerTests : IDisposable
         Assert.NotNull(createdTask);
 
         createdTask.Title = "Updated Title";
-        createdTask.Priority = "High";
+        createdTask.Priority = 8.0;
 
         // Act
         var response = await _client.PutAsJsonAsync($"/api/tasks/{createdTask.Id}", createdTask);
@@ -133,7 +133,7 @@ public class TasksControllerTests : IDisposable
         var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(updatedTask);
         Assert.Equal("Updated Title", updatedTask.Title);
-        Assert.Equal("High", updatedTask.Priority);
+        Assert.Equal(8.0, updatedTask.Priority);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class TasksControllerTests : IDisposable
         var newTask = new TaskItemDto
         {
             Title = "Task to Delete",
-            Priority = "Medium"
+            Priority = 5.0
         };
 
         var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);

@@ -44,11 +44,11 @@ public class AnyTests
     public void Enum_ReturnsValidEnumValue()
     {
         // Act
-        var result = Any.Enum<TaskPriority>();
+        var result = Any.Enum<TaskSource>();
 
         // Assert
-        Assert.IsType<TaskPriority>(result);
-        Assert.True(System.Enum.IsDefined(typeof(TaskPriority), result));
+        Assert.IsType<TaskSource>(result);
+        Assert.True(System.Enum.IsDefined(typeof(TaskSource), result));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class AnyTests
         Assert.NotNull(result);
         Assert.NotNull(result.Title);
         Assert.NotEmpty(result.Title);
-        Assert.True(System.Enum.IsDefined(typeof(TaskPriority), result.Priority));
+        Assert.True(result.Priority >= 0);
     }
 
     [Fact]
@@ -105,12 +105,12 @@ public class AnyTests
         // Act
         var result = Any.TaskItem(
             title: "Custom Title",
-            priority: TaskPriority.Critical,
+            priority: 9.5,
             projectId: 42);
 
         // Assert
         Assert.Equal("Custom Title", result.Title);
-        Assert.Equal(TaskPriority.Critical, result.Priority);
+        Assert.Equal(9.5, result.Priority);
         Assert.Equal(42, result.ProjectId);
     }
 
@@ -127,10 +127,10 @@ public class AnyTests
     }
 
     [Fact]
-    public void Sprint_GeneratesValidSprint()
+    public void Board_GeneratesValidBoard()
     {
         // Act
-        var result = Any.Sprint();
+        var result = Any.Board();
 
         // Assert
         Assert.NotNull(result);

@@ -1,6 +1,6 @@
 namespace UniTask.Api.Shared;
 
-public class SprintDto
+public class BoardDto
 {
     public int Id { get; set; }
     public string? ExternalId { get; set; }

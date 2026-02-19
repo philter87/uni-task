@@ -24,12 +24,12 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskI
             ProjectId = request.ProjectId,
             TaskTypeId = request.TaskTypeId,
             StatusId = request.StatusId,
-            SprintId = request.SprintId,
+            BoardId = request.BoardId,
             Priority = request.Priority,
             DueDate = request.DueDate,
             AssignedTo = request.AssignedTo,
-            DurationMin = request.DurationMin,
-            RemainingMin = request.RemainingMin
+            DurationHours = request.DurationHours,
+            DurationRemainingHours = request.DurationRemainingHours
         };
 
         var success = await _adapter.UpdateTaskAsync(request.TaskId, taskDto);

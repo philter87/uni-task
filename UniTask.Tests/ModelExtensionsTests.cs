@@ -226,26 +226,26 @@ public class ModelExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task Sprint_CanHaveExternalId()
+    public async Task Board_CanHaveExternalId()
     {
         // Arrange
         var project = Any.Project();
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
 
-        var sprint = Any.Sprint(projectId: project.Id);
-        sprint.ExternalId = "ext-sprint-456";
+        var board = Any.Board(projectId: project.Id);
+        board.ExternalId = "ext-board-456";
 
         // Act
-        _context.Sprints.Add(sprint);
+        _context.Boards.Add(board);
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedSprint = await _context.Sprints
-            .FirstOrDefaultAsync(s => s.Id == sprint.Id);
+        var savedBoard = await _context.Boards
+            .FirstOrDefaultAsync(s => s.Id == board.Id);
 
-        Assert.NotNull(savedSprint);
-        Assert.Equal("ext-sprint-456", savedSprint.ExternalId);
+        Assert.NotNull(savedBoard);
+        Assert.Equal("ext-board-456", savedBoard.ExternalId);
     }
 
     [Fact]

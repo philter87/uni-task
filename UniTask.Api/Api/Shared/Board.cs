@@ -3,7 +3,7 @@ using UniTask.Api.Tasks;
 
 namespace UniTask.Api.Shared;
 
-public class Sprint
+public class Board
 {
     public int Id { get; set; }
     public string? ExternalId { get; set; }

@@ -1,6 +1,4 @@
-using UniTask.Api.Tasks;
-
-namespace UniTask.Api.Shared;
+namespace UniTask.Api.Tasks;
 
 public class Label
 {
@@ -11,4 +9,5 @@ public class Label
 
     // Navigation properties
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+    public ICollection<LabelValue> Values { get; set; } = new List<LabelValue>();
 }

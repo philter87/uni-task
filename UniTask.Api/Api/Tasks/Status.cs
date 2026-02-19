@@ -1,19 +1,19 @@
 using UniTask.Api.Projects;
-using UniTask.Api.Tasks;
 
-namespace UniTask.Api.Shared;
+namespace UniTask.Api.Tasks;
 
-public class TaskType
+public class Status
 {
     public int Id { get; set; }
     public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
+    public int Order { get; set; }
     
     // Foreign Keys
-    public int? ProjectId { get; set; }
+    public int? TaskTypeId { get; set; }
 
     // Navigation properties
-    public Project? Project { get; set; }
+    public TaskType? TaskType { get; set; }
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 }

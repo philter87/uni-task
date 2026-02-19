@@ -1,5 +1,6 @@
 using UniTask.Api.Projects;
 using UniTask.Api.Shared;
+using System.ComponentModel.DataAnnotations;
 
 namespace UniTask.Api.Tasks;
 
@@ -13,23 +14,24 @@ public class TaskItemDto
     public int? ProjectId { get; set; }
     public int? TaskTypeId { get; set; }
     public int? StatusId { get; set; }
-    public int? SprintId { get; set; }
+    public int? BoardId { get; set; }
     public int? ParentId { get; set; }
     
-    public string Priority { get; set; } = "Medium";
+    [Range(0, 10)]
+    public double Priority { get; set; } = 5.0;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public string? Source { get; set; }
     
-    public int? DurationMin { get; set; }
-    public int? RemainingMin { get; set; }
+    public double? DurationHours { get; set; }
+    public double? DurationRemainingHours { get; set; }
     
     public ProjectDto? Project { get; set; }
     public TaskTypeDto? TaskType { get; set; }
     public StatusDto? Status { get; set; }
-    public SprintDto? Sprint { get; set; }
+    public BoardDto? Board { get; set; }
     public List<CommentDto> Comments { get; set; } = new();
     public List<LabelDto> Labels { get; set; } = new();
     public List<AttachmentDto> Attachments { get; set; } = new();
