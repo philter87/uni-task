@@ -196,7 +196,7 @@ public class UserModelTests : IDisposable
         var saved = await _context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
         Assert.NotNull(saved);
         Assert.Equal("test@example.com", saved.Email);
-        Assert.Equal("testuser", saved.Username);
+        Assert.Equal("testuser", saved.UserName);
     }
 
     [Fact]

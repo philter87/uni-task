@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Projects;
 using UniTask.Api.PullRequests;
@@ -7,7 +9,7 @@ using UniTask.Api.Users;
 
 namespace UniTask.Api.Shared;
 
-public class TaskDbContext : DbContext
+public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
 {
     public TaskDbContext(DbContextOptions<TaskDbContext> options)
         : base(options)
@@ -19,7 +21,6 @@ public class TaskDbContext : DbContext
     public DbSet<Organisation> Organisations { get; set; } = null!;
     public DbSet<OrganisationMember> OrganisationMembers { get; set; } = null!;
     public DbSet<ProjectMember> ProjectMembers { get; set; } = null!;
-    public DbSet<User> Users { get; set; } = null!;
     public DbSet<TaskType> TaskTypes { get; set; } = null!;
     public DbSet<Status> Statuses { get; set; } = null!;
     public DbSet<Comment> Comments { get; set; } = null!;
@@ -102,14 +103,12 @@ public class TaskDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // User configuration
-        modelBuilder.Entity<User>(entity =>
+        // UniUser configuration - base Identity properties (Id, UserName, Email, etc.)
+        // are already configured by IdentityDbContext. Only add extra property constraints here.
+        modelBuilder.Entity<UniUser>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.DisplayName).HasMaxLength(200);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
+            entity.Property(e => e.DisplayName).HasMaxLength(200);
         });
 
         // TaskType configuration
@@ -155,12 +154,16 @@ public class TaskDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired().HasMaxLength(5000);
-            entity.Property(e => e.UserId).IsRequired().HasMaxLength(100);
             
             entity.HasOne(e => e.TaskItem)
                 .WithMany(e => e.Comments)
                 .HasForeignKey(e => e.TaskItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Attachment configuration
@@ -177,6 +180,11 @@ public class TaskDbContext : DbContext
                 .WithMany(e => e.Attachments)
                 .HasForeignKey(e => e.TaskItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.UploadedBy)
+                .WithMany()
+                .HasForeignKey(e => e.UploadedById)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Label configuration
@@ -247,6 +255,11 @@ public class TaskDbContext : DbContext
                 .WithMany(e => e.Children)
                 .HasForeignKey(e => e.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.AssignedToUser)
+                .WithMany()
+                .HasForeignKey(e => e.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // TaskItemRelation configuration
@@ -297,6 +310,16 @@ public class TaskDbContext : DbContext
                 .WithMany(e => e.PullRequests)
                 .HasForeignKey(e => e.TaskItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

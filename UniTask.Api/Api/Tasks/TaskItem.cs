@@ -1,6 +1,7 @@
 using UniTask.Api.Projects;
 using UniTask.Api.PullRequests;
 using UniTask.Api.Shared;
+using UniTask.Api.Users;
 
 namespace UniTask.Api.Tasks;
 
@@ -22,6 +23,7 @@ public class TaskItem
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
+    public int? AssignedToUserId { get; set; }
     public TaskSource? Source { get; set; }
     public string? ExternalId { get; set; }
     
@@ -35,6 +37,7 @@ public class TaskItem
     public Status? Status { get; set; }
     public Board? Board { get; set; }
     public TaskItem? Parent { get; set; }
+    public UniUser? AssignedToUser { get; set; }
     public ICollection<TaskItem> Children { get; set; } = new List<TaskItem>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Label> Labels { get; set; } = new List<Label>();
