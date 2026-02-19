@@ -1,4 +1,5 @@
 using UniTask.Api.Tasks;
+using UniTask.Api.Users;
 
 namespace UniTask.Api.PullRequests;
 
@@ -19,8 +20,12 @@ public class PullRequest
     // Foreign Keys
     public int? MergeStatusId { get; set; }
     public int TaskItemId { get; set; }
+    public int? CreatedByUserId { get; set; }
+    public int? UpdatedByUserId { get; set; }
     
     // Navigation properties
     public MergeStatus? MergeStatus { get; set; }
     public TaskItem TaskItem { get; set; } = null!;
+    public UniUser? CreatedByUser { get; set; }
+    public UniUser? UpdatedByUser { get; set; }
 }

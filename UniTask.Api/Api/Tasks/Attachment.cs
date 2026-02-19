@@ -9,9 +9,11 @@ public class Attachment
     public required string InternalName { get; set; }
     public required string FileType { get; set; }
     
-    // Foreign Key
+    // Foreign Keys
     public int TaskItemId { get; set; }
+    public int? UploadedById { get; set; }
     
-    // Navigation property
+    // Navigation properties
     public TaskItem TaskItem { get; set; } = null!;
+    public UniTask.Api.Users.UniUser? UploadedBy { get; set; }
 }

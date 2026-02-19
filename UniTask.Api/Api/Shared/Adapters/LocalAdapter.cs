@@ -67,6 +67,7 @@ public class LocalAdapter : ITaskAdapter
         existingTask.Priority = taskDto.Priority;
         existingTask.DueDate = taskDto.DueDate;
         existingTask.AssignedTo = taskDto.AssignedTo;
+        existingTask.AssignedToUserId = taskDto.AssignedToUserId;
         existingTask.ProjectId = taskDto.ProjectId;
         existingTask.TaskTypeId = taskDto.TaskTypeId;
         existingTask.BoardId = taskDto.BoardId;
@@ -275,6 +276,7 @@ public class LocalAdapter : ITaskAdapter
             UpdatedAt = task.UpdatedAt,
             DueDate = task.DueDate,
             AssignedTo = task.AssignedTo,
+            AssignedToUserId = task.AssignedToUserId,
             Source = task.Source?.ToString(),
             DurationHours = task.DurationHours,
             DurationRemainingHours = task.DurationRemainingHours,
@@ -361,6 +363,7 @@ public class LocalAdapter : ITaskAdapter
             UpdatedAt = dto.UpdatedAt,
             DueDate = dto.DueDate,
             AssignedTo = dto.AssignedTo,
+            AssignedToUserId = dto.AssignedToUserId,
             Source = source,
             DurationHours = dto.DurationHours,
             DurationRemainingHours = dto.DurationRemainingHours

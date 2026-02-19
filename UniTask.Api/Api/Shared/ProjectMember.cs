@@ -13,5 +13,5 @@ public class ProjectMember
 
     // Navigation properties
     public Project Project { get; set; } = null!;
-    public User User { get; set; } = null!;
+    public UniUser User { get; set; } = null!;
 }

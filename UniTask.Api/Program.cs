@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Shared;
 using UniTask.Api.Shared.Adapters;
+using UniTask.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,11 @@ builder.Services.AddEndpointsApiExplorer();
 // Configure DbContext with SQLite
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tasks.db"));
+
+// Configure Identity
+builder.Services.AddIdentityCore<UniUser>()
+    .AddRoles<IdentityRole<int>>()
+    .AddEntityFrameworkStores<TaskDbContext>();
 
 // Register adapter
 builder.Services.AddScoped<ITaskAdapter, LocalAdapter>();

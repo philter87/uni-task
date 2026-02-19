@@ -11,5 +11,5 @@ public class OrganisationMember
 
     // Navigation properties
     public Organisation Organisation { get; set; } = null!;
-    public User User { get; set; } = null!;
+    public UniUser User { get; set; } = null!;
 }

@@ -1,10 +1,3 @@
+// This file is intentionally empty. The User model has been replaced by UniUser.
+// See UniUser.cs for the Identity-based user model.
 namespace UniTask.Api.Users;
-
-public class User
-{
-    public int Id { get; set; }
-    public string? ExternalId { get; set; }
-    public required string Email { get; set; }
-    public required string Username { get; set; }
-    public string? DisplayName { get; set; }
-}

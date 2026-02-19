@@ -23,6 +23,7 @@ public class TaskItemDto
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
+    public int? AssignedToUserId { get; set; }
     public string? Source { get; set; }
     
     public double? DurationHours { get; set; }

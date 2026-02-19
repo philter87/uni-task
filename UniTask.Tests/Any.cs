@@ -373,7 +373,7 @@ public static class Any
         int id = 0,
         int taskItemId = 1,
         string? content = null,
-        string? userId = null,
+        int? userId = null,
         DateTime? createdAt = null,
         DateTime? updatedAt = null)
     {
@@ -382,7 +382,7 @@ public static class Any
             Id = id,
             TaskItemId = taskItemId,
             Content = content ?? String(50),
-            UserId = userId ?? $"user-{String(8)}",
+            UserId = userId,
             CreatedAt = createdAt ?? DateTime(),
             UpdatedAt = updatedAt
         };
@@ -438,23 +438,23 @@ public static class Any
     }
 
     /// <summary>
-    /// Creates a User with random values.
+    /// Creates a UniUser with random values.
     /// </summary>
     /// <param name="email">Optional email (randomly generated if not provided)</param>
     /// <param name="username">Optional username (randomly generated if not provided)</param>
     /// <param name="displayName">Optional display name (randomly generated if not provided)</param>
     /// <param name="externalId">Optional external ID</param>
-    /// <returns>A User with random data</returns>
-    public static User User(
+    /// <returns>A UniUser with random data</returns>
+    public static UniUser User(
         string? email = null,
         string? username = null,
         string? displayName = null,
         string? externalId = null)
     {
-        return new User
+        return new UniUser
         {
             Email = email ?? Email(),
-            Username = username ?? $"user_{String(8)}",
+            UserName = username ?? $"user_{String(8)}",
             DisplayName = displayName ?? String(12),
             ExternalId = externalId
         };
@@ -510,6 +510,7 @@ public static class Any
         DateTime? updatedAt = null,
         DateTime? dueDate = null,
         string? assignedTo = null,
+        int? assignedToUserId = null,
         string? source = null,
         string? externalId = null,
         double? durationHours = null,
@@ -530,6 +531,7 @@ public static class Any
             UpdatedAt = updatedAt ?? created,
             DueDate = dueDate,
             AssignedTo = assignedTo,
+            AssignedToUserId = assignedToUserId,
             Source = source,
             ExternalId = externalId,
             DurationHours = durationHours,
