@@ -1,6 +1,7 @@
 using UniTask.Api.Projects;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
+using UniTask.Api.Users;
 
 namespace UniTask.Tests;
 
@@ -432,6 +433,46 @@ public static class Any
             Url = url ?? $"https://example.com/files/{String(16)}",
             InternalName = internalName ?? $"{String(32)}.pdf",
             FileType = fileType ?? "application/pdf",
+            ExternalId = externalId
+        };
+    }
+
+    /// <summary>
+    /// Creates a User with random values.
+    /// </summary>
+    /// <param name="email">Optional email (randomly generated if not provided)</param>
+    /// <param name="username">Optional username (randomly generated if not provided)</param>
+    /// <param name="displayName">Optional display name (randomly generated if not provided)</param>
+    /// <param name="externalId">Optional external ID</param>
+    /// <returns>A User with random data</returns>
+    public static User User(
+        string? email = null,
+        string? username = null,
+        string? displayName = null,
+        string? externalId = null)
+    {
+        return new User
+        {
+            Email = email ?? Email(),
+            Username = username ?? $"user_{String(8)}",
+            DisplayName = displayName ?? String(12),
+            ExternalId = externalId
+        };
+    }
+
+    /// <summary>
+    /// Creates an Organisation with random values.
+    /// </summary>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <param name="externalId">Optional external ID</param>
+    /// <returns>An Organisation with random data</returns>
+    public static Organisation Organisation(
+        string? name = null,
+        string? externalId = null)
+    {
+        return new Organisation
+        {
+            Name = name ?? $"Org {String(8)}",
             ExternalId = externalId
         };
     }

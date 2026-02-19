@@ -11,8 +11,10 @@ public class Project
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public int? OrganisationId { get; set; }
 
     // Navigation properties
+    public Organisation? Organisation { get; set; }
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
     public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
     public ICollection<Board> Boards { get; set; } = new List<Board>();
