@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using UniTask.Api.Projects;
-using UniTask.Api.Projects.Create;
+using UniTask.Api.Projects.Commands.Create;
 using Xunit;
 
 namespace UniTask.Tests;
@@ -43,12 +43,12 @@ public class ProjectsControllerTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdProject = await response.Content.ReadFromJsonAsync<ProjectDto>();
-        Assert.NotNull(createdProject);
-        Assert.Equal("Test Project", createdProject.Name);
-        Assert.Equal("Test project description", createdProject.Description);
-        Assert.True(createdProject.Id > 0);
-        Assert.True(createdProject.CreatedAt > DateTime.MinValue);
+        var projectCreated = await response.Content.ReadFromJsonAsync<ProjectCreatedEvent>();
+        Assert.NotNull(projectCreated);
+        Assert.Equal("Test Project", projectCreated.Name);
+        Assert.Equal("Test project description", projectCreated.Description);
+        Assert.True(projectCreated.ProjectId > 0);
+        Assert.True(projectCreated.CreatedAt > DateTime.MinValue);
     }
 
     [Fact]
@@ -65,10 +65,10 @@ public class ProjectsControllerTests : IDisposable
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdProject = await response.Content.ReadFromJsonAsync<ProjectDto>();
-        Assert.NotNull(createdProject);
-        Assert.Equal("Minimal Project", createdProject.Name);
-        Assert.Null(createdProject.Description);
-        Assert.True(createdProject.Id > 0);
+        var projectCreated = await response.Content.ReadFromJsonAsync<ProjectCreatedEvent>();
+        Assert.NotNull(projectCreated);
+        Assert.Equal("Minimal Project", projectCreated.Name);
+        Assert.Null(projectCreated.Description);
+        Assert.True(projectCreated.ProjectId > 0);
     }
 }

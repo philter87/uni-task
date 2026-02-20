@@ -1,12 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using UniTask.Api.Shared.Adapters;
-using UniTask.Api.Tasks.ChangeStatus;
-using UniTask.Api.Tasks.AssignMember;
-using UniTask.Api.Tasks.Update;
-using UniTask.Api.Tasks.AddLabel;
-using UniTask.Api.Tasks.RemoveLabel;
+using UniTask.Api.Tasks.Commands.AddLabel;
+using UniTask.Api.Tasks.Commands.AssignMember;
+using UniTask.Api.Tasks.Commands.ChangeStatus;
+using UniTask.Api.Tasks.Commands.Create;
+using UniTask.Api.Tasks.Commands.Delete;
+using UniTask.Api.Tasks.Commands.RemoveLabel;
+using UniTask.Api.Tasks.Commands.Update;
+using UniTask.Api.Tasks.Queries.GetTask;
+using UniTask.Api.Tasks.Queries.GetTasks;
 
 namespace UniTask.Api.Tasks;
 
@@ -14,26 +17,24 @@ namespace UniTask.Api.Tasks;
 [Route("api/[controller]")]
 public class TasksController : ControllerBase
 {
-    private readonly ITaskAdapter _adapter;
     private readonly IMediator _mediator;
 
-    public TasksController(ITaskAdapter adapter, IMediator mediator)
+    public TasksController(IMediator mediator)
     {
-        _adapter = adapter;
         _mediator = mediator;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetTasks()
     {
-        var tasks = await _adapter.GetAllTasksAsync();
+        var tasks = await _mediator.Send(new GetTasksQuery());
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskItemDto>> GetTask(int id)
     {
-        var task = await _adapter.GetTaskByIdAsync(id);
+        var task = await _mediator.Send(new GetTaskQuery { Id = id });
         if (task == null)
         {
             return NotFound();
@@ -42,36 +43,43 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TaskItemDto>> CreateTask([FromBody] TaskItemDto taskDto)
+    public async Task<ActionResult<TaskCreatedEvent>> CreateTask([FromBody] CreateTaskCommand command)
     {
-        var createdTask = await _adapter.CreateTaskAsync(taskDto);
-        return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask);
+        var taskCreated = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetTask), new { id = taskCreated.TaskId }, taskCreated);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskItemDto taskDto)
+    public async Task<ActionResult<TaskUpdatedEvent>> UpdateTask(int id, [FromBody] UpdateTaskCommand command)
     {
-        var updated = await _adapter.UpdateTaskAsync(id, taskDto);
-        if (!updated)
+        command.TaskId = id;
+        try
         {
-            return NotFound();
+            var taskUpdated = await _mediator.Send(command);
+            return Ok(taskUpdated);
         }
-        return NoContent();
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTask(int id)
+    public async Task<ActionResult<TaskDeletedEvent>> DeleteTask(int id)
     {
-        var deleted = await _adapter.DeleteTaskAsync(id);
-        if (!deleted)
+        try
         {
-            return NotFound();
+            var taskDeleted = await _mediator.Send(new DeleteTaskCommand { TaskId = id });
+            return Ok(taskDeleted);
         }
-        return NoContent();
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<ActionResult<TaskItemDto>> ChangeTaskStatus(int id, [FromBody] ChangeTaskStatusRequest request)
+    public async Task<ActionResult<TaskStatusChangedEvent>> ChangeTaskStatus(int id, [FromBody] ChangeTaskStatusRequest request)
     {
         try
         {
@@ -91,7 +99,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPatch("{id}/assign")]
-    public async Task<ActionResult<TaskItemDto>> AssignMemberToTask(int id, [FromBody] AssignMemberRequest request)
+    public async Task<ActionResult<MemberAssignedToTaskEvent>> AssignMemberToTask(int id, [FromBody] AssignMemberRequest request)
     {
         try
         {
@@ -110,38 +118,8 @@ public class TasksController : ControllerBase
         }
     }
 
-    [HttpPut("{id}/update")]
-    public async Task<ActionResult<TaskItemDto>> UpdateTaskWithCommand(int id, [FromBody] UpdateTaskRequest request)
-    {
-        try
-        {
-            var command = new UpdateTaskCommand
-            {
-                TaskId = id,
-                Title = request.Title,
-                Description = request.Description,
-                ProjectId = request.ProjectId,
-                TaskTypeId = request.TaskTypeId,
-                StatusId = request.StatusId,
-                BoardId = request.BoardId,
-                Priority = request.Priority,
-                DueDate = request.DueDate,
-                AssignedTo = request.AssignedTo,
-                DurationHours = request.DurationHours,
-                DurationRemainingHours = request.DurationRemainingHours
-            };
-
-            var result = await _mediator.Send(command);
-            return Ok(result);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(ex.Message);
-        }
-    }
-
     [HttpPost("{id}/labels/{labelId}")]
-    public async Task<ActionResult<TaskItemDto>> AddTaskLabel(int id, int labelId)
+    public async Task<ActionResult<TaskLabelAddedEvent>> AddTaskLabel(int id, int labelId)
     {
         try
         {
@@ -161,7 +139,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpDelete("{id}/labels/{labelId}")]
-    public async Task<ActionResult<TaskItemDto>> RemoveTaskLabel(int id, int labelId)
+    public async Task<ActionResult<TaskLabelRemovedEvent>> RemoveTaskLabel(int id, int labelId)
     {
         try
         {
@@ -189,20 +167,4 @@ public class ChangeTaskStatusRequest
 public class AssignMemberRequest
 {
     public required string AssignedTo { get; set; }
-}
-
-public class UpdateTaskRequest
-{
-    public required string Title { get; set; }
-    public string? Description { get; set; }
-    public int? ProjectId { get; set; }
-    public int? TaskTypeId { get; set; }
-    public int? StatusId { get; set; }
-    public int? BoardId { get; set; }
-    [Range(0, 10)]
-    public double Priority { get; set; } = 5.0;
-    public DateTime? DueDate { get; set; }
-    public string? AssignedTo { get; set; }
-    public double? DurationHours { get; set; }
-    public double? DurationRemainingHours { get; set; }
 }
