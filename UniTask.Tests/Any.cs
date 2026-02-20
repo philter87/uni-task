@@ -209,16 +209,47 @@ public static class Any
     /// Creates a Label with random values.
     /// </summary>
     /// <param name="name">Optional name (randomly generated if not provided)</param>
-    /// <param name="color">Optional color (randomly generated if not provided)</param>
+    /// <param name="typeId">Optional type ID</param>
     /// <returns>A Label with random data</returns>
     public static Label Label(
         string? name = null,
-        string? color = null)
+        int? typeId = null)
     {
         return new Label
         {
             Name = name ?? $"Label {String(6)}",
+            TypeId = typeId
+        };
+    }
+
+    /// <summary>
+    /// Creates a LabelType with random values.
+    /// </summary>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <param name="color">Optional color (randomly generated if not provided)</param>
+    /// <returns>A LabelType with random data</returns>
+    public static LabelType LabelType(
+        string? name = null,
+        string? color = null)
+    {
+        return new LabelType
+        {
+            Name = name ?? $"LabelType {String(6)}",
             Color = color ?? Color()
+        };
+    }
+
+    /// <summary>
+    /// Creates a Tag with random values.
+    /// </summary>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <returns>A Tag with random data</returns>
+    public static Tag Tag(
+        string? name = null)
+    {
+        return new Tag
+        {
+            Name = name ?? $"Tag {String(6)}"
         };
     }
 
@@ -393,18 +424,35 @@ public static class Any
     /// </summary>
     /// <param name="id">Optional ID (default: 0)</param>
     /// <param name="name">Optional name (randomly generated if not provided)</param>
-    /// <param name="color">Optional color (randomly generated if not provided)</param>
+    /// <param name="typeId">Optional type ID</param>
     /// <returns>A LabelDto with random data</returns>
     public static LabelDto LabelDto(
         int id = 0,
         string? name = null,
-        string? color = null)
+        int? typeId = null)
     {
         return new LabelDto
         {
             Id = id,
             Name = name ?? $"Label {String(6)}",
-            Color = color ?? Color()
+            TypeId = typeId
+        };
+    }
+
+    /// <summary>
+    /// Creates a TagDto with random values.
+    /// </summary>
+    /// <param name="id">Optional ID (default: 0)</param>
+    /// <param name="name">Optional name (randomly generated if not provided)</param>
+    /// <returns>A TagDto with random data</returns>
+    public static TagDto TagDto(
+        int id = 0,
+        string? name = null)
+    {
+        return new TagDto
+        {
+            Id = id,
+            Name = name ?? $"Tag {String(6)}"
         };
     }
 

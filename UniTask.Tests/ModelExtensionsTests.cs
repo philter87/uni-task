@@ -287,14 +287,21 @@ public class ModelExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task Label_CanHaveExternalId()
+    public async Task Label_CanHaveTypeId()
     {
         // Arrange
+        var labelType = new LabelType
+        {
+            Name = "Priority",
+            Color = "#FF0000"
+        };
+        _context.LabelTypes.Add(labelType);
+        await _context.SaveChangesAsync();
+
         var label = new Label
         {
-            Name = "Test Label",
-            ExternalId = "ext-label-xyz",
-            Color = "#FF0000"
+            Name = "High",
+            TypeId = labelType.Id
         };
 
         // Act
@@ -303,10 +310,15 @@ public class ModelExtensionsTests : IDisposable
 
         // Assert
         var savedLabel = await _context.Labels
+            .Include(l => l.LabelType)
             .FirstOrDefaultAsync(l => l.Id == label.Id);
 
         Assert.NotNull(savedLabel);
-        Assert.Equal("ext-label-xyz", savedLabel.ExternalId);
+        Assert.Equal("High", savedLabel.Name);
+        Assert.Equal(labelType.Id, savedLabel.TypeId);
+        Assert.NotNull(savedLabel.LabelType);
+        Assert.Equal("Priority", savedLabel.LabelType.Name);
+        Assert.Equal("#FF0000", savedLabel.LabelType.Color);
     }
 
     [Fact]

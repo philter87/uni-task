@@ -25,7 +25,8 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
     public DbSet<Status> Statuses { get; set; } = null!;
     public DbSet<Comment> Comments { get; set; } = null!;
     public DbSet<Label> Labels { get; set; } = null!;
-    public DbSet<LabelValue> LabelValues { get; set; } = null!;
+    public DbSet<LabelType> LabelTypes { get; set; } = null!;
+    public DbSet<Tag> Tags { get; set; } = null!;
     public DbSet<Board> Boards { get; set; } = null!;
     public DbSet<TaskChange> TaskChanges { get; set; } = null!;
     public DbSet<TaskItemRelation> TaskItemRelations { get; set; } = null!;
@@ -192,24 +193,34 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Color).HasMaxLength(7); // For hex colors like #FFFFFF
-            entity.Property(e => e.ExternalId).HasMaxLength(100);
-            
+
+            entity.HasOne(e => e.LabelType)
+                .WithMany(e => e.Labels)
+                .HasForeignKey(e => e.TypeId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasMany(e => e.Tasks)
                 .WithMany(e => e.Labels)
                 .UsingEntity(j => j.ToTable("TaskLabels"));
-            
-            entity.HasMany(e => e.Values)
-                .WithOne(e => e.Label)
-                .HasForeignKey(e => e.LabelId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // LabelValue configuration
-        modelBuilder.Entity<LabelValue>(entity =>
+        // LabelType configuration
+        modelBuilder.Entity<LabelType>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Color).HasMaxLength(7); // For hex colors like #FFFFFF
+        });
+
+        // Tag configuration
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+
+            entity.HasMany(e => e.Tasks)
+                .WithMany(e => e.Tags)
+                .UsingEntity(j => j.ToTable("TaskTags"));
         });
 
         // Board configuration

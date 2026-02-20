@@ -35,5 +35,6 @@ public class TaskItemDto
     public BoardDto? Board { get; set; }
     public List<CommentDto> Comments { get; set; } = new();
     public List<LabelDto> Labels { get; set; } = new();
+    public List<TagDto> Tags { get; set; } = new();
     public List<AttachmentDto> Attachments { get; set; } = new();
 }
