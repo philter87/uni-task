@@ -1,4 +1,4 @@
-namespace UniTask.Api.Shared;
+namespace UniTask.Api.Tasks;
 
 public enum TaskRelationType
 {

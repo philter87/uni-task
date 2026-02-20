@@ -28,7 +28,6 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
     public DbSet<LabelType> LabelTypes { get; set; } = null!;
     public DbSet<Tag> Tags { get; set; } = null!;
     public DbSet<Board> Boards { get; set; } = null!;
-    public DbSet<TaskChange> TaskChanges { get; set; } = null!;
     public DbSet<TaskItemRelation> TaskItemRelations { get; set; } = null!;
     public DbSet<Attachment> Attachments { get; set; } = null!;
     public DbSet<PullRequest> PullRequests { get; set; } = null!;
@@ -235,20 +234,6 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
                 .WithOne(e => e.Board)
                 .HasForeignKey(e => e.BoardId)
                 .OnDelete(DeleteBehavior.SetNull);
-        });
-
-        // TaskChange configuration
-        modelBuilder.Entity<TaskChange>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Field).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Value).HasMaxLength(2000);
-            entity.Property(e => e.UserId).IsRequired().HasMaxLength(100);
-            
-            entity.HasOne(e => e.TaskItem)
-                .WithMany(e => e.Changes)
-                .HasForeignKey(e => e.TaskItemId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // TaskItem configuration

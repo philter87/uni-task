@@ -1,7 +1,6 @@
-using UniTask.Api.Projects;
 using UniTask.Api.Users;
 
-namespace UniTask.Api.Shared;
+namespace UniTask.Api.Projects;
 
 public class ProjectMember
 {

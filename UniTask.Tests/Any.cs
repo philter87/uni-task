@@ -1,5 +1,4 @@
 using UniTask.Api.Projects;
-using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
 using UniTask.Api.Users;
 
