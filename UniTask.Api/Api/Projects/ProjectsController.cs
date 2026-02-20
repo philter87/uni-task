@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using UniTask.Api.Projects.Create;
+using UniTask.Api.Projects.Commands.Create;
+using UniTask.Api.Projects.Queries.GetProject;
+using UniTask.Api.Projects.Queries.GetProjects;
 
 namespace UniTask.Api.Projects;
 
@@ -16,25 +18,27 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ProjectDto>> CreateProject([FromBody] CreateProjectCommand command)
+    public async Task<ActionResult<ProjectCreatedEvent>> CreateProject([FromBody] CreateProjectCommand command)
     {
-        var project = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
+        var projectCreated = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetProject), new { id = projectCreated.ProjectId }, projectCreated);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ProjectDto>> GetProject(int id)
     {
-        // This will be implemented with a query in the future
-        // For now, return NotFound as placeholder
-        return NotFound();
+        var project = await _mediator.Send(new GetProjectQuery { Id = id });
+        if (project == null)
+        {
+            return NotFound();
+        }
+        return Ok(project);
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAllProjects()
     {
-        // This will be implemented with a query in the future
-        // For now, return empty list as placeholder
-        return Ok(new List<ProjectDto>());
+        var projects = await _mediator.Send(new GetProjectsQuery());
+        return Ok(projects);
     }
 }

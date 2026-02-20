@@ -7,6 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
+using UniTask.Api.Tasks.Commands.AssignMember;
+using UniTask.Api.Tasks.Commands.ChangeStatus;
+using UniTask.Api.Tasks.Commands.Create;
+using UniTask.Api.Tasks.Commands.RemoveLabel;
+using UniTask.Api.Tasks.Commands.AddLabel;
+using UniTask.Api.Tasks.Commands.Update;
 using Xunit;
 
 namespace UniTask.Tests;
@@ -32,14 +38,16 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task ChangeTaskStatus_UpdatesTaskStatus_WhenTaskExists()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Task to Change Status",
-            description: "Test Description",
-            priority: 5.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Task to Change Status",
+            Description = "Test Description",
+            Priority = 5.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Arrange - Create a status
         using (var scope = _factory.Services.CreateScope())
@@ -51,15 +59,15 @@ public class TaskCommandHandlerTests : IDisposable
 
             // Act - Change task status
             var changeStatusRequest = new { StatusId = status.Id };
-            var response = await _client.PatchAsync($"/api/tasks/{createdTask.Id}/status", 
+            var response = await _client.PatchAsync($"/api/tasks/{taskCreated.TaskId}/status", 
                 JsonContent.Create(changeStatusRequest));
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
-            Assert.NotNull(updatedTask);
-            Assert.Equal(status.Id, updatedTask.StatusId);
-            Assert.Equal("In Progress", updatedTask.Status?.Name);
+            var statusChanged = await response.Content.ReadFromJsonAsync<TaskStatusChangedEvent>();
+            Assert.NotNull(statusChanged);
+            Assert.Equal(taskCreated.TaskId, statusChanged.TaskId);
+            Assert.Equal(status.Id, statusChanged.StatusId);
         }
     }
 
@@ -81,26 +89,29 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AssignMemberToTask_UpdatesAssignedTo_WhenTaskExists()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Task to Assign",
-            description: "Test Description",
-            priority: 8.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Task to Assign",
+            Description = "Test Description",
+            Priority = 8.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Act - Assign member to task
         var assignedTo = Any.Email();
         var assignMemberRequest = new { AssignedTo = assignedTo };
-        var response = await _client.PatchAsync($"/api/tasks/{createdTask.Id}/assign", 
+        var response = await _client.PatchAsync($"/api/tasks/{taskCreated.TaskId}/assign", 
             JsonContent.Create(assignMemberRequest));
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(updatedTask);
-        Assert.Equal(assignedTo, updatedTask.AssignedTo);
+        var memberAssigned = await response.Content.ReadFromJsonAsync<MemberAssignedToTaskEvent>();
+        Assert.NotNull(memberAssigned);
+        Assert.Equal(taskCreated.TaskId, memberAssigned.TaskId);
+        Assert.Equal(assignedTo, memberAssigned.AssignedTo);
     }
 
     [Fact]
@@ -118,22 +129,24 @@ public class TaskCommandHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateTaskWithCommand_UpdatesTask_WhenTaskExists()
+    public async Task UpdateTask_UpdatesTask_WhenTaskExists()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Original Task Title",
-            description: "Original Description",
-            priority: 2.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Original Task Title",
+            Description = "Original Description",
+            Priority = 2.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Act - Update task
         var dueDate = Any.DateTime(7, 14);
         var assignedTo = Any.Email();
-        var updateRequest = new
+        var updateCommand = new UpdateTaskCommand
         {
             Title = "Updated Task Title",
             Description = "Updated Description",
@@ -142,24 +155,21 @@ public class TaskCommandHandlerTests : IDisposable
             AssignedTo = assignedTo
         };
 
-        var response = await _client.PutAsync($"/api/tasks/{createdTask.Id}/update", 
-            JsonContent.Create(updateRequest));
+        var response = await _client.PutAsJsonAsync($"/api/tasks/{taskCreated.TaskId}", updateCommand);
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(updatedTask);
-        Assert.Equal("Updated Task Title", updatedTask.Title);
-        Assert.Equal("Updated Description", updatedTask.Description);
-        Assert.Equal(9.5, updatedTask.Priority);
-        Assert.Equal(assignedTo, updatedTask.AssignedTo);
+        var taskUpdated = await response.Content.ReadFromJsonAsync<TaskUpdatedEvent>();
+        Assert.NotNull(taskUpdated);
+        Assert.Equal(taskCreated.TaskId, taskUpdated.TaskId);
+        Assert.Equal("Updated Task Title", taskUpdated.Title);
     }
 
     [Fact]
-    public async Task UpdateTaskWithCommand_ReturnsNotFound_WhenTaskDoesNotExist()
+    public async Task UpdateTask_ReturnsNotFound_WhenTaskDoesNotExist()
     {
         // Arrange
-        var updateRequest = new
+        var updateCommand = new UpdateTaskCommand
         {
             Title = "Updated Task Title",
             Description = "Updated Description",
@@ -167,8 +177,7 @@ public class TaskCommandHandlerTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsync("/api/tasks/999/update", 
-            JsonContent.Create(updateRequest));
+        var response = await _client.PutAsJsonAsync("/api/tasks/999", updateCommand);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -178,13 +187,15 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_AddsLabelToTask_WhenBothExist()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Task for Label Test",
-            priority: 5.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Task for Label Test",
+            Priority = 5.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Arrange - Create a label
         int labelId;
@@ -200,13 +211,20 @@ public class TaskCommandHandlerTests : IDisposable
         }
 
         // Act - Add label to task
-        var response = await _client.PostAsync($"/api/tasks/{createdTask.Id}/labels/{labelId}", null);
+        var response = await _client.PostAsync($"/api/tasks/{taskCreated.TaskId}/labels/{labelId}", null);
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(updatedTask);
-        Assert.Contains(updatedTask.Labels, l => l.Id == labelId && l.Name == labelName);
+        var labelAdded = await response.Content.ReadFromJsonAsync<TaskLabelAddedEvent>();
+        Assert.NotNull(labelAdded);
+        Assert.Equal(taskCreated.TaskId, labelAdded.TaskId);
+        Assert.Equal(labelId, labelAdded.LabelId);
+
+        // Verify label was added via GET
+        var getResponse = await _client.GetAsync($"/api/tasks/{taskCreated.TaskId}");
+        var taskDto = await getResponse.Content.ReadFromJsonAsync<TaskItemDto>();
+        Assert.NotNull(taskDto);
+        Assert.Contains(taskDto.Labels, l => l.Id == labelId && l.Name == labelName);
     }
 
     [Fact]
@@ -234,16 +252,18 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_ReturnsNotFound_WhenLabelDoesNotExist()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Task for Label Test",
-            priority: 5.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Task for Label Test",
+            Priority = 5.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Act
-        var response = await _client.PostAsync($"/api/tasks/{createdTask.Id}/labels/999", null);
+        var response = await _client.PostAsync($"/api/tasks/{taskCreated.TaskId}/labels/999", null);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -253,13 +273,15 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task RemoveTaskLabel_RemovesLabelFromTask_WhenBothExist()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Task for Label Removal Test",
-            priority: 2.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Task for Label Removal Test",
+            Priority = 2.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Arrange - Create and add a label to the task
         int labelId;
@@ -272,23 +294,30 @@ public class TaskCommandHandlerTests : IDisposable
             labelId = label.Id;
 
             // Add label to task
-            var task = await db.Tasks.Include(t => t.Labels).FirstAsync(t => t.Id == createdTask.Id);
+            var task = await db.Tasks.Include(t => t.Labels).FirstAsync(t => t.Id == taskCreated.TaskId);
             task.Labels.Add(label);
             await db.SaveChangesAsync();
         }
 
         // Verify label was added
-        var taskWithLabel = await _client.GetAsync($"/api/tasks/{createdTask.Id}");
+        var taskWithLabel = await _client.GetAsync($"/api/tasks/{taskCreated.TaskId}");
         var taskDto = await taskWithLabel.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(taskDto);
         Assert.Contains(taskDto.Labels, l => l.Id == labelId);
 
         // Act - Remove label from task
-        var response = await _client.DeleteAsync($"/api/tasks/{createdTask.Id}/labels/{labelId}");
+        var response = await _client.DeleteAsync($"/api/tasks/{taskCreated.TaskId}/labels/{labelId}");
 
         // Assert
         response.EnsureSuccessStatusCode();
-        var updatedTask = await response.Content.ReadFromJsonAsync<TaskItemDto>();
+        var labelRemoved = await response.Content.ReadFromJsonAsync<TaskLabelRemovedEvent>();
+        Assert.NotNull(labelRemoved);
+        Assert.Equal(taskCreated.TaskId, labelRemoved.TaskId);
+        Assert.Equal(labelId, labelRemoved.LabelId);
+
+        // Verify label was removed via GET
+        var getResponse = await _client.GetAsync($"/api/tasks/{taskCreated.TaskId}");
+        var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(updatedTask);
         Assert.DoesNotContain(updatedTask.Labels, l => l.Id == labelId);
     }
@@ -307,13 +336,15 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_DoesNotAddDuplicateLabel_WhenLabelAlreadyExists()
     {
         // Arrange - Create a task
-        var newTask = Any.TaskItemDto(
-            title: "Task for Duplicate Label Test",
-            priority: 5.0);
+        var createCommand = new CreateTaskCommand
+        {
+            Title = "Task for Duplicate Label Test",
+            Priority = 5.0
+        };
 
-        var createResponse = await _client.PostAsJsonAsync("/api/tasks", newTask);
-        var createdTask = await createResponse.Content.ReadFromJsonAsync<TaskItemDto>();
-        Assert.NotNull(createdTask);
+        var createResponse = await _client.PostAsJsonAsync("/api/tasks", createCommand);
+        var taskCreated = await createResponse.Content.ReadFromJsonAsync<TaskCreatedEvent>();
+        Assert.NotNull(taskCreated);
 
         // Arrange - Create a label
         int labelId;
@@ -327,14 +358,15 @@ public class TaskCommandHandlerTests : IDisposable
         }
 
         // Act - Add label to task twice
-        var response1 = await _client.PostAsync($"/api/tasks/{createdTask.Id}/labels/{labelId}", null);
+        var response1 = await _client.PostAsync($"/api/tasks/{taskCreated.TaskId}/labels/{labelId}", null);
         response1.EnsureSuccessStatusCode();
 
-        var response2 = await _client.PostAsync($"/api/tasks/{createdTask.Id}/labels/{labelId}", null);
+        var response2 = await _client.PostAsync($"/api/tasks/{taskCreated.TaskId}/labels/{labelId}", null);
         response2.EnsureSuccessStatusCode();
 
-        // Assert - Label should only appear once
-        var updatedTask = await response2.Content.ReadFromJsonAsync<TaskItemDto>();
+        // Assert - Label should only appear once in GET response
+        var getResponse = await _client.GetAsync($"/api/tasks/{taskCreated.TaskId}");
+        var updatedTask = await getResponse.Content.ReadFromJsonAsync<TaskItemDto>();
         Assert.NotNull(updatedTask);
         Assert.Single(updatedTask.Labels, l => l.Id == labelId);
     }

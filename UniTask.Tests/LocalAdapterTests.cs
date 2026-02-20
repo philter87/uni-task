@@ -4,8 +4,13 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Projects;
 using UniTask.Api.Shared;
-using UniTask.Api.Shared.Adapters;
 using UniTask.Api.Tasks;
+using UniTask.Api.Tasks.Adapters;
+using UniTask.Api.Tasks.Commands.Create;
+using UniTask.Api.Tasks.Commands.Delete;
+using UniTask.Api.Tasks.Commands.Update;
+using UniTask.Api.Tasks.Queries.GetTask;
+using UniTask.Api.Tasks.Queries.GetTasks;
 using Xunit;
 
 namespace UniTask.Tests;
@@ -13,7 +18,7 @@ namespace UniTask.Tests;
 public class LocalAdapterTests : IDisposable
 {
     private readonly TaskDbContext _context;
-    private readonly LocalAdapter _adapter;
+    private readonly LocalTasksAdapter _adapter;
 
     public LocalAdapterTests()
     {
@@ -22,7 +27,7 @@ public class LocalAdapterTests : IDisposable
             .Options;
         
         _context = new TaskDbContext(options);
-        _adapter = new LocalAdapter(_context);
+        _adapter = new LocalTasksAdapter(_context);
     }
 
     public void Dispose()
@@ -31,10 +36,10 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAllTasksAsync_ReturnsEmptyList_WhenNoTasks()
+    public async Task GetAllTasks_ReturnsEmptyList_WhenNoTasks()
     {
         // Act
-        var tasks = await _adapter.GetAllTasksAsync();
+        var tasks = await _adapter.Handle(new GetTasksQuery());
 
         // Assert
         Assert.NotNull(tasks);
@@ -42,35 +47,34 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateTaskAsync_CreatesTaskAndReturnsDto()
+    public async Task CreateTask_CreatesTaskAndReturnsEvent()
     {
         // Arrange
-        var taskDto = Any.TaskItemDto(
-            title: "Test Task",
-            description: "Test Description",
-            priority: 8.5);
+        var command = new CreateTaskCommand
+        {
+            Title = "Test Task",
+            Description = "Test Description",
+            Priority = 8.5
+        };
 
         // Act
-        var result = await _adapter.CreateTaskAsync(taskDto);
+        var result = await _adapter.Handle(command);
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Id > 0);
+        Assert.True(result.TaskId > 0);
         Assert.Equal("Test Task", result.Title);
-        Assert.Equal("Test Description", result.Description);
-        Assert.Equal(8.5, result.Priority);
         Assert.True(result.CreatedAt > DateTime.MinValue);
-        Assert.True(result.UpdatedAt > DateTime.MinValue);
 
         // Verify in database
-        var dbTask = await _context.Tasks.FindAsync(result.Id);
+        var dbTask = await _context.Tasks.FindAsync(result.TaskId);
         Assert.NotNull(dbTask);
         Assert.Equal("Test Task", dbTask.Title);
         Assert.Equal(8.5, dbTask.Priority);
     }
 
     [Fact]
-    public async Task GetTaskByIdAsync_ReturnsDto_WhenTaskExists()
+    public async Task GetTaskById_ReturnsDto_WhenTaskExists()
     {
         // Arrange
         var task = Any.TaskItem(
@@ -81,7 +85,7 @@ public class LocalAdapterTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _adapter.GetTaskByIdAsync(task.Id);
+        var result = await _adapter.Handle(new GetTaskQuery { Id = task.Id });
 
         // Assert
         Assert.NotNull(result);
@@ -91,17 +95,17 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task GetTaskByIdAsync_ReturnsNull_WhenTaskDoesNotExist()
+    public async Task GetTaskById_ReturnsNull_WhenTaskDoesNotExist()
     {
         // Act
-        var result = await _adapter.GetTaskByIdAsync(999);
+        var result = await _adapter.Handle(new GetTaskQuery { Id = 999 });
 
         // Assert
         Assert.Null(result);
     }
 
     [Fact]
-    public async Task UpdateTaskAsync_UpdatesTask_WhenTaskExists()
+    public async Task UpdateTask_UpdatesTask_WhenTaskExists()
     {
         // Arrange
         var task = Any.TaskItem(
@@ -111,17 +115,21 @@ public class LocalAdapterTests : IDisposable
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
-        var updateDto = Any.TaskItemDto(
-            id: task.Id,
-            title: "Updated Title",
-            description: "Updated Description",
-            priority: 9.5);
+        var command = new UpdateTaskCommand
+        {
+            TaskId = task.Id,
+            Title = "Updated Title",
+            Description = "Updated Description",
+            Priority = 9.5
+        };
 
         // Act
-        var result = await _adapter.UpdateTaskAsync(task.Id, updateDto);
+        var result = await _adapter.Handle(command);
 
         // Assert
-        Assert.True(result);
+        Assert.NotNull(result);
+        Assert.Equal(task.Id, result.TaskId);
+        Assert.Equal("Updated Title", result.Title);
 
         // Verify in database
         var dbTask = await _context.Tasks.FindAsync(task.Id);
@@ -132,23 +140,22 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateTaskAsync_ReturnsFalse_WhenTaskDoesNotExist()
+    public async Task UpdateTask_ThrowsException_WhenTaskDoesNotExist()
     {
         // Arrange
-        var updateDto = Any.TaskItemDto(
-            id: 999,
-            title: "Updated Title",
-            priority: 8.0);
+        var command = new UpdateTaskCommand
+        {
+            TaskId = 999,
+            Title = "Updated Title",
+            Priority = 8.0
+        };
 
-        // Act
-        var result = await _adapter.UpdateTaskAsync(999, updateDto);
-
-        // Assert
-        Assert.False(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _adapter.Handle(command));
     }
 
     [Fact]
-    public async Task DeleteTaskAsync_DeletesTask_WhenTaskExists()
+    public async Task DeleteTask_DeletesTask_WhenTaskExists()
     {
         // Arrange
         var task = Any.TaskItem(
@@ -158,10 +165,11 @@ public class LocalAdapterTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _adapter.DeleteTaskAsync(task.Id);
+        var result = await _adapter.Handle(new DeleteTaskCommand { TaskId = task.Id });
 
         // Assert
-        Assert.True(result);
+        Assert.NotNull(result);
+        Assert.Equal(task.Id, result.TaskId);
 
         // Verify deletion
         var dbTask = await _context.Tasks.FindAsync(task.Id);
@@ -169,17 +177,15 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteTaskAsync_ReturnsFalse_WhenTaskDoesNotExist()
+    public async Task DeleteTask_ThrowsException_WhenTaskDoesNotExist()
     {
-        // Act
-        var result = await _adapter.DeleteTaskAsync(999);
-
-        // Assert
-        Assert.False(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _adapter.Handle(new DeleteTaskCommand { TaskId = 999 }));
     }
 
     [Fact]
-    public async Task GetAllTasksAsync_ReturnsTasksWithRelatedData()
+    public async Task GetAllTasks_ReturnsTasksWithRelatedData()
     {
         // Arrange
         var project = Any.Project(name: "Test Project");
@@ -199,7 +205,7 @@ public class LocalAdapterTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var tasks = await _adapter.GetAllTasksAsync();
+        var tasks = await _adapter.Handle(new GetTasksQuery());
 
         // Assert
         var taskList = tasks.ToList();
@@ -213,35 +219,39 @@ public class LocalAdapterTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateTaskAsync_StoresPriorityCorrectly()
+    public async Task CreateTask_StoresPriorityCorrectly()
     {
         // Arrange
-        var taskDto = Any.TaskItemDto(
-            title: "Priority Test",
-            priority: 2.5);
+        var command = new CreateTaskCommand
+        {
+            Title = "Priority Test",
+            Priority = 2.5
+        };
 
         // Act
-        var result = await _adapter.CreateTaskAsync(taskDto);
+        var result = await _adapter.Handle(command);
 
         // Assert
-        var dbTask = await _context.Tasks.FindAsync(result.Id);
+        var dbTask = await _context.Tasks.FindAsync(result.TaskId);
         Assert.NotNull(dbTask);
         Assert.Equal(2.5, dbTask.Priority);
     }
 
     [Fact]
-    public async Task CreateTaskAsync_HandlesZeroPriority()
+    public async Task CreateTask_HandlesZeroPriority()
     {
         // Arrange
-        var taskDto = Any.TaskItemDto(
-            title: "Zero Priority Test",
-            priority: 0);
+        var command = new CreateTaskCommand
+        {
+            Title = "Zero Priority Test",
+            Priority = 0
+        };
 
         // Act
-        var result = await _adapter.CreateTaskAsync(taskDto);
+        var result = await _adapter.Handle(command);
 
         // Assert
-        var dbTask = await _context.Tasks.FindAsync(result.Id);
+        var dbTask = await _context.Tasks.FindAsync(result.TaskId);
         Assert.NotNull(dbTask);
         Assert.Equal(0, dbTask.Priority);
     }
