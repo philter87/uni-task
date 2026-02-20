@@ -1,6 +1,5 @@
 using UniTask.Api.Projects;
 using UniTask.Api.PullRequests;
-using UniTask.Api.Shared;
 using UniTask.Api.Users;
 
 namespace UniTask.Api.Tasks;
@@ -42,7 +41,6 @@ public class TaskItem
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Label> Labels { get; set; } = new List<Label>();
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();
-    public ICollection<TaskChange> Changes { get; set; } = new List<TaskChange>();
     public ICollection<TaskItemRelation> RelationsFrom { get; set; } = new List<TaskItemRelation>();
     public ICollection<TaskItemRelation> RelationsTo { get; set; } = new List<TaskItemRelation>();
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();

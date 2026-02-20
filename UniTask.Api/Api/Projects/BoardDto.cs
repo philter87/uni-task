@@ -1,9 +1,6 @@
-using UniTask.Api.Projects;
-using UniTask.Api.Tasks;
+namespace UniTask.Api.Projects;
 
-namespace UniTask.Api.Shared;
-
-public class Board
+public class BoardDto
 {
     public int Id { get; set; }
     public string? ExternalId { get; set; }
@@ -12,8 +9,4 @@ public class Board
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public int ProjectId { get; set; }
-
-    // Navigation properties
-    public Project Project { get; set; } = null!;
-    public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 }

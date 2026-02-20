@@ -1,5 +1,4 @@
 using UniTask.Api.Projects;
-using UniTask.Api.Shared;
 using System.ComponentModel.DataAnnotations;
 
 namespace UniTask.Api.Tasks;
