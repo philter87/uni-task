@@ -1,0 +1,202 @@
+{
+  "_comment": "Examples for creating issues using GitHub REST API",
+  "create_issue": {
+    "description": "Create a new issue in a repository",
+    "endpoint": "POST /repos/{owner}/{repo}/issues",
+    "method": "POST",
+    "required_permissions": "Issues repository permissions (write)",
+    "example_request": {
+      "url": "https://api.github.com/repos/octocat/Hello-World/issues",
+      "method": "POST",
+      "headers": {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer YOUR_TOKEN",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "title": "Found a bug",
+        "body": "I'm having a problem with this feature. Steps to reproduce:\n1. Do this\n2. Then that\n3. See error",
+        "assignees": ["octocat"],
+        "milestone": 1,
+        "labels": ["bug", "high-priority"]
+      }
+    },
+    "curl_example": "curl -L -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer YOUR_TOKEN\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/OWNER/REPO/issues -d '{\"title\":\"Found a bug\",\"body\":\"Issue description\",\"labels\":[\"bug\"]}'",
+    "request_body_parameters": {
+      "title": {
+        "type": "string or integer",
+        "required": true,
+        "description": "The title of the issue"
+      },
+      "body": {
+        "type": "string",
+        "required": false,
+        "description": "The contents of the issue (supports Markdown)"
+      },
+      "assignee": {
+        "type": "string or null",
+        "required": false,
+        "description": "Login for the user to assign (legacy, use assignees)",
+        "note": "Only users with push access can set assignee"
+      },
+      "milestone": {
+        "type": "integer or string or null",
+        "required": false,
+        "description": "The number of the milestone to associate",
+        "note": "Only users with push access can set milestone"
+      },
+      "labels": {
+        "type": "array of strings",
+        "required": false,
+        "description": "Labels to associate with the issue",
+        "example": ["bug", "documentation", "good first issue"],
+        "note": "Only users with push access can set labels"
+      },
+      "assignees": {
+        "type": "array of strings",
+        "required": false,
+        "description": "Logins for users to assign",
+        "example": ["octocat", "hubot"],
+        "note": "Only users with push access can set assignees"
+      }
+    },
+    "example_response": {
+      "status": 201,
+      "body": {
+        "id": 1,
+        "node_id": "MDU6SXNzdWUx",
+        "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+        "repository_url": "https://api.github.com/repos/octocat/Hello-World",
+        "labels_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/labels{/name}",
+        "comments_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/comments",
+        "events_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/events",
+        "html_url": "https://github.com/octocat/Hello-World/issues/1347",
+        "number": 1347,
+        "state": "open",
+        "title": "Found a bug",
+        "body": "I'm having a problem with this feature...",
+        "user": {
+          "login": "octocat",
+          "id": 1
+        },
+        "labels": [
+          {
+            "id": 208045946,
+            "node_id": "MDU6TGFiZWwyMDgwNDU5NDY=",
+            "url": "https://api.github.com/repos/octocat/Hello-World/labels/bug",
+            "name": "bug",
+            "description": "Something isn't working",
+            "color": "f29513",
+            "default": true
+          }
+        ],
+        "assignee": {
+          "login": "octocat",
+          "id": 1
+        },
+        "assignees": [
+          {
+            "login": "octocat",
+            "id": 1
+          }
+        ],
+        "milestone": {
+          "url": "https://api.github.com/repos/octocat/Hello-World/milestones/1",
+          "html_url": "https://github.com/octocat/Hello-World/milestones/v1.0",
+          "id": 1002604,
+          "number": 1,
+          "state": "open",
+          "title": "v1.0",
+          "description": "Tracking milestone for version 1.0"
+        },
+        "comments": 0,
+        "created_at": "2011-04-22T13:33:48Z",
+        "updated_at": "2011-04-22T13:33:48Z",
+        "closed_at": null,
+        "author_association": "OWNER"
+      }
+    }
+  },
+  "real_world_examples": {
+    "bug_report": {
+      "title": "Button not responding on mobile devices",
+      "body": "## Bug Description\nThe submit button in the checkout form doesn't respond to taps on iOS Safari.\n\n## Steps to Reproduce\n1. Open the app on iPhone with Safari\n2. Navigate to checkout\n3. Fill in the form\n4. Tap the submit button\n\n## Expected Behavior\nForm should submit and show confirmation\n\n## Actual Behavior\nNothing happens when tapping the button\n\n## Environment\n- Device: iPhone 14\n- iOS Version: 17.2\n- Browser: Safari 17\n\n## Screenshots\n![screenshot](url-to-screenshot.png)",
+      "labels": ["bug", "mobile", "high-priority"],
+      "assignees": ["mobile-team-lead"]
+    },
+    "feature_request": {
+      "title": "Add dark mode support",
+      "body": "## Feature Request\nAdd dark mode theme to improve user experience in low-light conditions.\n\n## Use Case\nMany users prefer dark mode for:\n- Reduced eye strain\n- Better battery life on OLED screens\n- Consistent experience with system settings\n\n## Proposed Solution\n- Detect system preference\n- Add manual toggle\n- Persist user choice\n\n## Alternatives Considered\n- Only automatic detection\n- Only manual toggle",
+      "labels": ["enhancement", "ux", "good first issue"],
+      "milestone": 2
+    },
+    "documentation_issue": {
+      "title": "API documentation missing pagination example",
+      "body": "The GET /users endpoint documentation doesn't explain how to handle pagination.\n\nPlease add:\n- Example of Link header parsing\n- Code sample for iterating through pages\n- Information about page size limits",
+      "labels": ["documentation"],
+      "assignees": ["docs-team"]
+    },
+    "task_tracking": {
+      "title": "[TASK] Implement user authentication",
+      "body": "## Tasks\n- [ ] Design authentication flow\n- [ ] Implement JWT token generation\n- [ ] Add login endpoint\n- [ ] Add logout endpoint\n- [ ] Add password reset flow\n- [ ] Write tests\n- [ ] Update documentation\n\n## Dependencies\nBlocked by #123 (database migration)",
+      "labels": ["task", "backend", "security"],
+      "assignees": ["backend-developer"],
+      "milestone": 3
+    }
+  },
+  "markdown_support": {
+    "description": "Issue body supports GitHub Flavored Markdown",
+    "examples": {
+      "headers": "# H1\n## H2\n### H3",
+      "emphasis": "**bold** *italic* ~~strikethrough~~",
+      "lists": "- Item 1\n- Item 2\n  - Nested item",
+      "code": "`inline code` or ```language\ncode block\n```",
+      "links": "[text](url)",
+      "images": "![alt text](image-url)",
+      "task_lists": "- [ ] Incomplete\n- [x] Complete",
+      "mentions": "@username",
+      " references": "#123 (issue/PR), author/repo#123",
+      "tables": "| Col 1 | Col 2 |\n|-------|-------|\n| Val 1 | Val 2 |"
+    }
+  },
+  "validation_errors": {
+    "422": {
+      "description": "Validation failed",
+      "common_causes": [
+        "Missing required 'title' field",
+        "Invalid label names",
+        "Invalid assignee username",
+        "Invalid milestone number",
+        "Repository has issues disabled"
+      ],
+      "example_response": {
+        "message": "Validation Failed",
+        "errors": [
+          {
+            "resource": "Issue",
+            "field": "title",
+            "code": "missing_field"
+          }
+        ]
+      }
+    },
+    "410": {
+      "description": "Gone",
+      "cause": "Issues are disabled for this repository",
+      "message": "Issues are disabled for this repo"
+    }
+  },
+  "code_examples": {
+    "javascript": "const response = await fetch('https://api.github.com/repos/owner/repo/issues', {\n  method: 'POST',\n  headers: {\n    'Accept': 'application/vnd.github+json',\n    'Authorization': `Bearer ${token}`,\n    'X-GitHub-Api-Version': '2022-11-28',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    title: 'Found a bug',\n    body: 'Issue description here',\n    labels: ['bug']\n  })\n});\nconst issue = await response.json();",
+    "python": "import requests\n\nurl = 'https://api.github.com/repos/owner/repo/issues'\nheaders = {\n    'Accept': 'application/vnd.github+json',\n    'Authorization': f'Bearer {token}',\n    'X-GitHub-Api-Version': '2022-11-28'\n}\ndata = {\n    'title': 'Found a bug',\n    'body': 'Issue description here',\n    'labels': ['bug']\n}\n\nresponse = requests.post(url, headers=headers, json=data)\nissue = response.json()",
+    "curl": "curl -L -X POST \\\n  -H \"Accept: application/vnd.github+json\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"X-GitHub-Api-Version: 2022-11-28\" \\\n  https://api.github.com/repos/OWNER/REPO/issues \\\n  -d '{\"title\":\"Bug title\",\"body\":\"Description\",\"labels\":[\"bug\"]}'"
+  },
+  "important_notes": {
+    "permissions": "Only users with push access can set assignees, labels, and milestones",
+    "notifications": "This endpoint triggers notifications - use carefully to avoid spam",
+    "rate_limits": "Subject to rate limiting - max 5000 requests/hour for authenticated users",
+    "content_type": "Always include Content-Type: application/json header",
+    "silently_dropped": "Fields requiring permissions are silently dropped if user lacks access"
+  }
+}
