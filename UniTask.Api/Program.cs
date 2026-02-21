@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Projects.Adapters;
 using UniTask.Api.Shared;
-using UniTask.Api.Tasks.Adapters;
 using UniTask.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,10 +17,6 @@ builder.Services.AddDbContext<TaskDbContext>(options =>
 builder.Services.AddIdentityCore<UniUser>()
     .AddRoles<IdentityRole<int>>()
     .AddEntityFrameworkStores<TaskDbContext>();
-
-// Register adapters
-builder.Services.AddScoped<IProjectAdapter, LocalProjectAdapter>();
-builder.Services.AddScoped<ITasksAdapter, LocalTasksAdapter>();
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
