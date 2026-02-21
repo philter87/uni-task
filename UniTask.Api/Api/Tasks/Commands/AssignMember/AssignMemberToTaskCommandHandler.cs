@@ -1,22 +1,38 @@
 using MediatR;
-using UniTask.Api.Tasks.Adapters;
+using UniTask.Api.Shared;
 
 namespace UniTask.Api.Tasks.Commands.AssignMember;
 
 public class AssignMemberToTaskCommandHandler : IRequestHandler<AssignMemberToTaskCommand, MemberAssignedToTaskEvent>
 {
-    private readonly ITasksAdapter _adapter;
+    private readonly TaskDbContext _context;
     private readonly IPublisher _publisher;
 
-    public AssignMemberToTaskCommandHandler(ITasksAdapter adapter, IPublisher publisher)
+    public AssignMemberToTaskCommandHandler(TaskDbContext context, IPublisher publisher)
     {
-        _adapter = adapter;
+        _context = context;
         _publisher = publisher;
     }
 
     public async Task<MemberAssignedToTaskEvent> Handle(AssignMemberToTaskCommand request, CancellationToken cancellationToken)
     {
-        var memberAssignedEvent = await _adapter.Handle(request);
+        var task = await _context.Tasks.FindAsync(request.TaskId);
+        if (task == null)
+        {
+            throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
+        }
+
+        task.AssignedTo = request.AssignedTo;
+        task.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var memberAssignedEvent = new MemberAssignedToTaskEvent
+        {
+            TaskId = request.TaskId,
+            AssignedTo = request.AssignedTo,
+            AssignedAt = DateTime.UtcNow
+        };
 
         await _publisher.Publish(memberAssignedEvent, cancellationToken);
 
