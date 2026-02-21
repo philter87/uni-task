@@ -1,0 +1,138 @@
+{
+  "description": "Create a new User Story work item",
+  "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$User Story?api-version=7.1",
+  "headers": {
+    "Content-Type": "application/json-patch+json",
+    "Authorization": "Basic {base64_encoded_pat}"
+  },
+  "request": [
+    {
+      "op": "add",
+      "path": "/fields/System.Title",
+      "value": "User can log in with email and password",
+      "notes": "Title is required for all work items"
+    },
+    {
+      "op": "add",
+      "path": "/fields/System.Description",
+      "value": "<div>As a user, I want to log in using my email and password so that I can access my account securely.<br/><br/><b>Acceptance Criteria:</b><ul><li>User can enter email and password</li><li>System validates credentials</li><li>User is redirected to dashboard on success</li><li>Error message shown on invalid credentials</li></ul></div>",
+      "notes": "Description supports HTML formatting"
+    },
+    {
+      "op": "add",
+      "path": "/fields/System.AssignedTo",
+      "value": "john.doe@example.com",
+      "notes": "Assign to a user by their email or display name"
+    },
+    {
+      "op": "add",
+      "path": "/fields/System.AreaPath",
+      "value": "MyProject\\Authentication",
+      "notes": "Area path for organizing work items. Use double backslashes in JSON"
+    },
+    {
+      "op": "add",
+      "path": "/fields/System.IterationPath",
+      "value": "MyProject\\Sprint 1",
+      "notes": "Iteration/Sprint path. Use double backslashes in JSON"
+    },
+    {
+      "op": "add",
+      "path": "/fields/System.Tags",
+      "value": "authentication; security; login",
+      "notes": "Tags are semicolon-separated"
+    },
+    {
+      "op": "add",
+      "path": "/fields/Microsoft.VSTS.Common.Priority",
+      "value": 1,
+      "notes": "Priority: 1=High, 2=Medium, 3=Low, 4=Very Low"
+    },
+    {
+      "op": "add",
+      "path": "/fields/Microsoft.VSTS.Common.ValueArea",
+      "value": "Business",
+      "notes": "ValueArea: Business or Architectural"
+    },
+    {
+      "op": "add",
+      "path": "/fields/Microsoft.VSTS.Scheduling.StoryPoints",
+      "value": 5,
+      "notes": "Story points for estimation (Agile specific)"
+    }
+  ],
+  "response": {
+    "id": 123,
+    "rev": 1,
+    "fields": {
+      "System.AreaPath": "MyProject\\Authentication",
+      "System.TeamProject": "MyProject",
+      "System.IterationPath": "MyProject\\Sprint 1",
+      "System.WorkItemType": "User Story",
+      "System.State": "New",
+      "System.Reason": "New",
+      "System.AssignedTo": {
+        "displayName": "John Doe",
+        "url": "https://spsprodeus21.vssps.visualstudio.com/...",
+        "id": "12345678-1234-1234-1234-123456789012",
+        "uniqueName": "john.doe@example.com",
+        "imageUrl": "https://...",
+        "descriptor": "..."
+      },
+      "System.CreatedDate": "2026-02-21T10:30:00.123Z",
+      "System.CreatedBy": {
+        "displayName": "Jane Smith",
+        "url": "https://...",
+        "id": "87654321-4321-4321-4321-210987654321",
+        "uniqueName": "jane.smith@example.com"
+      },
+      "System.ChangedDate": "2026-02-21T10:30:00.123Z",
+      "System.ChangedBy": {
+        "displayName": "Jane Smith",
+        "url": "https://...",
+        "id": "87654321-4321-4321-4321-210987654321",
+        "uniqueName": "jane.smith@example.com"
+      },
+      "System.Title": "User can log in with email and password",
+      "System.Description": "<div>As a user, I want to log in using my email and password...",
+      "System.Tags": "authentication; security; login",
+      "Microsoft.VSTS.Common.Priority": 1,
+      "Microsoft.VSTS.Common.ValueArea": "Business",
+      "Microsoft.VSTS.Scheduling.StoryPoints": 5
+    },
+    "relations": [],
+    "_links": {
+      "self": {
+        "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+      },
+      "workItemUpdates": {
+        "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123/updates"
+      },
+      "workItemRevisions": {
+        "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123/revisions"
+      },
+      "workItemHistory": {
+        "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123/history"
+      },
+      "html": {
+        "href": "https://dev.azure.com/{organization}/{project}/_workitems/edit/123"
+      },
+      "workItemType": {
+        "href": "https://dev.azure.com/{organization}/{project}/_apis/wit/workItemTypes/User%20Story"
+      },
+      "fields": {
+        "href": "https://dev.azure.com/{organization}/_apis/wit/fields"
+      }
+    },
+    "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+  },
+  "notes": [
+    "The work item type is specified in the URL: $User Story",
+    "Use URL encoding for work item types with spaces: $User%20Story",
+    "JSON Patch format is required (array of operations)",
+    "All fields use reference names (System.Title, not just Title)",
+    "Identity fields (AssignedTo) can use email, display name, or ID",
+    "The response includes the full work item with all system fields populated",
+    "Work items start in the default state for their type (usually 'New')"
+  ]
+}

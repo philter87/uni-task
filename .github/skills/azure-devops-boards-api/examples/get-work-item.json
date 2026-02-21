@@ -1,0 +1,204 @@
+{
+  "description": "Get work item details by ID",
+  "endpoint": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+  "headers": {
+    "Authorization": "Basic {base64_encoded_pat}",
+    "Accept": "application/json"
+  },
+  "query_parameters": {
+    "fields": {
+      "description": "Comma-separated list of fields to return",
+      "example": "System.Title,System.State,System.AssignedTo",
+      "optional": true,
+      "notes": "If not specified, returns all fields"
+    },
+    "$expand": {
+      "description": "Expand related data",
+      "values": ["all", "relations", "fields", "links", "none"],
+      "example": "relations",
+      "optional": true,
+      "notes": "Use 'relations' to include parent/child links, attachments, etc."
+    }
+  },
+  "examples": [
+    {
+      "scenario": "Get basic work item details",
+      "url": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?api-version=7.1",
+      "response": {
+        "id": 123,
+        "rev": 3,
+        "fields": {
+          "System.AreaPath": "MyProject\\Authentication",
+          "System.TeamProject": "MyProject",
+          "System.IterationPath": "MyProject\\Sprint 1",
+          "System.WorkItemType": "User Story",
+          "System.State": "Active",
+          "System.Reason": "Implementation started",
+          "System.AssignedTo": {
+            "displayName": "John Doe",
+            "url": "https://spsprodeus21.vssps.visualstudio.com/...",
+            "id": "12345678-1234-1234-1234-123456789012",
+            "uniqueName": "john.doe@example.com",
+            "imageUrl": "https://...",
+            "descriptor": "..."
+          },
+          "System.CreatedDate": "2026-02-21T10:30:00.123Z",
+          "System.CreatedBy": {
+            "displayName": "Jane Smith",
+            "uniqueName": "jane.smith@example.com"
+          },
+          "System.ChangedDate": "2026-02-21T11:45:00.456Z",
+          "System.ChangedBy": {
+            "displayName": "John Doe",
+            "uniqueName": "john.doe@example.com"
+          },
+          "System.Title": "User can log in with email and password",
+          "System.Description": "<div>As a user, I want to log in...</div>",
+          "System.Tags": "authentication; security; login",
+          "Microsoft.VSTS.Common.StateChangeDate": "2026-02-21T11:45:00.456Z",
+          "Microsoft.VSTS.Common.Priority": 1,
+          "Microsoft.VSTS.Common.ValueArea": "Business",
+          "Microsoft.VSTS.Scheduling.StoryPoints": 5
+        },
+        "_links": {
+          "self": {
+            "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+          },
+          "workItemUpdates": {
+            "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123/updates"
+          },
+          "workItemRevisions": {
+            "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123/revisions"
+          },
+          "workItemHistory": {
+            "href": "https://dev.azure.com/{organization}/_apis/wit/workItems/123/history"
+          },
+          "html": {
+            "href": "https://dev.azure.com/{organization}/{project}/_workitems/edit/123"
+          },
+          "workItemType": {
+            "href": "https://dev.azure.com/{organization}/{project}/_apis/wit/workItemTypes/User%20Story"
+          }
+        },
+        "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+      }
+    },
+    {
+      "scenario": "Get specific fields only",
+      "url": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?fields=System.Title,System.State,System.AssignedTo&api-version=7.1",
+      "response": {
+        "id": 123,
+        "rev": 3,
+        "fields": {
+          "System.Title": "User can log in with email and password",
+          "System.State": "Active",
+          "System.AssignedTo": {
+            "displayName": "John Doe",
+            "uniqueName": "john.doe@example.com"
+          }
+        },
+        "_links": {},
+        "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+      }
+    },
+    {
+      "scenario": "Get work item with relations (links, children, attachments)",
+      "url": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?$expand=relations&api-version=7.1",
+      "response": {
+        "id": 123,
+        "rev": 3,
+        "fields": {
+          "System.Title": "User can log in with email and password",
+          "...": "other fields"
+        },
+        "relations": [
+          {
+            "rel": "System.LinkTypes.Hierarchy-Forward",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/124",
+            "attributes": {
+              "isLocked": false,
+              "name": "Child",
+              "comment": "Breaking down into tasks"
+            }
+          },
+          {
+            "rel": "System.LinkTypes.Hierarchy-Forward",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/125",
+            "attributes": {
+              "isLocked": false,
+              "name": "Child"
+            }
+          },
+          {
+            "rel": "AttachedFile",
+            "url": "https://dev.azure.com/{organization}/{project}/_apis/wit/attachments/abc123",
+            "attributes": {
+              "authorizedDate": "2026-02-21T12:00:00.000Z",
+              "id": 1,
+              "resourceCreatedDate": "2026-02-21T12:00:00.000Z",
+              "resourceModifiedDate": "2026-02-21T12:00:00.000Z",
+              "revisedDate": "9999-01-01T00:00:00.000Z",
+              "name": "mockup.png",
+              "comment": "Login screen mockup"
+            }
+          },
+          {
+            "rel": "System.LinkTypes.Related",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/200",
+            "attributes": {
+              "isLocked": false,
+              "name": "Related",
+              "comment": "Related to registration feature"
+            }
+          }
+        ],
+        "_links": {},
+        "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+      }
+    },
+    {
+      "scenario": "Get multiple work items in one call",
+      "url": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems?ids=123,124,125&api-version=7.1",
+      "response": {
+        "count": 3,
+        "value": [
+          {
+            "id": 123,
+            "rev": 3,
+            "fields": {
+              "System.WorkItemType": "User Story",
+              "System.Title": "User can log in with email and password",
+              "...": "other fields"
+            }
+          },
+          {
+            "id": 124,
+            "rev": 1,
+            "fields": {
+              "System.WorkItemType": "Task",
+              "System.Title": "Create login API endpoint",
+              "...": "other fields"
+            }
+          },
+          {
+            "id": 125,
+            "rev": 1,
+            "fields": {
+              "System.WorkItemType": "Task",
+              "System.Title": "Design login UI",
+              "...": "other fields"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "notes": [
+    "Work item IDs are unique across the entire organization, not just the project",
+    "Identity fields return rich objects with display name, email, and avatar URL",
+    "Use $expand=relations to get parent/child links, related items, and attachments",
+    "Batch fetching (multiple IDs) is more efficient than individual calls",
+    "The 'rev' field tracks the revision number (increments with each update)",
+    "HTML link provides direct URL to the work item in the Azure DevOps web UI"
+  ]
+}

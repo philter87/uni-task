@@ -1,0 +1,99 @@
+{
+  "description": "Authentication examples and patterns for Azure DevOps Boards API",
+  "authentication_methods": [
+    {
+      "method": "Personal Access Token (PAT) - Basic Auth",
+      "recommended": true,
+      "use_cases": [
+        "Individual developer access",
+        "Scripts and automation",
+        "Testing and development",
+        "CI/CD pipelines"
+      ],
+      "examples": [
+        {
+          "language": "curl",
+          "description": "Using PAT with curl",
+          "code": "# Method 1: Using -u flag (curl handles Base64 encoding)\ncurl -u :YOUR_PAT_HERE \\\n  \"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?api-version=7.1\"\n\n# Method 2: Manual Base64 encoding\nPAT=\"your-pat-here\"\nB64_PAT=$(echo -n \":$PAT\" | base64)\ncurl -H \"Authorization: Basic $B64_PAT\" \\\n  \"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?api-version=7.1\"",
+          "notes": [
+            "Empty username, PAT as password",
+            "Base64 encode the string ':PAT' (colon + PAT)",
+            "-u flag is simpler, curl handles encoding"
+          ]
+        },
+        {
+          "language": "python",
+          "description": "Using PAT with Python requests",
+          "code": "import requests\nfrom requests.auth import HTTPBasicAuth\nimport base64\n\norganization = \"your-org\"\nproject = \"your-project\"\npat = \"your-pat-here\"\n\n# Method 1: Using HTTPBasicAuth (recommended)\nresponse = requests.get(\n    f\"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123\",\n    auth=HTTPBasicAuth('', pat),\n    params={'api-version': '7.1'}\n)\n\n# Method 2: Manual header\nencoded_pat = base64.b64encode(f\":{pat}\".encode()).decode()\nheaders = {\n    'Authorization': f'Basic {encoded_pat}',\n    'Content-Type': 'application/json'\n}\nresponse = requests.get(\n    f\"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123\",\n    headers=headers,\n    params={'api-version': '7.1'}\n)\n\nif response.status_code == 200:\n    work_item = response.json()\n    print(work_item['fields']['System.Title'])\nelse:\n    print(f\"Error: {response.status_code} - {response.text}\")"
+        },
+        {
+          "language": "csharp",
+          "description": "Using PAT with C# HttpClient",
+          "code": "using System;\nusing System.Net.Http;\nusing System.Net.Http.Headers;\nusing System.Text;\nusing System.Threading.Tasks;\n\nvar organization = \"your-org\";\nvar project = \"your-project\";\nvar pat = \"your-pat-here\";\n\nusing var httpClient = new HttpClient();\n\n// Encode PAT for Basic Auth\nvar encodedPat = Convert.ToBase64String(Encoding.ASCII.GetBytes($\":{pat}\"));\nhttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(\"Basic\", encodedPat);\n\nvar url = $\"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?api-version=7.1\";\nvar response = await httpClient.GetAsync(url);\nvar content = await response.Content.ReadAsStringAsync();\n\nConsole.WriteLine(content);"
+        },
+        {
+          "language": "javascript",
+          "description": "Using PAT with Node.js fetch",
+          "code": "const organization = 'your-org';\nconst project = 'your-project';\nconst pat = 'your-pat-here';\n\n// Encode PAT for Basic Auth\nconst encodedPat = Buffer.from(`:${pat}`).toString('base64');\n\nconst headers = {\n    'Authorization': `Basic ${encodedPat}`,\n    'Content-Type': 'application/json'\n};\n\nasync function getWorkItem(id) {\n    const url = `https://dev.azure.com/${organization}/${project}/_apis/wit/workitems/${id}?api-version=7.1`;\n    const response = await fetch(url, { headers });\n    const workItem = await response.json();\n    return workItem;\n}\n\ngetWorkItem(123).then(wi => console.log(wi.fields['System.Title']));"
+        }
+      ]
+    },
+    {
+      "method": "OAuth 2.0 - Service Principal (Client Credentials)",
+      "recommended": true,
+      "use_cases": [
+        "Automated services without user context",
+        "Background jobs",
+        "Enterprise applications",
+        "Multi-tenant scenarios"
+      ],
+      "setup_steps": [
+        "1. Create app registration in Azure Portal (Microsoft Entra ID)",
+        "2. Add Azure DevOps API permission (user_impersonation)",
+        "3. Create client secret",
+        "4. Grant app access in Azure DevOps organization settings",
+        "5. Use client credentials flow to get access token"
+      ],
+      "examples": [
+        {
+          "language": "curl",
+          "description": "Get access token and call API",
+          "code": "# Step 1: Get access token\nTENANT_ID=\"your-tenant-id\"\nCLIENT_ID=\"your-client-id\"\nCLIENT_SECRET=\"your-client-secret\"\nAZURE_DEVOPS_RESOURCE_ID=\"499b84ac-1321-427f-aa17-267ca6975798\"\n\nTOKEN_RESPONSE=$(curl -X POST \\\n  -H \"Content-Type: application/x-www-form-urlencoded\" \\\n  -d \"client_id=$CLIENT_ID\" \\\n  -d \"client_secret=$CLIENT_SECRET\" \\\n  -d \"scope=$AZURE_DEVOPS_RESOURCE_ID/.default\" \\\n  -d \"grant_type=client_credentials\" \\\n  \"https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/token\")\n\nACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')\n\n# Step 2: Use access token to call Azure DevOps API\ncurl -H \"Authorization: Bearer $ACCESS_TOKEN\" \\\n  -H \"Content-Type: application/json\" \\\n  \"https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?api-version=7.1\"",
+          "notes": [
+            "Azure DevOps resource ID: 499b84ac-1321-427f-aa17-267ca6975798",
+            "Access tokens expire after 1 hour",
+            "Implement token caching and refresh logic"
+          ]
+        },
+        {
+          "language": "python",
+          "description": "OAuth with MSAL for Python",
+          "code": "from msal import ConfidentialClientApplication\nimport requests\n\ntenant_id = \"your-tenant-id\"\nclient_id = \"your-client-id\"\nclient_secret = \"your-client-secret\"\n\nazure_devops_resource = \"499b84ac-1321-427f-aa17-267ca6975798\"\nscopes = [f\"{azure_devops_resource}/.default\"]\n\napp = ConfidentialClientApplication(\n    client_id,\n    authority=f\"https://login.microsoftonline.com/{tenant_id}\",\n    client_credential=client_secret\n)\n\nresult = app.acquire_token_for_client(scopes=scopes)\n\nif \"access_token\" in result:\n    access_token = result[\"access_token\"]\n    headers = {\"Authorization\": f\"Bearer {access_token}\"}\n    \n    url = f\"https://dev.azure.com/{org}/{project}/_apis/wit/workitems/123?api-version=7.1\"\n    response = requests.get(url, headers=headers)\n    print(response.json())"
+        }
+      ]
+    }
+  ],
+  "environment_variables": {
+    "description": "Secure way to store credentials",
+    "examples": [
+      {
+        "language": "bash",
+        "code": "# .env file\nAZURE_DEVOPS_ORG=your-organization\nAZURE_DEVOPS_PROJECT=your-project\nAZURE_DEVOPS_PAT=your-pat-here"
+      },
+      {
+        "language": "python",
+        "description": "Using python-dotenv",
+        "code": "from dotenv import load_dotenv\nimport os\n\nload_dotenv()\n\norganization = os.getenv('AZURE_DEVOPS_ORG')\nproject = os.getenv('AZURE_DEVOPS_PROJECT')\npat = os.getenv('AZURE_DEVOPS_PAT')"
+      }
+    ]
+  },
+  "best_practices": [
+    "Never commit PATs or client secrets to source control",
+    "Use environment variables or secure key vaults",
+    "Set minimum required scopes on PATs",
+    "Rotate PATs regularly (every 90 days recommended)",
+    "Use OAuth for production applications, PAT for development",
+    "Implement token caching to reduce authentication calls",
+    "Handle token expiration gracefully with refresh logic"
+  ]
+}

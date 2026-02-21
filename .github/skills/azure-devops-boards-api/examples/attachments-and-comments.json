@@ -1,0 +1,334 @@
+{
+  "description": "Working with attachments and comments on work items",
+  "attachments": {
+    "workflow": "Two-step process: 1) Upload file 2) Link to work item",
+    "examples": [
+      {
+        "scenario": "Upload and attach a file",
+        "step1_upload": {
+          "description": "Upload file to get attachment URL",
+          "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/attachments?fileName=screenshot.png&api-version=7.1",
+          "headers": {
+            "Content-Type": "application/octet-stream",
+            "Authorization": "Basic {base64_encoded_pat}"
+          },
+          "request_body": "<<binary file content>>",
+          "curl_example": "curl -X POST -u :YOUR_PAT -H \"Content-Type: application/octet-stream\" --data-binary @screenshot.png \"https://dev.azure.com/{org}/{project}/_apis/wit/attachments?fileName=screenshot.png&api-version=7.1\"",
+          "response": {
+            "id": "3e3e3e3e-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
+            "url": "https://dev.azure.com/{organization}/{project}/_apis/wit/attachments/3e3e3e3e-3e3e-3e3e-3e3e-3e3e3e3e3e3e"
+          }
+        },
+        "step2_link": {
+          "description": "Link uploaded attachment to work item",
+          "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+          "headers": {
+            "Content-Type": "application/json-patch+json",
+            "Authorization": "Basic {base64_encoded_pat}"
+          },
+          "request": [
+            {
+              "op": "add",
+              "path": "/relations/-",
+              "value": {
+                "rel": "AttachedFile",
+                "url": "https://dev.azure.com/{organization}/{project}/_apis/wit/attachments/3e3e3e3e-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
+                "attributes": {
+                  "comment": "Screenshot showing the login error",
+                  "name": "screenshot.png"
+                }
+              }
+            }
+          ],
+          "notes": [
+            "Use the attachment URL from step 1 response",
+            "AttachedFile is a special relation type",
+            "Name attribute is optional but recommended",
+            "Comment helps explain what the attachment shows"
+          ]
+        }
+      },
+      {
+        "scenario": "Upload file with area path scope",
+        "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/attachments?fileName=design-doc.pdf&areaPath=MyProject\\Design&api-version=7.1",
+        "notes": [
+          "areaPath parameter helps organize attachments",
+          "Optional - attachments work without area path",
+          "URL encode the area path in query string"
+        ]
+      },
+      {
+        "scenario": "Get attachment metadata",
+        "endpoint": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?$expand=relations&api-version=7.1",
+        "response_excerpt": {
+          "relations": [
+            {
+              "rel": "AttachedFile",
+              "url": "https://dev.azure.com/{organization}/{project}/_apis/wit/attachments/3e3e3e3e-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
+              "attributes": {
+                "authorizedDate": "2026-02-21T14:00:00.000Z",
+                "id": 1,
+                "resourceCreatedDate": "2026-02-21T14:00:00.000Z",
+                "resourceModifiedDate": "2026-02-21T14:00:00.000Z",
+                "revisedDate": "9999-01-01T00:00:00.000Z",
+                "resourceSize": 102400,
+                "name": "screenshot.png",
+                "comment": "Screenshot showing the login error"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "scenario": "Download attachment",
+        "endpoint": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/attachments/{attachment_id}?api-version=7.1",
+        "curl_example": "curl -u :YOUR_PAT \"https://dev.azure.com/{org}/{project}/_apis/wit/attachments/{id}?api-version=7.1\" --output downloaded-file.png",
+        "notes": [
+          "Returns the binary file content",
+          "Use attachment URL from work item relations",
+          "Content-Type header indicates file type"
+        ]
+      },
+      {
+        "scenario": "Remove attachment",
+        "description": "Remove attachment relation from work item",
+        "step1": "Get work item with $expand=relations to find attachment index",
+        "step2": {
+          "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+          "request": [
+            {
+              "op": "test",
+              "path": "/relations/2/rel",
+              "value": "AttachedFile",
+              "notes": "Verify it's an attachment relation"
+            },
+            {
+              "op": "test",
+              "path": "/relations/2/url",
+              "value": "https://dev.azure.com/{organization}/{project}/_apis/wit/attachments/3e3e3e3e-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
+              "notes": "Verify it's the correct attachment"
+            },
+            {
+              "op": "remove",
+              "path": "/relations/2",
+              "notes": "Remove the attachment relation"
+            }
+          ]
+        },
+        "notes": [
+          "Removing relation doesn't delete the attachment file",
+          "File remains in Azure DevOps storage",
+          "Can be re-linked later using the same attachment URL"
+        ]
+      }
+    ]
+  },
+  "comments": {
+    "description": "Work item comments can be added via Comments API or System.History field",
+    "examples": [
+      {
+        "scenario": "Add comment using Comments API (recommended)",
+        "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/comments?api-version=7.1-preview.3",
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Basic {base64_encoded_pat}"
+        },
+        "request": {
+          "text": "I've reviewed the requirements and started implementation. The password validation will follow NIST guidelines."
+        },
+        "response": {
+          "id": 1,
+          "workItemId": 123,
+          "version": 1,
+          "text": "I've reviewed the requirements and started implementation. The password validation will follow NIST guidelines.",
+          "createdBy": {
+            "displayName": "John Doe",
+            "uniqueName": "john.doe@example.com",
+            "id": "12345678-1234-1234-1234-123456789012"
+          },
+          "createdDate": "2026-02-21T15:00:00.000Z",
+          "modifiedBy": {
+            "displayName": "John Doe",
+            "uniqueName": "john.doe@example.com",
+            "id": "12345678-1234-1234-1234-123456789012"
+          },
+          "modifiedDate": "2026-02-21T15:00:00.000Z",
+          "url": "https://dev.azure.com/{organization}/{project}/_apis/wit/workItems/123/comments/1"
+        },
+        "notes": [
+          "Comments API is preview (7.1-preview.3)",
+          "Supports formatting with mentions (@user)",
+          "Comments are separate from work item history"
+        ]
+      },
+      {
+        "scenario": "Add comment using System.History field",
+        "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+        "headers": {
+          "Content-Type": "application/json-patch+json",
+          "Authorization": "Basic {base64_encoded_pat}"
+        },
+        "request": [
+          {
+            "op": "add",
+            "path": "/fields/System.History",
+            "value": "Discussed implementation approach with the team. We'll use bcrypt for password hashing."
+          }
+        ],
+        "notes": [
+          "System.History is the classic way to add comments",
+          "Appears in Discussion tab of work item",
+          "Supports HTML formatting",
+          "Each update with History creates a new revision"
+        ]
+      },
+      {
+        "scenario": "Get all comments on a work item",
+        "endpoint": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/comments?api-version=7.1-preview.3",
+        "response": {
+          "totalCount": 2,
+          "count": 2,
+          "comments": [
+            {
+              "id": 1,
+              "workItemId": 123,
+              "text": "I've reviewed the requirements...",
+              "createdBy": {...},
+              "createdDate": "2026-02-21T15:00:00.000Z"
+            },
+            {
+              "id": 2,
+              "workItemId": 123,
+              "text": "Implementation completed. Ready for review.",
+              "createdBy": {...},
+              "createdDate": "2026-02-21T16:30:00.000Z"
+            }
+          ]
+        },
+        "query_parameters": {
+          "$top": "Number of comments to return",
+          "$skip": "Number of comments to skip (pagination)",
+          "$expand": "Expand options (e.g., 'reactions')",
+          "order": "asc or desc (default: asc)"
+        }
+      },
+      {
+        "scenario": "Update a comment",
+        "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/comments/{comment_id}?api-version=7.1-preview.3",
+        "request": {
+          "text": "Updated comment: Implementation completed and code reviewed. Ready for QA."
+        },
+        "notes": [
+          "Only the comment author can update",
+          "modifiedDate timestamp is updated",
+          "Version number increments"
+        ]
+      },
+      {
+        "scenario": "Delete a comment",
+        "endpoint": "DELETE https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/comments/{comment_id}?api-version=7.1-preview.3",
+        "notes": [
+          "Only the comment author or project admin can delete",
+          "Soft delete - comment is marked as deleted but not removed",
+          "Deleted comments show 'Comment removed' placeholder"
+        ]
+      },
+      {
+        "scenario": "Add comment with HTML formatting",
+        "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/comments?api-version=7.1-preview.3",
+        "request": {
+          "text": "<div>Implementation notes:<br/><ul><li>Used bcrypt for hashing</li><li>Added rate limiting</li><li>Implemented password strength meter</li></ul><br/><b>Ready for review!</b></div>"
+        },
+        "notes": "Supports HTML formatting for rich text"
+      },
+      {
+        "scenario": "Add comment with @mentions",
+        "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/comments?api-version=7.1-preview.3",
+        "request": {
+          "text": "@<12345678-1234-1234-1234-123456789012> Can you review the password validation logic?"
+        },
+        "notes": [
+          "Mention users with @<user_id>",
+          "Mentioned users receive notifications",
+          "User ID can be obtained from identity APIs or work item fields"
+        ]
+      },
+      {
+        "scenario": "Get work item history (including comments)",
+        "endpoint": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/updates?api-version=7.1",
+        "response": {
+          "count": 5,
+          "value": [
+            {
+              "id": 1,
+              "workItemId": 123,
+              "rev": 1,
+              "revisedBy": {...},
+              "revisedDate": "2026-02-21T10:30:00.123Z",
+              "fields": {
+                "System.Title": {
+                  "newValue": "User can log in with email and password"
+                },
+                "System.State": {
+                  "newValue": "New"
+                }
+              }
+            },
+            {
+              "id": 2,
+              "workItemId": 123,
+              "rev": 2,
+              "revisedBy": {...},
+              "revisedDate": "2026-02-21T11:45:00.456Z",
+              "fields": {
+                "System.State": {
+                  "oldValue": "New",
+                  "newValue": "Active"
+                },
+                "System.History": {
+                  "newValue": "Started working on this item..."
+                }
+              }
+            }
+          ]
+        },
+        "notes": [
+          "Shows all changes to the work item over time",
+          "Each update has a revision number (rev)",
+          "System.History entries appear as field changes",
+          "Includes who made changes and when"
+        ]
+      }
+    ]
+  },
+  "best_practices": [
+    "Use Comments API for discussions, System.History for status updates",
+    "Add descriptive comments to attachments explaining their purpose",
+    "Keep attachment file sizes reasonable (Azure DevOps has quotas)",
+    "Use meaningful filenames for attachments",
+    "Consider using Azure Storage for very large files, link in comments",
+    "Remove old attachments that are no longer relevant",
+    "Use @mentions in comments to notify team members",
+    "Format comments with HTML for better readability"
+  ],
+  "supported_attachment_types": [
+    "Images: png, jpg, gif, svg, bmp",
+    "Documents: pdf, doc, docx, xls, xlsx, ppt, pptx",
+    "Code: txt, md, json, xml, log, cs, js, py, etc.",
+    "Archives: zip, tar, gz, 7z",
+    "Any file type is technically supported"
+  ],
+  "attachment_limits": {
+    "max_file_size": "60 MB per file",
+    "total_storage": "Varies by Azure DevOps plan",
+    "note": "Check organization settings for specific limits"
+  },
+  "notes": [
+    "Attachments are immutable - cannot modify after upload, must upload new version",
+    "Comments API is in preview - syntax may change in future versions",
+    "System.History is stable and widely used for adding comments",
+    "Attachments persist even if work item relation is removed",
+    "Comments and history are preserved when work items are moved between projects",
+    "Both comments and attachments support HTML for rich formatting"
+  ]
+}

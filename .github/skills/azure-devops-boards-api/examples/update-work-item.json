@@ -1,0 +1,136 @@
+{
+  "description": "Update an existing work item (change state, add comments, update fields)",
+  "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+  "headers": {
+    "Content-Type": "application/json-patch+json",
+    "Authorization": "Basic {base64_encoded_pat}"
+  },
+  "examples": [
+    {
+      "scenario": "Change work item state to Active and add a comment",
+      "request": [
+        {
+          "op": "replace",
+          "path": "/fields/System.State",
+          "value": "Active",
+          "notes": "Use 'replace' for updating existing fields. State must be valid for the work item type."
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.History",
+          "value": "Started working on this item. Will focus on the authentication logic first.",
+          "notes": "System.History adds a comment to the work item discussion"
+        }
+      ]
+    },
+    {
+      "scenario": "Update multiple fields and reassign",
+      "request": [
+        {
+          "op": "replace",
+          "path": "/fields/System.Title",
+          "value": "User can log in with email, password, or social auth"
+        },
+        {
+          "op": "replace",
+          "path": "/fields/System.AssignedTo",
+          "value": "alice.johnson@example.com"
+        },
+        {
+          "op": "replace",
+          "path": "/fields/Microsoft.VSTS.Scheduling.StoryPoints",
+          "value": 8,
+          "notes": "Increased story points due to added social auth requirement"
+        },
+        {
+          "op": "replace",
+          "path": "/fields/Microsoft.VSTS.Common.Priority",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "scenario": "Add and remove tags",
+      "request": [
+        {
+          "op": "replace",
+          "path": "/fields/System.Tags",
+          "value": "authentication; security; login; oauth; social-auth",
+          "notes": "To add tags, include existing tags plus new ones. To remove, exclude them from the value."
+        }
+      ]
+    },
+    {
+      "scenario": "Move to different iteration and area",
+      "request": [
+        {
+          "op": "replace",
+          "path": "/fields/System.IterationPath",
+          "value": "MyProject\\Sprint 2"
+        },
+        {
+          "op": "replace",
+          "path": "/fields/System.AreaPath",
+          "value": "MyProject\\Authentication\\OAuth"
+        }
+      ]
+    },
+    {
+      "scenario": "Close work item with resolution",
+      "request": [
+        {
+          "op": "replace",
+          "path": "/fields/System.State",
+          "value": "Closed"
+        },
+        {
+          "op": "replace",
+          "path": "/fields/System.Reason",
+          "value": "Completed",
+          "notes": "Reason should match valid reasons for the target state"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.History",
+          "value": "Completed implementation and testing. All acceptance criteria met."
+        }
+      ]
+    },
+    {
+      "scenario": "Remove assignment (unassign)",
+      "request": [
+        {
+          "op": "remove",
+          "path": "/fields/System.AssignedTo",
+          "notes": "Use 'remove' operation to clear a field value"
+        }
+      ]
+    }
+  ],
+  "response": {
+    "id": 123,
+    "rev": 2,
+    "fields": {
+      "System.State": "Active",
+      "System.Reason": "Implementation started",
+      "System.ChangedDate": "2026-02-21T11:45:00.456Z",
+      "System.ChangedBy": {
+        "displayName": "Current User",
+        "uniqueName": "current.user@example.com"
+      },
+      "System.History": "Started working on this item. Will focus on the authentication logic first.",
+      "...": "other fields"
+    },
+    "_links": {},
+    "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+  },
+  "notes": [
+    "Each update increments the revision number (rev)",
+    "Use 'replace' for existing fields, 'add' for new fields or appending (like History)",
+    "Use 'remove' to clear field values",
+    "State transitions must follow allowed transitions for the work item type",
+    "System.History entries appear in the work item discussion/activity feed",
+    "Changes are audited - ChangedDate and ChangedBy are automatically updated",
+    "You can include multiple operations in a single PATCH request"
+  ]
+}

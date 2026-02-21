@@ -1,0 +1,303 @@
+{
+  "description": "Managing work item relationships (parent-child, related, dependencies)",
+  "scenarios": [
+    {
+      "name": "Add parent-child link (making work item a child)",
+      "description": "Link a Task to its parent User Story",
+      "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{child_id}?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Hierarchy-Reverse",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123",
+            "attributes": {
+              "comment": "Linking task to parent user story"
+            }
+          },
+          "notes": [
+            "Hierarchy-Reverse means this work item is a CHILD of the target",
+            "URL points to the parent work item",
+            "Use '-' in path to append to relations array"
+          ]
+        }
+      ],
+      "alternative": {
+        "description": "Add child link from parent's perspective",
+        "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{parent_id}?api-version=7.1",
+        "request": [
+          {
+            "op": "add",
+            "path": "/relations/-",
+            "value": {
+              "rel": "System.LinkTypes.Hierarchy-Forward",
+              "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/124",
+              "attributes": {
+                "comment": "Adding child task"
+              }
+            },
+            "notes": [
+              "Hierarchy-Forward means target is a CHILD of this work item",
+              "Accomplishes the same result as Hierarchy-Reverse from child"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Add related work item link",
+      "description": "Link two work items as related (peer relationship)",
+      "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+      "request": [
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Related",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/200",
+            "attributes": {
+              "comment": "These user stories are related - both deal with authentication"
+            }
+          }
+        }
+      ],
+      "notes": [
+        "Related links are bidirectional - both work items will show the relationship",
+        "Common for linking bugs to user stories, or related features"
+      ]
+    },
+    {
+      "name": "Add dependency link (predecessor/successor)",
+      "description": "Create dependency between work items",
+      "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+      "request": [
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Dependency-Forward",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/150",
+            "attributes": {
+              "comment": "This work item must be completed before item 150 can start"
+            }
+          },
+          "notes": [
+            "Dependency-Forward: This item is a PREDECESSOR (must complete first)",
+            "Dependency-Reverse: This item is a SUCCESSOR (depends on another)",
+            "Useful for tracking blocking relationships"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove a relationship",
+      "description": "Delete a link between work items",
+      "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?api-version=7.1",
+      "workflow": [
+        {
+          "step": 1,
+          "description": "First, get the work item to find the relation index",
+          "request": "GET https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?$expand=relations&api-version=7.1",
+          "example_response": {
+            "relations": [
+              {
+                "rel": "System.LinkTypes.Hierarchy-Reverse",
+                "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123"
+              },
+              {
+                "rel": "System.LinkTypes.Related",
+                "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/200"
+              }
+            ]
+          },
+          "notes": "Relations array index starts at 0"
+        },
+        {
+          "step": 2,
+          "description": "Remove the relation by index",
+          "request": [
+            {
+              "op": "remove",
+              "path": "/relations/1",
+              "notes": [
+                "This removes the second relation (index 1) - the Related link",
+                "Use the exact index from the relations array",
+                "Be careful - indices can change if other relations are added/removed"
+              ]
+            }
+          ]
+        }
+      ],
+      "alternative_by_url": [
+        {
+          "op": "test",
+          "path": "/relations/1/url",
+          "value": "https://dev.azure.com/{organization}/_apis/wit/workItems/200",
+          "notes": "First test that the relation at this index matches expected URL"
+        },
+        {
+          "op": "remove",
+          "path": "/relations/1",
+          "notes": "Then remove it if test passes"
+        }
+      ]
+    },
+    {
+      "name": "Create work item with parent link in one call",
+      "description": "Create a new Task and link it to parent User Story",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Task?api-version=7.1",
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "Implement password validation"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Description",
+          "value": "Add server-side password strength validation"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Scheduling.RemainingWork",
+          "value": 4
+        },
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Hierarchy-Reverse",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123",
+            "attributes": {
+              "comment": "Child task of login user story"
+            }
+          },
+          "notes": "Can add relations during work item creation"
+        }
+      ]
+    },
+    {
+      "name": "Link multiple children at once",
+      "description": "Add multiple tasks to a user story",
+      "endpoint": "PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/123?api-version=7.1",
+      "request": [
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Hierarchy-Forward",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/124",
+            "attributes": {
+              "comment": "Task: Create login API"
+            }
+          }
+        },
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Hierarchy-Forward",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/125",
+            "attributes": {
+              "comment": "Task: Design login UI"
+            }
+          }
+        },
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Hierarchy-Forward",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/126",
+            "attributes": {
+              "comment": "Task: Write integration tests"
+            }
+          }
+        }
+      ],
+      "notes": "Multiple add operations in single PATCH - efficient bulk linking"
+    }
+  ],
+  "link_types": {
+    "hierarchical": {
+      "System.LinkTypes.Hierarchy-Forward": {
+        "description": "This work item is PARENT, target is CHILD",
+        "use_case": "Epic -> Feature, Feature -> User Story, User Story -> Task",
+        "example": "User Story has child Tasks"
+      },
+      "System.LinkTypes.Hierarchy-Reverse": {
+        "description": "This work item is CHILD, target is PARENT",
+        "use_case": "Reverse of Hierarchy-Forward",
+        "example": "Task belongs to User Story"
+      }
+    },
+    "dependency": {
+      "System.LinkTypes.Dependency-Forward": {
+        "description": "This work item is PREDECESSOR (blocks target)",
+        "use_case": "This must complete before target can start",
+        "example": "Database migration must complete before new feature"
+      },
+      "System.LinkTypes.Dependency-Reverse": {
+        "description": "This work item is SUCCESSOR (blocked by target)",
+        "use_case": "This cannot start until target completes",
+        "example": "Integration test depends on implementation"
+      }
+    },
+    "related": {
+      "System.LinkTypes.Related": {
+        "description": "Generic bidirectional relationship",
+        "use_case": "Work items that should be tracked together",
+        "example": "Bug related to User Story, or two Features in same area"
+      }
+    },
+    "other": {
+      "System.LinkTypes.Duplicate-Forward": {
+        "description": "This duplicates target",
+        "use_case": "Marking duplicate work items"
+      },
+      "System.LinkTypes.Duplicate-Reverse": {
+        "description": "Target duplicates this",
+        "use_case": "Reverse duplicate relationship"
+      },
+      "Microsoft.VSTS.TestCase.SharedStepReferencedBy": {
+        "description": "Test case uses shared steps",
+        "use_case": "Test management"
+      }
+    }
+  },
+  "relation_attributes": {
+    "comment": {
+      "type": "string",
+      "description": "Optional comment explaining the relationship",
+      "best_practice": "Add meaningful context for why items are linked"
+    },
+    "isLocked": {
+      "type": "boolean",
+      "description": "Whether the link can be modified",
+      "default": false
+    }
+  },
+  "best_practices": [
+    "Always use Hierarchy-Forward from parent or Hierarchy-Reverse from child (not both)",
+    "Related links are bidirectional - creating one link updates both work items",
+    "Use meaningful comments when creating links for better traceability",
+    "When removing links, use 'test' operation first to ensure you're removing the right one",
+    "Consider using queries to find work items before linking programmatically",
+    "Batch multiple link operations in one PATCH for efficiency",
+    "Dependencies help visualize critical path and blockers in planning"
+  ],
+  "notes": [
+    "Relations are stored in the /relations array of a work item",
+    "Each relation has a 'rel' (type) and 'url' (target work item)",
+    "The '-' path (/relations/-) appends to the end of the relations array",
+    "Removing a relation requires knowing its index in the array",
+    "Some link types are directional (Hierarchy, Dependency), others bidirectional (Related)",
+    "Cross-project links are supported - URL can point to work items in other projects",
+    "Invalid link type or unreachable work item will result in 400 Bad Request error"
+  ]
+}
