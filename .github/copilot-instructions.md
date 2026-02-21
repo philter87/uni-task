@@ -2,36 +2,21 @@
 
 ## Architecture Overview
 
-UniTask combines **CQRS with MediatR** and the **Adapter Pattern** to create a unified task management API that can integrate with multiple backends (local DB, GitHub Issues, Azure DevOps).
+UniTask uses **CQRS with MediatR** to create a unified task management API. Commands and queries interact directly with the database via `TaskDbContext`. External provider integrations (GitHub, Azure DevOps, etc.) belong in **EventHandlers**.
 
 ### CQRS Flow
 ```
-Controller → Command/Query → Handler → Adapter → Event (for commands)
-                                           ↓
-                                      EventHandler
+Controller → Command/Query → Handler → DbContext → Event (for commands)
+                                                        ↓
+                                                   EventHandler (external integrations)
 ```
 
 **Key Rules:**
-- **Commands**: Imperative verbs (`CreateProject`, `ChangeTaskStatus`) - modify state
-- **Queries**: Start with `Get` (`GetAllProjects`, `GetTaskById`) - read-only
-- **Events**: Past tense (`ProjectCreated`, `TaskStatusChanged`) - published by CommandHandlers
+- **Commands**: Imperative verbs (`CreateProject`, `ChangeTaskStatus`) - modify state, interact with `TaskDbContext` directly
+- **Queries**: Start with `Get` (`GetAllProjects`, `GetTaskById`) - read-only, query `TaskDbContext` directly
+- **Events**: Past tense (`ProjectCreated`, `TaskStatusChanged`) - published by CommandHandlers, handled by EventHandlers for side effects and external integrations
 
-**Example:** See [`ProjectsController`](UniTask.Api/Api/Projects/ProjectsController.cs) → [`CreateProjectCommandHandler`](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs) → [`LocalProjectAdapter`](UniTask.Api/Api/Projects/Adapters/LocalProjectAdapter.cs)
-
-### Adapter Pattern
-
-Adapters decouple the API from specific backends. Switch implementations in [`Program.cs`](UniTask.Api/Program.cs):
-```csharp
-builder.Services.AddScoped<ITaskAdapter, LocalTasksAdapter>();
-// OR for GitHub: builder.Services.AddScoped<ITaskAdapter, GitHubTasksAdapter>();
-```
-
-**Adapter responsibilities:**
-- Map DTOs ↔ backend entities
-- Handle backend-specific API calls
-- Return domain events from commands
-
-See [`IProjectAdapter`](UniTask.Api/Api/Projects/Adapters/IProjectAdapter.cs) interface defining the contract.
+**Example:** See [`ProjectsController`](UniTask.Api/Api/Projects/ProjectsController.cs) → [`CreateProjectCommandHandler`](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs)
 
 ## Project Structure (Feature-Based)
 
@@ -44,17 +29,17 @@ UniTask.Api/Api/
 │   │   ├── ProjectCreatedEvent.cs
 │   │   └── ProjectCreatedEventHandler.cs
 │   ├── Queries/GetProject/      # Queries organized similarly
-│   ├── Adapters/                # Backend implementations
-│   │   ├── IProjectAdapter.cs
-│   │   └── LocalProjectAdapter.cs
 │   ├── Project.cs               # Entity model
 │   ├── ProjectDto.cs            # API contract
 │   └── ProjectsController.cs
 ├── Tasks/                       # Task feature (same structure)
-│   └── Commands/
-│       ├── Create/, Update/, Delete/
-│       ├── ChangeStatus/, AddLabel/, RemoveLabel/
-│       └── AssignMember/
+│   ├── Commands/
+│   │   ├── Create/, Update/, Delete/
+│   │   ├── ChangeStatus/, AddLabel/, RemoveLabel/
+│   │   └── AssignMember/
+│   ├── Queries/
+│   │   ├── GetTask/, GetTasks/
+│   └── TaskItemMapper.cs        # Shared entity → DTO mapping
 └── Shared/                      # Cross-feature components
     ├── TaskDbContext.cs
     └── [Status, TaskType, Label, Comment models/DTOs]
@@ -65,17 +50,25 @@ UniTask.Api/Api/
 ## Adding New CQRS Operations
 
 1. **Create Command/Query** in `Commands/{Operation}/` or `Queries/{Operation}/`
-2. **Create Handler** implementing `IRequestHandler<TRequest, TResponse>`
-3. **Update Adapter interface** and implementations
-4. **Create Event** (for commands) and optional EventHandler
-5. **Add Controller endpoint** using `await _mediator.Send(command)`
+2. **Create Handler** implementing `IRequestHandler<TRequest, TResponse>` — inject `TaskDbContext` for DB access
+3. **Create Event** (for commands) and optional EventHandler for side effects
+4. **Add Controller endpoint** using `await _mediator.Send(command)`
 
 **Example:** Adding `UpdateProject`:
 - Create `Commands/Update/UpdateProjectCommand.cs`
-- Create `Commands/Update/UpdateProjectCommandHandler.cs`
-- Add `Task<ProjectUpdatedEvent> Handle(UpdateProjectCommand)` to `IProjectAdapter`
-- Implement in `LocalProjectAdapter.cs`
+- Create `Commands/Update/UpdateProjectCommandHandler.cs` — inject `TaskDbContext`, do the DB work directly
+- Create `Commands/Update/ProjectUpdatedEvent.cs` and optional `ProjectUpdatedEventHandler.cs`
 - Add `[HttpPut("{id}")]` endpoint in `ProjectsController.cs`
+
+## External Integrations (GitHub, Azure DevOps)
+
+External provider logic belongs in **EventHandlers**, not in command/query handlers. This keeps the core flow clean and makes integrations opt-in side effects.
+
+**Example:** Syncing a created task to GitHub Issues:
+- `CreateTaskCommandHandler` saves to DB and publishes `TaskCreatedEvent`
+- A `GitHubTaskSyncEventHandler` (implementing `INotificationHandler<TaskCreatedEvent>`) calls the GitHub API
+
+Refer to `.github/skills/github-issues-rest-api/` for GitHub API patterns.
 
 ## Testing Conventions
 
@@ -90,6 +83,8 @@ var randomString = Any.String(10);
 var randomInt = Any.Int(1, 100);
 var randomEmail = Any.Email();
 ```
+
+**Unit tests** instantiate handlers directly with an in-memory `TaskDbContext`. See [`LocalAdapterTests.cs`](UniTask.Tests/LocalAdapterTests.cs).
 
 **Integration tests** use `CustomWebApplicationFactory` with in-memory database. See [`ProjectsControllerTests.cs`](UniTask.Tests/ProjectsControllerTests.cs).
 
@@ -136,7 +131,7 @@ dotnet test
 - **`SKILL.md`**: Main documentation with YAML frontmatter
 - **`examples/`**: JSON examples with detailed usage patterns
 
-**Example:** [`github-issues-rest-api`](.github/skills/github-issues-rest-api/SKILL.md) skill documents GitHub REST API for future GitHub adapter implementation.
+**Example:** [`github-issues-rest-api`](.github/skills/github-issues-rest-api/SKILL.md) skill documents GitHub REST API for future GitHub EventHandler implementations.
 
 **When to create a skill:** External system integration, complex domain logic, or API interaction patterns.
 
@@ -146,14 +141,14 @@ dotnet test
 - **Entity models**: Plain classes without suffix (`Project`, `TaskItem`)
 - **Events end with `Event`**: `ProjectCreatedEvent`, `TaskStatusChangedEvent`
 - **Handlers end with `Handler`**: `CreateProjectCommandHandler`, `GetProjectQueryHandler`
-- **Adapters end with `Adapter`**: `LocalProjectAdapter`, `GitHubTasksAdapter`
 
 ## Common Pitfalls
 
-1. **Don't bypass MediatR** - Controllers should only call `_mediator.Send()`, never adapters directly
-2. **Events are for side effects** - Main operation result goes through command response, events handle notifications/logging/secondary actions
-3. **Adapters handle all backend logic** - Handlers should be thin orchestrators
-4. **Each CQRS operation gets its own folder** - Don't cram multiple commands in one file/folder
+1. **Don't bypass MediatR** - Controllers should only call `_mediator.Send()`, never `TaskDbContext` directly
+2. **Events are for side effects** - Main operation result goes through command response; events handle notifications, logging, and external integrations
+3. **Handlers own the DB logic** - CommandHandlers write to the DB; QueryHandlers read from the DB
+4. **External integrations go in EventHandlers** - Don't call GitHub/Azure DevOps APIs from command or query handlers
+5. **Each CQRS operation gets its own folder** - Don't cram multiple commands in one file/folder
 
 ## Frontend Integration
 
@@ -164,7 +159,7 @@ dotnet test
 ## Future Backend Integrations
 
 To add GitHub/Azure DevOps support:
-1. Implement `ITaskAdapter` or `IProjectAdapter` for the backend
-2. Map external API entities to DTOs
-3. Register adapter in `Program.cs`
-4. Refer to `.github/skills/github-issues-rest-api/` for GitHub API patterns
+1. Create an EventHandler implementing `INotificationHandler<TEvent>` for the relevant event(s)
+2. Call the external API inside the handler
+3. Refer to `.github/skills/github-issues-rest-api/` for GitHub API patterns
+

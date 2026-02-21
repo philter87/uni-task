@@ -1,19 +1,30 @@
 using MediatR;
-using UniTask.Api.Tasks.Adapters;
+using Microsoft.EntityFrameworkCore;
+using UniTask.Api.Shared;
 
 namespace UniTask.Api.Tasks.Queries.GetTask;
 
 public class GetTaskQueryHandler : IRequestHandler<GetTaskQuery, TaskItemDto?>
 {
-    private readonly ITasksAdapter _adapter;
+    private readonly TaskDbContext _context;
 
-    public GetTaskQueryHandler(ITasksAdapter adapter)
+    public GetTaskQueryHandler(TaskDbContext context)
     {
-        _adapter = adapter;
+        _context = context;
     }
 
-    public Task<TaskItemDto?> Handle(GetTaskQuery request, CancellationToken cancellationToken)
+    public async Task<TaskItemDto?> Handle(GetTaskQuery request, CancellationToken cancellationToken)
     {
-        return _adapter.Handle(request);
+        var task = await _context.Tasks
+            .Include(t => t.Project)
+            .Include(t => t.TaskType)
+            .Include(t => t.Status)
+            .Include(t => t.Board)
+            .Include(t => t.Labels).ThenInclude(l => l.LabelType)
+            .Include(t => t.Tags)
+            .Include(t => t.Comments)
+            .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
+
+        return task == null ? null : TaskItemMapper.MapToDto(task);
     }
 }

@@ -1,11 +1,12 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Projects;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
-using UniTask.Api.Tasks.Adapters;
 using UniTask.Api.Tasks.Commands.Create;
 using UniTask.Api.Tasks.Commands.Delete;
 using UniTask.Api.Tasks.Commands.Update;
@@ -15,19 +16,19 @@ using Xunit;
 
 namespace UniTask.Tests;
 
-public class LocalAdapterTests : IDisposable
+public class TaskHandlerTests : IDisposable
 {
     private readonly TaskDbContext _context;
-    private readonly LocalTasksAdapter _adapter;
+    private readonly IPublisher _publisher;
 
-    public LocalAdapterTests()
+    public TaskHandlerTests()
     {
         var options = new DbContextOptionsBuilder<TaskDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        
+
         _context = new TaskDbContext(options);
-        _adapter = new LocalTasksAdapter(_context);
+        _publisher = new NoOpPublisher();
     }
 
     public void Dispose()
@@ -39,7 +40,8 @@ public class LocalAdapterTests : IDisposable
     public async Task GetAllTasks_ReturnsEmptyList_WhenNoTasks()
     {
         // Act
-        var tasks = await _adapter.Handle(new GetTasksQuery());
+        var handler = new GetTasksQueryHandler(_context);
+        var tasks = await handler.Handle(new GetTasksQuery(), CancellationToken.None);
 
         // Assert
         Assert.NotNull(tasks);
@@ -58,7 +60,8 @@ public class LocalAdapterTests : IDisposable
         };
 
         // Act
-        var result = await _adapter.Handle(command);
+        var handler = new CreateTaskCommandHandler(_context, _publisher);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -85,7 +88,8 @@ public class LocalAdapterTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _adapter.Handle(new GetTaskQuery { Id = task.Id });
+        var handler = new GetTaskQueryHandler(_context);
+        var result = await handler.Handle(new GetTaskQuery { Id = task.Id }, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -98,7 +102,8 @@ public class LocalAdapterTests : IDisposable
     public async Task GetTaskById_ReturnsNull_WhenTaskDoesNotExist()
     {
         // Act
-        var result = await _adapter.Handle(new GetTaskQuery { Id = 999 });
+        var handler = new GetTaskQueryHandler(_context);
+        var result = await handler.Handle(new GetTaskQuery { Id = 999 }, CancellationToken.None);
 
         // Assert
         Assert.Null(result);
@@ -124,7 +129,8 @@ public class LocalAdapterTests : IDisposable
         };
 
         // Act
-        var result = await _adapter.Handle(command);
+        var handler = new UpdateTaskCommandHandler(_context, _publisher);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -151,7 +157,9 @@ public class LocalAdapterTests : IDisposable
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _adapter.Handle(command));
+        var handler = new UpdateTaskCommandHandler(_context, _publisher);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            handler.Handle(command, CancellationToken.None));
     }
 
     [Fact]
@@ -165,7 +173,8 @@ public class LocalAdapterTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _adapter.Handle(new DeleteTaskCommand { TaskId = task.Id });
+        var handler = new DeleteTaskCommandHandler(_context, _publisher);
+        var result = await handler.Handle(new DeleteTaskCommand { TaskId = task.Id }, CancellationToken.None);
 
         // Assert
         Assert.NotNull(result);
@@ -180,8 +189,9 @@ public class LocalAdapterTests : IDisposable
     public async Task DeleteTask_ThrowsException_WhenTaskDoesNotExist()
     {
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _adapter.Handle(new DeleteTaskCommand { TaskId = 999 }));
+        var handler = new DeleteTaskCommandHandler(_context, _publisher);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            handler.Handle(new DeleteTaskCommand { TaskId = 999 }, CancellationToken.None));
     }
 
     [Fact]
@@ -205,12 +215,13 @@ public class LocalAdapterTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var tasks = await _adapter.Handle(new GetTasksQuery());
+        var handler = new GetTasksQueryHandler(_context);
+        var tasks = await handler.Handle(new GetTasksQuery(), CancellationToken.None);
 
         // Assert
         var taskList = tasks.ToList();
         Assert.Single(taskList);
-        
+
         var resultTask = taskList.First();
         Assert.NotNull(resultTask.Project);
         Assert.Equal("Test Project", resultTask.Project.Name);
@@ -229,7 +240,8 @@ public class LocalAdapterTests : IDisposable
         };
 
         // Act
-        var result = await _adapter.Handle(command);
+        var handler = new CreateTaskCommandHandler(_context, _publisher);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         var dbTask = await _context.Tasks.FindAsync(result.TaskId);
@@ -248,11 +260,18 @@ public class LocalAdapterTests : IDisposable
         };
 
         // Act
-        var result = await _adapter.Handle(command);
+        var handler = new CreateTaskCommandHandler(_context, _publisher);
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         var dbTask = await _context.Tasks.FindAsync(result.TaskId);
         Assert.NotNull(dbTask);
         Assert.Equal(0, dbTask.Priority);
     }
+}
+
+file class NoOpPublisher : IPublisher
+{
+    public Task Publish(object notification, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification => Task.CompletedTask;
 }

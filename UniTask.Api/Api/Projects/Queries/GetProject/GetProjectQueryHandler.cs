@@ -1,19 +1,34 @@
 using MediatR;
-using UniTask.Api.Projects.Adapters;
+using UniTask.Api.Shared;
 
 namespace UniTask.Api.Projects.Queries.GetProject;
 
 public class GetProjectQueryHandler : IRequestHandler<GetProjectQuery, ProjectDto?>
 {
-    private readonly IProjectAdapter _adapter;
+    private readonly TaskDbContext _context;
 
-    public GetProjectQueryHandler(IProjectAdapter adapter)
+    public GetProjectQueryHandler(TaskDbContext context)
     {
-        _adapter = adapter;
+        _context = context;
     }
 
-    public Task<ProjectDto?> Handle(GetProjectQuery request, CancellationToken cancellationToken)
+    public async Task<ProjectDto?> Handle(GetProjectQuery request, CancellationToken cancellationToken)
     {
-        return _adapter.Handle(request);
+        var project = await _context.Projects.FindAsync(request.Id);
+
+        if (project == null)
+        {
+            return null;
+        }
+
+        return new ProjectDto
+        {
+            Id = project.Id,
+            ExternalId = project.ExternalId,
+            Name = project.Name,
+            Description = project.Description,
+            CreatedAt = project.CreatedAt,
+            UpdatedAt = project.UpdatedAt
+        };
     }
 }
