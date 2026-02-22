@@ -1,4 +1,5 @@
 using MediatR;
+using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.AssignMember;
 

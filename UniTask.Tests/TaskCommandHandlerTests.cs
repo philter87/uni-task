@@ -13,6 +13,7 @@ using UniTask.Api.Tasks.Commands.Create;
 using UniTask.Api.Tasks.Commands.RemoveLabel;
 using UniTask.Api.Tasks.Commands.AddLabel;
 using UniTask.Api.Tasks.Commands.Update;
+using UniTask.Api.Tasks.Events;
 using Xunit;
 
 namespace UniTask.Tests;

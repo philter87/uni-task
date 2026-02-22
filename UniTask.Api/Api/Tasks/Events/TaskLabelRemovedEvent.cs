@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Tasks.Commands.RemoveLabel;
+namespace UniTask.Api.Tasks.Events;
 
 public class TaskLabelRemovedEvent : INotification
 {

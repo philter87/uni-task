@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using UniTask.Api.Projects;
 using UniTask.Api.Projects.Commands.Create;
+using UniTask.Api.Projects.Events;
 using Xunit;
 
 namespace UniTask.Tests;

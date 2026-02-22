@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Tasks.Commands.AddLabel;
+namespace UniTask.Api.Tasks.Events;
 
 public class TaskLabelAddedEventHandler : INotificationHandler<TaskLabelAddedEvent>
 {

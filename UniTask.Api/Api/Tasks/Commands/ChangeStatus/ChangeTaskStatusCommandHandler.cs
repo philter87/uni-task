@@ -1,5 +1,6 @@
 using MediatR;
 using UniTask.Api.Shared;
+using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.ChangeStatus;
 

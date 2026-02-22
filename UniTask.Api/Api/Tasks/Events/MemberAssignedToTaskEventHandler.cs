@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Tasks.Commands.AssignMember;
+namespace UniTask.Api.Tasks.Events;
 
 public class MemberAssignedToTaskEventHandler : INotificationHandler<MemberAssignedToTaskEvent>
 {

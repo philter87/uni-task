@@ -23,13 +23,18 @@ Controller → Command/Query → Handler → DbContext → Event (for commands)
 ```
 UniTask.Api/Api/
 ├── Projects/                    # Project feature
-│   ├── Commands/Create/         # CreateProject CQRS components
+│   ├── Commands/Create/         # CreateProject CQRS components (commands only)
 │   │   ├── CreateProjectCommand.cs
-│   │   ├── CreateProjectCommandHandler.cs
+│   │   └── CreateProjectCommandHandler.cs
+│   ├── Queries/GetProject/      # Queries organized similarly
+│   ├── Models/                  # DB entity models
+│   │   ├── Project.cs
+│   │   ├── Organisation.cs
+│   │   ├── Board.cs
+│   │   └── ...
+│   ├── Events/                  # Events and EventHandlers
 │   │   ├── ProjectCreatedEvent.cs
 │   │   └── ProjectCreatedEventHandler.cs
-│   ├── Queries/GetProject/      # Queries organized similarly
-│   ├── Project.cs               # Entity model
 │   ├── ProjectDto.cs            # API contract
 │   └── ProjectsController.cs
 ├── Tasks/                       # Task feature (same structure)
@@ -39,25 +44,34 @@ UniTask.Api/Api/
 │   │   └── AssignMember/
 │   ├── Queries/
 │   │   ├── GetTask/, GetTasks/
+│   ├── Models/                  # DB entity models
+│   │   ├── TaskItem.cs
+│   │   ├── Comment.cs
+│   │   └── ...
+│   ├── Events/                  # Events and EventHandlers
+│   │   ├── TaskCreatedEvent.cs
+│   │   ├── TaskCreatedEventHandler.cs
+│   │   └── ...
 │   └── TaskItemMapper.cs        # Shared entity → DTO mapping
 └── Shared/                      # Cross-feature components
     ├── TaskDbContext.cs
+    ├── TaskProvider.cs          # TaskProvider enum (Internal, GitHub, AzureDevOps, Jira)
     └── [Status, TaskType, Label, Comment models/DTOs]
 ```
 
-**Navigation tip:** All code for a feature lives in its folder. New commands/queries go in their own subfolders.
+**Navigation tip:** All code for a feature lives in its folder. New commands/queries go in their own subfolders. Events go in the feature-level `Events/` folder.
 
 ## Adding New CQRS Operations
 
 1. **Create Command/Query** in `Commands/{Operation}/` or `Queries/{Operation}/`
 2. **Create Handler** implementing `IRequestHandler<TRequest, TResponse>` — inject `TaskDbContext` for DB access
-3. **Create Event** (for commands) and optional EventHandler for side effects
+3. **Create Event** in `Events/` and optional EventHandler for side effects
 4. **Add Controller endpoint** using `await _mediator.Send(command)`
 
 **Example:** Adding `UpdateProject`:
 - Create `Commands/Update/UpdateProjectCommand.cs`
 - Create `Commands/Update/UpdateProjectCommandHandler.cs` — inject `TaskDbContext`, do the DB work directly
-- Create `Commands/Update/ProjectUpdatedEvent.cs` and optional `ProjectUpdatedEventHandler.cs`
+- Create `Events/ProjectUpdatedEvent.cs` and optional `Events/ProjectUpdatedEventHandler.cs`
 - Add `[HttpPut("{id}")]` endpoint in `ProjectsController.cs`
 
 ## External Integrations (GitHub, Azure DevOps)

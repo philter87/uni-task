@@ -1,5 +1,6 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
+using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.Update;
 

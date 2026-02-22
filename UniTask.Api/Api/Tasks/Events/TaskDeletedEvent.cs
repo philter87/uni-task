@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Tasks.Commands.Delete;
+namespace UniTask.Api.Tasks.Events;
 
 public class TaskDeletedEvent : INotification
 {

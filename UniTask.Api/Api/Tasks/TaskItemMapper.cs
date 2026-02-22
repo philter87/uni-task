@@ -23,7 +23,7 @@ public static class TaskItemMapper
             DueDate = task.DueDate,
             AssignedTo = task.AssignedTo,
             AssignedToUserId = task.AssignedToUserId,
-            Source = task.Source?.ToString(),
+            Provider = task.Provider,
             DurationHours = task.DurationHours,
             DurationRemainingHours = task.DurationRemainingHours,
             Project = task.Project == null ? null : new ProjectDto

@@ -1,5 +1,6 @@
 using MediatR;
 using UniTask.Api.Shared;
+using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.Create;
 
@@ -16,13 +17,6 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, TaskC
 
     public async Task<TaskCreatedEvent> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
-        TaskSource? source = null;
-        if (!string.IsNullOrEmpty(request.Source))
-        {
-            Enum.TryParse<TaskSource>(request.Source, true, out var parsedSource);
-            source = parsedSource;
-        }
-
         var taskItem = new TaskItem
         {
             Title = request.Title,
@@ -35,7 +29,7 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, TaskC
             DueDate = request.DueDate,
             AssignedTo = request.AssignedTo,
             AssignedToUserId = request.AssignedToUserId,
-            Source = source,
+            Provider = request.Provider,
             ExternalId = request.ExternalId,
             DurationHours = request.DurationHours,
             DurationRemainingHours = request.DurationRemainingHours,

@@ -1,5 +1,7 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
+using UniTask.Api.Shared;
+using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.Create;
 
@@ -16,7 +18,7 @@ public class CreateTaskCommand : IRequest<TaskCreatedEvent>
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public int? AssignedToUserId { get; set; }
-    public string? Source { get; set; }
+    public TaskProvider? Provider { get; set; }
     public string? ExternalId { get; set; }
     public double? DurationHours { get; set; }
     public double? DurationRemainingHours { get; set; }
