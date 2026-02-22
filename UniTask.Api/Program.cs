@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Shared;
+using UniTask.Api.Shared.TaskProviderClients;
 using UniTask.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,9 @@ builder.Services.AddIdentityCore<UniUser>()
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
+// Register task provider clients
+builder.Services.AddSingleton<ITaskProviderClient, MemoryTaskProviderClient>();
 
 // Configure OpenAPI with NSwag
 builder.Services.AddOpenApiDocument(config =>

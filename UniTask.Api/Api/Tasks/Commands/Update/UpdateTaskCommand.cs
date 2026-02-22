@@ -1,10 +1,11 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
+using UniTask.Api.Shared;
 using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.Update;
 
-public class UpdateTaskCommand : IRequest<TaskUpdatedEvent>
+public class UpdateTaskCommand : IRequest<TaskUpdatedEvent>, IProviderEvent
 {
     public int TaskId { get; set; }
     public required string Title { get; set; }
@@ -19,4 +20,6 @@ public class UpdateTaskCommand : IRequest<TaskUpdatedEvent>
     public string? AssignedTo { get; set; }
     public double? DurationHours { get; set; }
     public double? DurationRemainingHours { get; set; }
+    public ChangeOrigin Origin { get; set; } = ChangeOrigin.Internal;
+    public TaskProvider TaskProvider { get; set; } = TaskProvider.Internal;
 }
