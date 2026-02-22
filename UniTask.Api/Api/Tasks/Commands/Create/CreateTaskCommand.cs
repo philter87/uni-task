@@ -5,7 +5,7 @@ using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.Create;
 
-public class CreateTaskCommand : IRequest<TaskCreatedEvent>
+public class CreateTaskCommand : IRequest<TaskCreatedEvent>, IProviderEvent
 {
     public required string Title { get; set; }
     public string? Description { get; set; }
@@ -22,4 +22,6 @@ public class CreateTaskCommand : IRequest<TaskCreatedEvent>
     public string? ExternalId { get; set; }
     public double? DurationHours { get; set; }
     public double? DurationRemainingHours { get; set; }
+    public ChangeOrigin Origin { get; set; } = ChangeOrigin.Internal;
+    public TaskProvider TaskProvider { get; set; } = TaskProvider.Internal;
 }
