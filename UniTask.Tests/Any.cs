@@ -526,6 +526,29 @@ public static class Any
     }
 
     /// <summary>
+    /// Creates a TaskProviderSecret with random values.
+    /// </summary>
+    /// <param name="provider">Optional provider (randomly selected if not provided)</param>
+    /// <param name="key">Optional key (randomly generated if not provided)</param>
+    /// <param name="value">Optional value (randomly generated if not provided)</param>
+    /// <param name="organisationId">Organisation ID (default: 0, must be set before saving)</param>
+    /// <returns>A TaskProviderSecret with random data</returns>
+    public static TaskProviderSecret TaskProviderSecret(
+        TaskProvider? provider = null,
+        string? key = null,
+        string? value = null,
+        int organisationId = 0)
+    {
+        return new TaskProviderSecret
+        {
+            Provider = provider ?? Enum<TaskProvider>(),
+            Key = key ?? $"Key{String(6)}",
+            Value = value ?? String(20),
+            OrganisationId = organisationId
+        };
+    }
+
+    /// <summary>
     /// Creates a TaskItemDto with random values.
     /// </summary>
     /// <param name="id">Optional ID (default: 0)</param>

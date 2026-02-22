@@ -32,6 +32,7 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
     public DbSet<Attachment> Attachments { get; set; } = null!;
     public DbSet<PullRequest> PullRequests { get; set; } = null!;
     public DbSet<MergeStatus> MergeStatuses { get; set; } = null!;
+    public DbSet<TaskProviderSecret> TaskProviderSecrets { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -72,6 +73,20 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
+        });
+
+        // TaskProviderSecret configuration
+        modelBuilder.Entity<TaskProviderSecret>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Provider).HasConversion<string>();
+
+            entity.HasOne(e => e.Organisation)
+                .WithMany(e => e.Secrets)
+                .HasForeignKey(e => e.OrganisationId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // OrganisationMember configuration

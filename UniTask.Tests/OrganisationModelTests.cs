@@ -161,6 +161,55 @@ public class OrganisationModelTests : IDisposable
         Assert.NotNull(savedProject);
         Assert.Null(savedProject.OrganisationId);
     }
+
+    [Fact]
+    public async Task Organisation_CanHaveTaskProviderSecrets()
+    {
+        // Arrange
+        var organisation = Any.Organisation();
+        _context.Organisations.Add(organisation);
+        await _context.SaveChangesAsync();
+
+        var secret1 = Any.TaskProviderSecret(provider: TaskProvider.GitHub, key: "AccessToken", organisationId: organisation.Id);
+        var secret2 = Any.TaskProviderSecret(provider: TaskProvider.AzureDevOps, key: "ClientId", organisationId: organisation.Id);
+        var secret3 = Any.TaskProviderSecret(provider: TaskProvider.AzureDevOps, key: "ClientSecret", organisationId: organisation.Id);
+
+        // Act
+        _context.TaskProviderSecrets.AddRange(secret1, secret2, secret3);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        var saved = await _context.Organisations
+            .Include(o => o.Secrets)
+            .FirstOrDefaultAsync(o => o.Id == organisation.Id);
+
+        Assert.NotNull(saved);
+        Assert.Equal(3, saved.Secrets.Count);
+        Assert.Contains(saved.Secrets, s => s.Provider == TaskProvider.GitHub && s.Key == "AccessToken");
+        Assert.Contains(saved.Secrets, s => s.Provider == TaskProvider.AzureDevOps && s.Key == "ClientId");
+        Assert.Contains(saved.Secrets, s => s.Provider == TaskProvider.AzureDevOps && s.Key == "ClientSecret");
+    }
+
+    [Fact]
+    public async Task DeletingOrganisation_CascadeDeletesTaskProviderSecrets()
+    {
+        // Arrange
+        var organisation = Any.Organisation();
+        _context.Organisations.Add(organisation);
+        await _context.SaveChangesAsync();
+
+        var secret = Any.TaskProviderSecret(provider: TaskProvider.GitHub, key: "AccessToken", organisationId: organisation.Id);
+        _context.TaskProviderSecrets.Add(secret);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _context.Organisations.Remove(organisation);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        var savedSecret = await _context.TaskProviderSecrets.FirstOrDefaultAsync(s => s.Id == secret.Id);
+        Assert.Null(savedSecret);
+    }
 }
 
 public class UserModelTests : IDisposable
