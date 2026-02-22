@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using UniTask.Api.Projects.Commands.Create;
+using UniTask.Api.Projects.Events;
 using UniTask.Api.Projects.Queries.GetProject;
 using UniTask.Api.Projects.Queries.GetProjects;
 

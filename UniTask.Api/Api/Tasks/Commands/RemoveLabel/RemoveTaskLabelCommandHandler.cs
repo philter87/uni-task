@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Shared;
+using UniTask.Api.Tasks.Events;
 
 namespace UniTask.Api.Tasks.Commands.RemoveLabel;
 

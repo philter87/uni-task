@@ -1,4 +1,5 @@
 using UniTask.Api.Projects;
+using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
 using UniTask.Api.Users;
 
@@ -539,7 +540,7 @@ public static class Any
     /// <param name="updatedAt">Optional update date (randomly generated if not provided)</param>
     /// <param name="dueDate">Optional due date</param>
     /// <param name="assignedTo">Optional assignee</param>
-    /// <param name="source">Optional source</param>
+    /// <param name="provider">Optional provider</param>
     /// <param name="externalId">Optional external ID</param>
     /// <param name="durationHours">Optional duration in hours</param>
     /// <param name="durationRemainingHours">Optional remaining time in hours</param>
@@ -558,7 +559,7 @@ public static class Any
         DateTime? dueDate = null,
         string? assignedTo = null,
         int? assignedToUserId = null,
-        string? source = null,
+        TaskProvider? provider = null,
         string? externalId = null,
         double? durationHours = null,
         double? durationRemainingHours = null)
@@ -579,7 +580,7 @@ public static class Any
             DueDate = dueDate,
             AssignedTo = assignedTo,
             AssignedToUserId = assignedToUserId,
-            Source = source,
+            Provider = provider,
             ExternalId = externalId,
             DurationHours = durationHours,
             DurationRemainingHours = durationRemainingHours

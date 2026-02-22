@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Tasks.Commands.ChangeStatus;
+namespace UniTask.Api.Tasks.Events;
 
 public class TaskStatusChangedEventHandler : INotificationHandler<TaskStatusChangedEvent>
 {

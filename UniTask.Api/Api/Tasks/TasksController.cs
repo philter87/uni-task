@@ -8,6 +8,7 @@ using UniTask.Api.Tasks.Commands.Create;
 using UniTask.Api.Tasks.Commands.Delete;
 using UniTask.Api.Tasks.Commands.RemoveLabel;
 using UniTask.Api.Tasks.Commands.Update;
+using UniTask.Api.Tasks.Events;
 using UniTask.Api.Tasks.Queries.GetTask;
 using UniTask.Api.Tasks.Queries.GetTasks;
 

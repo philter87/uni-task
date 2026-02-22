@@ -12,6 +12,7 @@ public class Project
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public int? OrganisationId { get; set; }
+    public TaskProvider? Provider { get; set; }
 
     // Navigation properties
     public Organisation? Organisation { get; set; }

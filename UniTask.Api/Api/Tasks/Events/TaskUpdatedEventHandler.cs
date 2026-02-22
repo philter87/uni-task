@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Tasks.Commands.Update;
+namespace UniTask.Api.Tasks.Events;
 
 public class TaskUpdatedEventHandler : INotificationHandler<TaskUpdatedEvent>
 {

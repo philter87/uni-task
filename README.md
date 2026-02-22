@@ -67,11 +67,18 @@ UniTask.Api/
 └── Api/
     ├── Projects/          # Project feature
     │   ├── Commands/
-    │   │   └── Create/    # CreateProjectCommand, Handler, Event, EventHandler
+    │   │   └── Create/    # CreateProjectCommand, Handler
     │   ├── Queries/
     │   │   ├── GetProject/
     │   │   └── GetProjects/
-    │   ├── Project.cs     # Project entity model
+    │   ├── Models/        # DB entity models
+    │   │   ├── Project.cs
+    │   │   ├── Organisation.cs
+    │   │   ├── Board.cs
+    │   │   └── ...
+    │   ├── Events/        # Events and EventHandlers
+    │   │   ├── ProjectCreatedEvent.cs
+    │   │   └── ProjectCreatedEventHandler.cs
     │   ├── ProjectDto.cs  # Project DTO
     │   └── ProjectsController.cs
     │
@@ -82,13 +89,22 @@ UniTask.Api/
     │   │   └── AssignMember/
     │   ├── Queries/
     │   │   ├── GetTask/, GetTasks/
-    │   ├── TaskItem.cs    # TaskItem entity model
+    │   ├── Models/        # DB entity models
+    │   │   ├── TaskItem.cs
+    │   │   ├── Comment.cs
+    │   │   ├── Label.cs
+    │   │   └── ...
+    │   ├── Events/        # Events and EventHandlers
+    │   │   ├── TaskCreatedEvent.cs
+    │   │   ├── TaskCreatedEventHandler.cs
+    │   │   └── ...
     │   ├── TaskItemDto.cs # TaskItem DTO
     │   ├── TaskItemMapper.cs # Shared entity → DTO mapping
     │   └── TasksController.cs
     │
     └── Shared/            # Shared components across features
         ├── TaskDbContext.cs
+        ├── TaskProvider.cs  # TaskProvider enum
         └── [Status, TaskType, Label, Comment models/DTOs]
 ```
 
@@ -96,19 +112,22 @@ UniTask.Api/
 
 Each feature folder contains:
 
-- **Entity Model** (`*.cs`): The domain model representing the database entity
+- **Models/** (`Models/*.cs`): DB entity models - classes mapped to database tables
   - Example: `Project.cs`, `TaskItem.cs`
   
-- **DTO** (`*Dto.cs`): Data Transfer Object for API communication
+- **DTO** (`*Dto.cs`): Data Transfer Objects for API communication
   - Example: `ProjectDto.cs`, `TaskItemDto.cs`
   
 - **Controller** (`*Controller.cs`): API endpoints for the feature
   - Example: `ProjectsController.cs`, `TasksController.cs`
   
-- **CQRS Folders**: Sub-folders for commands, queries, and events
+- **Commands/** and **Queries/**: CQRS sub-folders (without events)
   - Example: `Projects/Commands/Create/` contains:
     - `CreateProjectCommand.cs` - The command
     - `CreateProjectCommandHandler.cs` - Command handler (injects `TaskDbContext`)
+
+- **Events/**: Events and EventHandlers for the feature
+  - Example: `Projects/Events/` contains:
     - `ProjectCreatedEvent.cs` - Event raised after creation
     - `ProjectCreatedEventHandler.cs` - Event handler (side effects / external integrations)
 

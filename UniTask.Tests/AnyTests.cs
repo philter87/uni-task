@@ -1,3 +1,4 @@
+using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
 using Xunit;
 
@@ -44,11 +45,11 @@ public class AnyTests
     public void Enum_ReturnsValidEnumValue()
     {
         // Act
-        var result = Any.Enum<TaskSource>();
+        var result = Any.Enum<TaskProvider>();
 
         // Assert
-        Assert.IsType<TaskSource>(result);
-        Assert.True(System.Enum.IsDefined(typeof(TaskSource), result));
+        Assert.IsType<TaskProvider>(result);
+        Assert.True(System.Enum.IsDefined(typeof(TaskProvider), result));
     }
 
     [Fact]

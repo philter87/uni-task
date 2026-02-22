@@ -1,5 +1,6 @@
 using UniTask.Api.Projects;
 using UniTask.Api.PullRequests;
+using UniTask.Api.Shared;
 using UniTask.Api.Users;
 
 namespace UniTask.Api.Tasks;
@@ -23,7 +24,7 @@ public class TaskItem
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public int? AssignedToUserId { get; set; }
-    public TaskSource? Source { get; set; }
+    public TaskProvider? Provider { get; set; }
     public string? ExternalId { get; set; }
     
     // New fields
@@ -45,11 +46,4 @@ public class TaskItem
     public ICollection<TaskItemRelation> RelationsTo { get; set; } = new List<TaskItemRelation>();
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
     public ICollection<PullRequest> PullRequests { get; set; } = new List<PullRequest>();
-}
-
-public enum TaskSource
-{
-    Local,
-    AzureDevOps,
-    GitHub
 }

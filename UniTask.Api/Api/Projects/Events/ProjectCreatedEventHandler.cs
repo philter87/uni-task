@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace UniTask.Api.Projects.Commands.Create;
+namespace UniTask.Api.Projects.Events;
 
 public class ProjectCreatedEventHandler : INotificationHandler<ProjectCreatedEvent>
 {

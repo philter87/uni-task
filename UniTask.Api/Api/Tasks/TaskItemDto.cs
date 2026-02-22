@@ -1,4 +1,5 @@
 using UniTask.Api.Projects;
+using UniTask.Api.Shared;
 using System.ComponentModel.DataAnnotations;
 
 namespace UniTask.Api.Tasks;
@@ -23,7 +24,7 @@ public class TaskItemDto
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
     public int? AssignedToUserId { get; set; }
-    public string? Source { get; set; }
+    public TaskProvider? Provider { get; set; }
     
     public double? DurationHours { get; set; }
     public double? DurationRemainingHours { get; set; }

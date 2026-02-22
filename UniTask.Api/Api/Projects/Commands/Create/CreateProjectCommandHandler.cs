@@ -1,4 +1,5 @@
 using MediatR;
+using UniTask.Api.Projects.Events;
 using UniTask.Api.Shared;
 
 namespace UniTask.Api.Projects.Commands.Create;

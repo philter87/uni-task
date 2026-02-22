@@ -242,7 +242,7 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(2000);
-            entity.Property(e => e.Source).HasConversion<string>();
+            entity.Property(e => e.Provider).HasConversion<string>();
             entity.Property(e => e.AssignedTo).HasMaxLength(100);
             entity.Property(e => e.ExternalId).HasMaxLength(100);
             
