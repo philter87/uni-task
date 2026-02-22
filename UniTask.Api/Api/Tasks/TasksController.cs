@@ -7,6 +7,7 @@ using UniTask.Api.Tasks.Commands.ChangeStatus;
 using UniTask.Api.Tasks.Commands.Create;
 using UniTask.Api.Tasks.Commands.Delete;
 using UniTask.Api.Tasks.Commands.RemoveLabel;
+using UniTask.Api.Tasks.Commands.SyncTasks;
 using UniTask.Api.Tasks.Commands.Update;
 using UniTask.Api.Tasks.Events;
 using UniTask.Api.Tasks.Queries.GetTask;
@@ -41,6 +42,13 @@ public class TasksController : ControllerBase
             return NotFound();
         }
         return Ok(task);
+    }
+
+    [HttpPost("sync")]
+    public async Task<ActionResult<IEnumerable<TaskItemDto>>> SyncTasks([FromBody] SyncTasksCommand command)
+    {
+        var tasks = await _mediator.Send(command);
+        return Ok(tasks);
     }
 
     [HttpPost]

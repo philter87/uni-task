@@ -34,6 +34,9 @@ public class MemoryTaskProviderClient : ITaskProviderClient
 
     public Task<IEnumerable<TaskItemDto>> GetTasks(GetTasksQuery getTasks)
     {
-        return Task.FromResult<IEnumerable<TaskItemDto>>(_tasks.Values);
+        var tasks = _tasks.Values.AsEnumerable();
+        if (getTasks.ProjectId.HasValue)
+            tasks = tasks.Where(t => t.ProjectId == getTasks.ProjectId.Value);
+        return Task.FromResult(tasks);
     }
 }
