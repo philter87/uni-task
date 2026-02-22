@@ -15,14 +15,7 @@ public class MemoryTaskProviderClient : ITaskProviderClient
 
     public Task CreateProject(ProjectCreatedEvent projectCreated)
     {
-        var dto = new ProjectDto
-        {
-            Id = projectCreated.ProjectId,
-            Name = projectCreated.Name,
-            Description = projectCreated.Description,
-            CreatedAt = projectCreated.CreatedAt,
-            UpdatedAt = projectCreated.CreatedAt
-        };
+        var dto = MemoryProviderMapper.MapToProjectDto(projectCreated);
         _projects[dto.Id] = dto;
         return Task.CompletedTask;
     }
@@ -34,13 +27,7 @@ public class MemoryTaskProviderClient : ITaskProviderClient
 
     public Task CreateTask(TaskCreatedEvent taskCreated)
     {
-        var dto = new TaskItemDto
-        {
-            Id = taskCreated.TaskId,
-            Title = taskCreated.Title,
-            CreatedAt = taskCreated.CreatedAt,
-            UpdatedAt = taskCreated.CreatedAt
-        };
+        var dto = MemoryProviderMapper.MapToTaskItemDto(taskCreated);
         _tasks[dto.Id] = dto;
         return Task.CompletedTask;
     }
