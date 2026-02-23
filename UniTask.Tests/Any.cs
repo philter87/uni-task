@@ -526,6 +526,29 @@ public static class Any
     }
 
     /// <summary>
+    /// Creates a TaskProviderAuth with random values.
+    /// </summary>
+    /// <param name="authenticationType">Optional authentication type (randomly selected if not provided)</param>
+    /// <param name="authTypeId">Optional auth type ID / client ID (randomly generated if not provided)</param>
+    /// <param name="secretValue">Optional secret value (randomly generated if not provided)</param>
+    /// <param name="organisationId">Organisation ID (default: 0, must be set before saving)</param>
+    /// <returns>A TaskProviderAuth with random data</returns>
+    public static TaskProviderAuth TaskProviderAuth(
+        AuthenticationType? authenticationType = null,
+        string? authTypeId = null,
+        string? secretValue = null,
+        int organisationId = 0)
+    {
+        return new TaskProviderAuth
+        {
+            AuthenticationType = authenticationType ?? Enum<AuthenticationType>(),
+            AuthTypeId = authTypeId ?? String(20),
+            SecretValue = secretValue ?? String(40),
+            OrganisationId = organisationId
+        };
+    }
+
+    /// <summary>
     /// Creates a TaskItemDto with random values.
     /// </summary>
     /// <param name="id">Optional ID (default: 0)</param>

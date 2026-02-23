@@ -12,4 +12,5 @@ public class Organisation
     // Navigation properties
     public ICollection<Project> Projects { get; set; } = new List<Project>();
     public ICollection<OrganisationMember> Members { get; set; } = new List<OrganisationMember>();
+    public ICollection<TaskProviderAuth> Auths { get; set; } = new List<TaskProviderAuth>();
 }

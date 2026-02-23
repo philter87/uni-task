@@ -161,6 +161,55 @@ public class OrganisationModelTests : IDisposable
         Assert.NotNull(savedProject);
         Assert.Null(savedProject.OrganisationId);
     }
+
+    [Fact]
+    public async Task Organisation_CanHaveTaskProviderAuths()
+    {
+        // Arrange
+        var organisation = Any.Organisation();
+        _context.Organisations.Add(organisation);
+        await _context.SaveChangesAsync();
+
+        var auth1 = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123", organisationId: organisation.Id);
+        var auth2 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id", organisationId: organisation.Id);
+        var auth3 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id-2", organisationId: organisation.Id);
+
+        // Act
+        _context.TaskProviderAuths.AddRange(auth1, auth2, auth3);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        var saved = await _context.Organisations
+            .Include(o => o.Auths)
+            .FirstOrDefaultAsync(o => o.Id == organisation.Id);
+
+        Assert.NotNull(saved);
+        Assert.Equal(3, saved.Auths.Count);
+        Assert.Contains(saved.Auths, a => a.AuthenticationType == AuthenticationType.GitHubApp && a.AuthTypeId == "gh-app-id-123");
+        Assert.Contains(saved.Auths, a => a.AuthenticationType == AuthenticationType.AzureAppRegistration && a.AuthTypeId == "azure-client-id");
+        Assert.Contains(saved.Auths, a => a.AuthenticationType == AuthenticationType.AzureAppRegistration && a.AuthTypeId == "azure-client-id-2");
+    }
+
+    [Fact]
+    public async Task DeletingOrganisation_CascadeDeletesTaskProviderAuths()
+    {
+        // Arrange
+        var organisation = Any.Organisation();
+        _context.Organisations.Add(organisation);
+        await _context.SaveChangesAsync();
+
+        var auth = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123", organisationId: organisation.Id);
+        _context.TaskProviderAuths.Add(auth);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _context.Organisations.Remove(organisation);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        var savedAuth = await _context.TaskProviderAuths.FirstOrDefaultAsync(a => a.Id == auth.Id);
+        Assert.Null(savedAuth);
+    }
 }
 
 public class UserModelTests : IDisposable
