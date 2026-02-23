@@ -163,43 +163,43 @@ public class OrganisationModelTests : IDisposable
     }
 
     [Fact]
-    public async Task Organisation_CanHaveTaskProviderSecrets()
+    public async Task Organisation_CanHaveTaskProviderAuths()
     {
         // Arrange
         var organisation = Any.Organisation();
         _context.Organisations.Add(organisation);
         await _context.SaveChangesAsync();
 
-        var secret1 = Any.TaskProviderSecret(provider: TaskProvider.GitHub, key: "AccessToken", organisationId: organisation.Id);
-        var secret2 = Any.TaskProviderSecret(provider: TaskProvider.AzureDevOps, key: "ClientId", organisationId: organisation.Id);
-        var secret3 = Any.TaskProviderSecret(provider: TaskProvider.AzureDevOps, key: "ClientSecret", organisationId: organisation.Id);
+        var auth1 = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123", organisationId: organisation.Id);
+        var auth2 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id", organisationId: organisation.Id);
+        var auth3 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id-2", organisationId: organisation.Id);
 
         // Act
-        _context.TaskProviderSecrets.AddRange(secret1, secret2, secret3);
+        _context.TaskProviderAuths.AddRange(auth1, auth2, auth3);
         await _context.SaveChangesAsync();
 
         // Assert
         var saved = await _context.Organisations
-            .Include(o => o.Secrets)
+            .Include(o => o.Auths)
             .FirstOrDefaultAsync(o => o.Id == organisation.Id);
 
         Assert.NotNull(saved);
-        Assert.Equal(3, saved.Secrets.Count);
-        Assert.Contains(saved.Secrets, s => s.Provider == TaskProvider.GitHub && s.Key == "AccessToken");
-        Assert.Contains(saved.Secrets, s => s.Provider == TaskProvider.AzureDevOps && s.Key == "ClientId");
-        Assert.Contains(saved.Secrets, s => s.Provider == TaskProvider.AzureDevOps && s.Key == "ClientSecret");
+        Assert.Equal(3, saved.Auths.Count);
+        Assert.Contains(saved.Auths, a => a.AuthenticationType == AuthenticationType.GitHubApp && a.AuthTypeId == "gh-app-id-123");
+        Assert.Contains(saved.Auths, a => a.AuthenticationType == AuthenticationType.AzureAppRegistration && a.AuthTypeId == "azure-client-id");
+        Assert.Contains(saved.Auths, a => a.AuthenticationType == AuthenticationType.AzureAppRegistration && a.AuthTypeId == "azure-client-id-2");
     }
 
     [Fact]
-    public async Task DeletingOrganisation_CascadeDeletesTaskProviderSecrets()
+    public async Task DeletingOrganisation_CascadeDeletesTaskProviderAuths()
     {
         // Arrange
         var organisation = Any.Organisation();
         _context.Organisations.Add(organisation);
         await _context.SaveChangesAsync();
 
-        var secret = Any.TaskProviderSecret(provider: TaskProvider.GitHub, key: "AccessToken", organisationId: organisation.Id);
-        _context.TaskProviderSecrets.Add(secret);
+        var auth = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123", organisationId: organisation.Id);
+        _context.TaskProviderAuths.Add(auth);
         await _context.SaveChangesAsync();
 
         // Act
@@ -207,8 +207,8 @@ public class OrganisationModelTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedSecret = await _context.TaskProviderSecrets.FirstOrDefaultAsync(s => s.Id == secret.Id);
-        Assert.Null(savedSecret);
+        var savedAuth = await _context.TaskProviderAuths.FirstOrDefaultAsync(a => a.Id == auth.Id);
+        Assert.Null(savedAuth);
     }
 }
 

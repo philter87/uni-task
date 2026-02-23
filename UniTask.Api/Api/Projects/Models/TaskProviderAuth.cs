@@ -2,13 +2,13 @@ using UniTask.Api.Shared;
 
 namespace UniTask.Api.Projects;
 
-public class TaskProviderSecret
+public class TaskProviderAuth
 {
     public int Id { get; set; }
     public int OrganisationId { get; set; }
-    public TaskProvider Provider { get; set; }
-    public required string Key { get; set; }
-    public required string Value { get; set; }
+    public AuthenticationType AuthenticationType { get; set; }
+    public required string AuthTypeId { get; set; }
+    public required string SecretValue { get; set; }
 
     // Navigation properties
     public Organisation Organisation { get; set; } = null!;

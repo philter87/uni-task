@@ -526,24 +526,24 @@ public static class Any
     }
 
     /// <summary>
-    /// Creates a TaskProviderSecret with random values.
+    /// Creates a TaskProviderAuth with random values.
     /// </summary>
-    /// <param name="provider">Optional provider (randomly selected if not provided)</param>
-    /// <param name="key">Optional key (randomly generated if not provided)</param>
-    /// <param name="value">Optional value (randomly generated if not provided)</param>
+    /// <param name="authenticationType">Optional authentication type (randomly selected if not provided)</param>
+    /// <param name="authTypeId">Optional auth type ID / client ID (randomly generated if not provided)</param>
+    /// <param name="secretValue">Optional secret value (randomly generated if not provided)</param>
     /// <param name="organisationId">Organisation ID (default: 0, must be set before saving)</param>
-    /// <returns>A TaskProviderSecret with random data</returns>
-    public static TaskProviderSecret TaskProviderSecret(
-        TaskProvider? provider = null,
-        string? key = null,
-        string? value = null,
+    /// <returns>A TaskProviderAuth with random data</returns>
+    public static TaskProviderAuth TaskProviderAuth(
+        AuthenticationType? authenticationType = null,
+        string? authTypeId = null,
+        string? secretValue = null,
         int organisationId = 0)
     {
-        return new TaskProviderSecret
+        return new TaskProviderAuth
         {
-            Provider = provider ?? Enum<TaskProvider>(),
-            Key = key ?? $"Key{String(6)}",
-            Value = value ?? String(20),
+            AuthenticationType = authenticationType ?? Enum<AuthenticationType>(),
+            AuthTypeId = authTypeId ?? String(20),
+            SecretValue = secretValue ?? String(40),
             OrganisationId = organisationId
         };
     }
