@@ -168,7 +168,7 @@ public class AnyTests
         Assert.NotEmpty(result.InternalName);
         Assert.NotNull(result.FileType);
         Assert.NotEmpty(result.FileType);
-        Assert.Equal(Guid.Empty, result.TaskItemId);
+        Assert.NotEqual(Guid.Empty, result.TaskItemId);
     }
 
     [Fact]

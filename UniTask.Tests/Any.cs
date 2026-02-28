@@ -167,7 +167,7 @@ public static class Any
     public static Board Board(
         string? name = null,
         string? goal = null,
-        Guid projectId = default,
+        Guid? projectId = null,
         DateTime? startDate = null,
         DateTime? endDate = null)
     {
@@ -176,7 +176,7 @@ public static class Any
         {
             Name = name ?? $"Board {String(5)}",
             Goal = goal ?? String(25),
-            ProjectId = projectId,
+            ProjectId = projectId ?? Guid.NewGuid(),
             StartDate = start,
             EndDate = endDate ?? start.AddDays(Random.Shared.Next(7, 21))
         };
@@ -269,7 +269,7 @@ public static class Any
         string? internalName = null,
         string? fileType = null,
         string? externalId = null,
-        Guid taskItemId = default)
+        Guid? taskItemId = null)
     {
         return new Attachment
         {
@@ -278,7 +278,7 @@ public static class Any
             InternalName = internalName ?? $"{String(32)}.pdf",
             FileType = fileType ?? "application/pdf",
             ExternalId = externalId,
-            TaskItemId = taskItemId
+            TaskItemId = taskItemId ?? Guid.NewGuid()
         };
     }
 
@@ -374,7 +374,7 @@ public static class Any
         Guid id = default,
         string? name = null,
         string? goal = null,
-        Guid projectId = default,
+        Guid? projectId = null,
         DateTime? startDate = null,
         DateTime? endDate = null)
     {
@@ -384,7 +384,7 @@ public static class Any
             Id = id,
             Name = name ?? $"Board {String(5)}",
             Goal = goal ?? String(25),
-            ProjectId = projectId,
+            ProjectId = projectId ?? Guid.NewGuid(),
             StartDate = start,
             EndDate = endDate ?? start.AddDays(Random.Shared.Next(7, 21))
         };
@@ -402,7 +402,7 @@ public static class Any
     /// <returns>A CommentDto with random data</returns>
     public static CommentDto CommentDto(
         Guid id = default,
-        Guid taskItemId = default,
+        Guid? taskItemId = null,
         string? content = null,
         Guid? userId = null,
         DateTime? createdAt = null,
@@ -411,7 +411,7 @@ public static class Any
         return new CommentDto
         {
             Id = id,
-            TaskItemId = taskItemId,
+            TaskItemId = taskItemId ?? Guid.NewGuid(),
             Content = content ?? String(50),
             UserId = userId,
             CreatedAt = createdAt ?? DateTime(),
