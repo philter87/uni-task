@@ -26,7 +26,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProjectDto>> GetProject(int id)
+    public async Task<ActionResult<ProjectDto>> GetProject(Guid id)
     {
         var project = await _mediator.Send(new GetProjectQuery { Id = id });
         if (project == null)

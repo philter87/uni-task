@@ -7,13 +7,13 @@ namespace UniTask.Api.Tasks.Commands.Update;
 
 public class UpdateTaskCommand : IRequest<TaskUpdatedEvent>, IProviderEvent
 {
-    public int TaskId { get; set; }
+    public Guid TaskId { get; set; }
     public required string Title { get; set; }
     public string? Description { get; set; }
-    public int? ProjectId { get; set; }
-    public int? TaskTypeId { get; set; }
-    public int? StatusId { get; set; }
-    public int? BoardId { get; set; }
+    public Guid? ProjectId { get; set; }
+    public Guid? TaskTypeId { get; set; }
+    public Guid? StatusId { get; set; }
+    public Guid? BoardId { get; set; }
     [Range(0, 10)]
     public double Priority { get; set; } = 5.0;
     public DateTime? DueDate { get; set; }

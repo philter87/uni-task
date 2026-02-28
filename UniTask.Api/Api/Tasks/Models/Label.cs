@@ -2,11 +2,11 @@ namespace UniTask.Api.Tasks;
 
 public class Label
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Name { get; set; }
 
     // Foreign Key
-    public int? TypeId { get; set; }
+    public Guid? TypeId { get; set; }
 
     // Navigation properties
     public LabelType? LabelType { get; set; }

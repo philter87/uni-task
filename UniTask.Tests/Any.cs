@@ -116,10 +116,10 @@ public static class Any
         string? title = null,
         string? description = null,
         double? priority = null,
-        int? projectId = null,
-        int? taskTypeId = null,
-        int? statusId = null,
-        int? boardId = null)
+        Guid? projectId = null,
+        Guid? taskTypeId = null,
+        Guid? statusId = null,
+        Guid? boardId = null)
     {
         return new TaskItem
         {
@@ -145,7 +145,7 @@ public static class Any
     public static TaskType TaskType(
         string? name = null,
         string? description = null,
-        int? projectId = null)
+        Guid? projectId = null)
     {
         return new TaskType
         {
@@ -167,7 +167,7 @@ public static class Any
     public static Board Board(
         string? name = null,
         string? goal = null,
-        int projectId = 1,
+        Guid? projectId = null,
         DateTime? startDate = null,
         DateTime? endDate = null)
     {
@@ -176,7 +176,7 @@ public static class Any
         {
             Name = name ?? $"Board {String(5)}",
             Goal = goal ?? String(25),
-            ProjectId = projectId,
+            ProjectId = projectId ?? Guid.NewGuid(),
             StartDate = start,
             EndDate = endDate ?? start.AddDays(Random.Shared.Next(7, 21))
         };
@@ -194,7 +194,7 @@ public static class Any
         string? name = null,
         string? description = null,
         int? order = null,
-        int? taskTypeId = null)
+        Guid? taskTypeId = null)
     {
         return new Status
         {
@@ -213,7 +213,7 @@ public static class Any
     /// <returns>A Label with random data</returns>
     public static Label Label(
         string? name = null,
-        int? typeId = null)
+        Guid? typeId = null)
     {
         return new Label
         {
@@ -269,7 +269,7 @@ public static class Any
         string? internalName = null,
         string? fileType = null,
         string? externalId = null,
-        int taskItemId = 1)
+        Guid? taskItemId = null)
     {
         return new Attachment
         {
@@ -278,7 +278,7 @@ public static class Any
             InternalName = internalName ?? $"{String(32)}.pdf",
             FileType = fileType ?? "application/pdf",
             ExternalId = externalId,
-            TaskItemId = taskItemId
+            TaskItemId = taskItemId ?? Guid.NewGuid()
         };
     }
 
@@ -294,7 +294,7 @@ public static class Any
     /// <param name="updatedAt">Optional update date (randomly generated if not provided)</param>
     /// <returns>A ProjectDto with random data</returns>
     public static ProjectDto ProjectDto(
-        int id = 0,
+        Guid id = default,
         string? name = null,
         string? description = null,
         DateTime? createdAt = null,
@@ -321,11 +321,11 @@ public static class Any
     /// <param name="taskTypeId">Optional task type ID</param>
     /// <returns>A StatusDto with random data</returns>
     public static StatusDto StatusDto(
-        int id = 0,
+        Guid id = default,
         string? name = null,
         string? description = null,
         int? order = null,
-        int? taskTypeId = null)
+        Guid? taskTypeId = null)
     {
         return new StatusDto
         {
@@ -346,10 +346,10 @@ public static class Any
     /// <param name="projectId">Optional project ID</param>
     /// <returns>A TaskTypeDto with random data</returns>
     public static TaskTypeDto TaskTypeDto(
-        int id = 0,
+        Guid id = default,
         string? name = null,
         string? description = null,
-        int? projectId = null)
+        Guid? projectId = null)
     {
         return new TaskTypeDto
         {
@@ -371,10 +371,10 @@ public static class Any
     /// <param name="endDate">Optional end date (randomly generated if not provided)</param>
     /// <returns>A BoardDto with random data</returns>
     public static BoardDto BoardDto(
-        int id = 0,
+        Guid id = default,
         string? name = null,
         string? goal = null,
-        int projectId = 1,
+        Guid? projectId = null,
         DateTime? startDate = null,
         DateTime? endDate = null)
     {
@@ -384,7 +384,7 @@ public static class Any
             Id = id,
             Name = name ?? $"Board {String(5)}",
             Goal = goal ?? String(25),
-            ProjectId = projectId,
+            ProjectId = projectId ?? Guid.NewGuid(),
             StartDate = start,
             EndDate = endDate ?? start.AddDays(Random.Shared.Next(7, 21))
         };
@@ -401,17 +401,17 @@ public static class Any
     /// <param name="updatedAt">Optional update date</param>
     /// <returns>A CommentDto with random data</returns>
     public static CommentDto CommentDto(
-        int id = 0,
-        int taskItemId = 1,
+        Guid id = default,
+        Guid? taskItemId = null,
         string? content = null,
-        int? userId = null,
+        Guid? userId = null,
         DateTime? createdAt = null,
         DateTime? updatedAt = null)
     {
         return new CommentDto
         {
             Id = id,
-            TaskItemId = taskItemId,
+            TaskItemId = taskItemId ?? Guid.NewGuid(),
             Content = content ?? String(50),
             UserId = userId,
             CreatedAt = createdAt ?? DateTime(),
@@ -427,9 +427,9 @@ public static class Any
     /// <param name="typeId">Optional type ID</param>
     /// <returns>A LabelDto with random data</returns>
     public static LabelDto LabelDto(
-        int id = 0,
+        Guid id = default,
         string? name = null,
-        int? typeId = null)
+        Guid? typeId = null)
     {
         return new LabelDto
         {
@@ -446,7 +446,7 @@ public static class Any
     /// <param name="name">Optional name (randomly generated if not provided)</param>
     /// <returns>A TagDto with random data</returns>
     public static TagDto TagDto(
-        int id = 0,
+        Guid id = default,
         string? name = null)
     {
         return new TagDto
@@ -467,7 +467,7 @@ public static class Any
     /// <param name="externalId">Optional external ID</param>
     /// <returns>An AttachmentDto with random data</returns>
     public static AttachmentDto AttachmentDto(
-        int id = 0,
+        Guid id = default,
         string? name = null,
         string? url = null,
         string? internalName = null,
@@ -537,7 +537,7 @@ public static class Any
         AuthenticationType? authenticationType = null,
         string? authTypeId = null,
         string? secretValue = null,
-        int organisationId = 0)
+        Guid organisationId = default)
     {
         return new TaskProviderAuth
         {
@@ -569,19 +569,19 @@ public static class Any
     /// <param name="durationRemainingHours">Optional remaining time in hours</param>
     /// <returns>A TaskItemDto with random data</returns>
     public static TaskItemDto TaskItemDto(
-        int id = 0,
+        Guid id = default,
         string? title = null,
         string? description = null,
         double? priority = null,
-        int? projectId = null,
-        int? taskTypeId = null,
-        int? statusId = null,
-        int? boardId = null,
+        Guid? projectId = null,
+        Guid? taskTypeId = null,
+        Guid? statusId = null,
+        Guid? boardId = null,
         DateTime? createdAt = null,
         DateTime? updatedAt = null,
         DateTime? dueDate = null,
         string? assignedTo = null,
-        int? assignedToUserId = null,
+        Guid? assignedToUserId = null,
         TaskProvider? provider = null,
         string? externalId = null,
         double? durationHours = null,

@@ -35,7 +35,7 @@ public class SyncTasksCommandHandlerTests : IDisposable
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
 
-        var providerTask = new TaskItemDto { Id = 1, Title = "Provider Task", ExternalId = "ext-1", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var providerTask = new TaskItemDto { Id = Guid.NewGuid(), Title = "Provider Task", ExternalId = "ext-1", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
         var provider = new StubTaskProviderClient(new[] { providerTask });
         var handler = new SyncTasksCommandHandler(_context, provider);
 
@@ -64,7 +64,7 @@ public class SyncTasksCommandHandlerTests : IDisposable
         _context.Tasks.Add(existing);
         await _context.SaveChangesAsync();
 
-        var updatedTask = new TaskItemDto { Id = 0, Title = "New Title", ExternalId = "ext-42", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var updatedTask = new TaskItemDto { Id = default, Title = "New Title", ExternalId = "ext-42", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
         var provider = new StubTaskProviderClient(new[] { updatedTask });
         var handler = new SyncTasksCommandHandler(_context, provider);
 
@@ -84,7 +84,7 @@ public class SyncTasksCommandHandlerTests : IDisposable
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
 
-        var providerTask = new TaskItemDto { Id = 0, Title = "Brand New Task", ExternalId = "ext-99", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var providerTask = new TaskItemDto { Id = default, Title = "Brand New Task", ExternalId = "ext-99", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
         var provider = new StubTaskProviderClient(new[] { providerTask });
         var handler = new SyncTasksCommandHandler(_context, provider);
 

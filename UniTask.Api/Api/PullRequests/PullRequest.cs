@@ -5,7 +5,7 @@ namespace UniTask.Api.PullRequests;
 
 public class PullRequest
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
@@ -18,10 +18,10 @@ public class PullRequest
     public string? TargetBranch { get; set; }
     
     // Foreign Keys
-    public int? MergeStatusId { get; set; }
-    public int TaskItemId { get; set; }
-    public int? CreatedByUserId { get; set; }
-    public int? UpdatedByUserId { get; set; }
+    public Guid? MergeStatusId { get; set; }
+    public Guid TaskItemId { get; set; }
+    public Guid? CreatedByUserId { get; set; }
+    public Guid? UpdatedByUserId { get; set; }
     
     // Navigation properties
     public MergeStatus? MergeStatus { get; set; }

@@ -6,16 +6,16 @@ namespace UniTask.Api.Tasks;
 
 public class TaskItemDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string? ExternalId { get; set; }
     public required string Title { get; set; }
     public string? Description { get; set; }
     
-    public int? ProjectId { get; set; }
-    public int? TaskTypeId { get; set; }
-    public int? StatusId { get; set; }
-    public int? BoardId { get; set; }
-    public int? ParentId { get; set; }
+    public Guid? ProjectId { get; set; }
+    public Guid? TaskTypeId { get; set; }
+    public Guid? StatusId { get; set; }
+    public Guid? BoardId { get; set; }
+    public Guid? ParentId { get; set; }
     
     [Range(0, 10)]
     public double Priority { get; set; } = 5.0;
@@ -23,7 +23,7 @@ public class TaskItemDto
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
     public string? AssignedTo { get; set; }
-    public int? AssignedToUserId { get; set; }
+    public Guid? AssignedToUserId { get; set; }
     public TaskProvider? Provider { get; set; }
     
     public double? DurationHours { get; set; }

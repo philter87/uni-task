@@ -4,7 +4,7 @@ namespace UniTask.Api.Projects;
 
 public class Organisation
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public TaskProvider? Provider { get; set; }

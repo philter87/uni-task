@@ -2,7 +2,7 @@ namespace UniTask.Api.Tasks;
 
 public class LabelType
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Name { get; set; }
     public string? Color { get; set; }
 

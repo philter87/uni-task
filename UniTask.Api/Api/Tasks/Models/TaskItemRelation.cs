@@ -2,11 +2,11 @@ namespace UniTask.Api.Tasks;
 
 public class TaskItemRelation
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     // Foreign Keys
-    public int FromTaskId { get; set; }
-    public int ToTaskId { get; set; }
+    public Guid FromTaskId { get; set; }
+    public Guid ToTaskId { get; set; }
     
     // Relation types describing both sides
     public TaskRelationType FromRelationType { get; set; }

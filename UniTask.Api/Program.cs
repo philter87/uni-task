@@ -16,7 +16,7 @@ builder.Services.AddDbContext<TaskDbContext>(options =>
 
 // Configure Identity
 builder.Services.AddIdentityCore<UniUser>()
-    .AddRoles<IdentityRole<int>>()
+    .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<TaskDbContext>();
 
 // Register MediatR

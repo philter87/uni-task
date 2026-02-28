@@ -12,7 +12,7 @@ public class MemoryProviderMapperTests
     {
         var evt = new ProjectCreatedEvent
         {
-            ProjectId = Any.Int(),
+            ProjectId = Guid.NewGuid(),
             Name = Any.String(),
             Description = Any.String(),
             CreatedAt = Any.DateTime()
@@ -32,7 +32,7 @@ public class MemoryProviderMapperTests
     {
         var evt = new TaskCreatedEvent
         {
-            TaskId = Any.Int(),
+            TaskId = Guid.NewGuid(),
             Title = Any.String(),
             CreatedAt = Any.DateTime()
         };
