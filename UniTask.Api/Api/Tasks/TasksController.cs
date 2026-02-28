@@ -34,7 +34,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<TaskItemDto>> GetTask(int id)
+    public async Task<ActionResult<TaskItemDto>> GetTask(Guid id)
     {
         var task = await _mediator.Send(new GetTaskQuery { Id = id });
         if (task == null)
@@ -59,7 +59,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<TaskUpdatedEvent>> UpdateTask(int id, [FromBody] UpdateTaskCommand command)
+    public async Task<ActionResult<TaskUpdatedEvent>> UpdateTask(Guid id, [FromBody] UpdateTaskCommand command)
     {
         command.TaskId = id;
         try
@@ -74,7 +74,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<TaskDeletedEvent>> DeleteTask(int id)
+    public async Task<ActionResult<TaskDeletedEvent>> DeleteTask(Guid id)
     {
         try
         {
@@ -88,7 +88,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
-    public async Task<ActionResult<TaskStatusChangedEvent>> ChangeTaskStatus(int id, [FromBody] ChangeTaskStatusRequest request)
+    public async Task<ActionResult<TaskStatusChangedEvent>> ChangeTaskStatus(Guid id, [FromBody] ChangeTaskStatusRequest request)
     {
         try
         {
@@ -108,7 +108,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPatch("{id}/assign")]
-    public async Task<ActionResult<MemberAssignedToTaskEvent>> AssignMemberToTask(int id, [FromBody] AssignMemberRequest request)
+    public async Task<ActionResult<MemberAssignedToTaskEvent>> AssignMemberToTask(Guid id, [FromBody] AssignMemberRequest request)
     {
         try
         {
@@ -128,7 +128,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost("{id}/labels/{labelId}")]
-    public async Task<ActionResult<TaskLabelAddedEvent>> AddTaskLabel(int id, int labelId)
+    public async Task<ActionResult<TaskLabelAddedEvent>> AddTaskLabel(Guid id, Guid labelId)
     {
         try
         {
@@ -148,7 +148,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpDelete("{id}/labels/{labelId}")]
-    public async Task<ActionResult<TaskLabelRemovedEvent>> RemoveTaskLabel(int id, int labelId)
+    public async Task<ActionResult<TaskLabelRemovedEvent>> RemoveTaskLabel(Guid id, Guid labelId)
     {
         try
         {
@@ -170,7 +170,7 @@ public class TasksController : ControllerBase
 
 public class ChangeTaskStatusRequest
 {
-    public int StatusId { get; set; }
+    public Guid StatusId { get; set; }
 }
 
 public class AssignMemberRequest

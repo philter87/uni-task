@@ -76,10 +76,10 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task ChangeTaskStatus_ReturnsNotFound_WhenTaskDoesNotExist()
     {
         // Arrange
-        var changeStatusRequest = new { StatusId = 1 };
+        var changeStatusRequest = new { StatusId = Guid.NewGuid() };
 
         // Act
-        var response = await _client.PatchAsync("/api/tasks/999/status", 
+        var response = await _client.PatchAsync($"/api/tasks/{Guid.NewGuid()}/status", 
             JsonContent.Create(changeStatusRequest));
 
         // Assert
@@ -122,7 +122,7 @@ public class TaskCommandHandlerTests : IDisposable
         var assignMemberRequest = new { AssignedTo = Any.Email() };
 
         // Act
-        var response = await _client.PatchAsync("/api/tasks/999/assign", 
+        var response = await _client.PatchAsync($"/api/tasks/{Guid.NewGuid()}/assign", 
             JsonContent.Create(assignMemberRequest));
 
         // Assert
@@ -178,7 +178,7 @@ public class TaskCommandHandlerTests : IDisposable
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync("/api/tasks/999", updateCommand);
+        var response = await _client.PutAsJsonAsync($"/api/tasks/{Guid.NewGuid()}", updateCommand);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -199,7 +199,7 @@ public class TaskCommandHandlerTests : IDisposable
         Assert.NotNull(taskCreated);
 
         // Arrange - Create a label
-        int labelId;
+        Guid labelId;
         string labelName;
         using (var scope = _factory.Services.CreateScope())
         {
@@ -232,7 +232,7 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task AddTaskLabel_ReturnsNotFound_WhenTaskDoesNotExist()
     {
         // Arrange - Create a label
-        int labelId;
+        Guid labelId;
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
@@ -243,7 +243,7 @@ public class TaskCommandHandlerTests : IDisposable
         }
 
         // Act
-        var response = await _client.PostAsync($"/api/tasks/999/labels/{labelId}", null);
+        var response = await _client.PostAsync($"/api/tasks/{Guid.NewGuid()}/labels/{labelId}", null);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -264,7 +264,7 @@ public class TaskCommandHandlerTests : IDisposable
         Assert.NotNull(taskCreated);
 
         // Act
-        var response = await _client.PostAsync($"/api/tasks/{taskCreated.TaskId}/labels/999", null);
+        var response = await _client.PostAsync($"/api/tasks/{taskCreated.TaskId}/labels/{Guid.NewGuid()}", null);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -285,7 +285,7 @@ public class TaskCommandHandlerTests : IDisposable
         Assert.NotNull(taskCreated);
 
         // Arrange - Create and add a label to the task
-        int labelId;
+        Guid labelId;
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
@@ -327,7 +327,7 @@ public class TaskCommandHandlerTests : IDisposable
     public async Task RemoveTaskLabel_ReturnsNotFound_WhenTaskDoesNotExist()
     {
         // Act
-        var response = await _client.DeleteAsync("/api/tasks/999/labels/1");
+        var response = await _client.DeleteAsync($"/api/tasks/{Guid.NewGuid()}/labels/{Guid.NewGuid()}");
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -348,7 +348,7 @@ public class TaskCommandHandlerTests : IDisposable
         Assert.NotNull(taskCreated);
 
         // Arrange - Create a label
-        int labelId;
+        Guid labelId;
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();

@@ -104,15 +104,16 @@ public class AnyTests
     public void TaskItem_AllowsOverridingProperties()
     {
         // Act
+        var projectId = Guid.NewGuid();
         var result = Any.TaskItem(
             title: "Custom Title",
             priority: 9.5,
-            projectId: 42);
+            projectId: projectId);
 
         // Assert
         Assert.Equal("Custom Title", result.Title);
         Assert.Equal(9.5, result.Priority);
-        Assert.Equal(42, result.ProjectId);
+        Assert.Equal(projectId, result.ProjectId);
     }
 
     [Fact]
@@ -167,22 +168,23 @@ public class AnyTests
         Assert.NotEmpty(result.InternalName);
         Assert.NotNull(result.FileType);
         Assert.NotEmpty(result.FileType);
-        Assert.Equal(1, result.TaskItemId);
+        Assert.Equal(Guid.Empty, result.TaskItemId);
     }
 
     [Fact]
     public void Attachment_AllowsOverridingProperties()
     {
         // Act
+        var taskItemId = Guid.NewGuid();
         var result = Any.Attachment(
             name: "custom-file.txt",
             fileType: "text/plain",
-            taskItemId: 99);
+            taskItemId: taskItemId);
 
         // Assert
         Assert.Equal("custom-file.txt", result.Name);
         Assert.Equal("text/plain", result.FileType);
-        Assert.Equal(99, result.TaskItemId);
+        Assert.Equal(taskItemId, result.TaskItemId);
     }
 
     [Fact]

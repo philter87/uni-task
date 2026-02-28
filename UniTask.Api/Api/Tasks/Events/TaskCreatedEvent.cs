@@ -5,7 +5,7 @@ namespace UniTask.Api.Tasks.Events;
 
 public class TaskCreatedEvent : INotification, IProviderEvent
 {
-    public int TaskId { get; set; }
+    public Guid TaskId { get; set; }
     public required string Title { get; set; }
     public DateTime CreatedAt { get; set; }
     public ChangeOrigin Origin { get; set; } = ChangeOrigin.Internal;

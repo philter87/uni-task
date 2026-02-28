@@ -70,7 +70,7 @@ public class TasksControllerTests : IDisposable
         var taskCreated = await response.Content.ReadFromJsonAsync<TaskCreatedEvent>();
         Assert.NotNull(taskCreated);
         Assert.Equal("Test Task", taskCreated.Title);
-        Assert.True(taskCreated.TaskId > 0);
+        Assert.NotEqual(Guid.Empty, taskCreated.TaskId);
         Assert.True(taskCreated.CreatedAt > DateTime.MinValue);
     }
 
@@ -103,7 +103,7 @@ public class TasksControllerTests : IDisposable
     public async Task GetTask_ReturnsNotFound_WhenTaskDoesNotExist()
     {
         // Act
-        var response = await _client.GetAsync("/api/tasks/999");
+        var response = await _client.GetAsync($"/api/tasks/{Guid.NewGuid()}");
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

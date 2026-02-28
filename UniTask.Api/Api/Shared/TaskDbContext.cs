@@ -9,7 +9,7 @@ using UniTask.Api.Users;
 
 namespace UniTask.Api.Shared;
 
-public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<int>, int>
+public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<Guid>, Guid>
 {
     public TaskDbContext(DbContextOptions<TaskDbContext> options)
         : base(options)

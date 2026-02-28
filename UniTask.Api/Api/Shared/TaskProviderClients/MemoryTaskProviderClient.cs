@@ -10,8 +10,8 @@ namespace UniTask.Api.Shared.TaskProviderClients;
 
 public class MemoryTaskProviderClient : ITaskProviderClient
 {
-    private readonly ConcurrentDictionary<int, ProjectDto> _projects = new();
-    private readonly ConcurrentDictionary<int, TaskItemDto> _tasks = new();
+    private readonly ConcurrentDictionary<Guid, ProjectDto> _projects = new();
+    private readonly ConcurrentDictionary<Guid, TaskItemDto> _tasks = new();
 
     public Task CreateProject(ProjectCreatedEvent projectCreated)
     {

@@ -2,8 +2,8 @@ namespace UniTask.Api.Tasks;
 
 public class LabelDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Name { get; set; }
-    public int? TypeId { get; set; }
+    public Guid? TypeId { get; set; }
     public LabelTypeDto? LabelType { get; set; }
 }

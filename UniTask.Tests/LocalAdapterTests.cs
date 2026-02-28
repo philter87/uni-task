@@ -66,7 +66,7 @@ public class TaskHandlerTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.TaskId > 0);
+        Assert.NotEqual(Guid.Empty, result.TaskId);
         Assert.Equal("Test Task", result.Title);
         Assert.True(result.CreatedAt > DateTime.MinValue);
 
@@ -104,7 +104,7 @@ public class TaskHandlerTests : IDisposable
     {
         // Act
         var handler = new GetTaskQueryHandler(_context);
-        var result = await handler.Handle(new GetTaskQuery { Id = 999 }, CancellationToken.None);
+        var result = await handler.Handle(new GetTaskQuery { Id = Guid.NewGuid() }, CancellationToken.None);
 
         // Assert
         Assert.Null(result);
@@ -152,7 +152,7 @@ public class TaskHandlerTests : IDisposable
         // Arrange
         var command = new UpdateTaskCommand
         {
-            TaskId = 999,
+            TaskId = Guid.NewGuid(),
             Title = "Updated Title",
             Priority = 8.0
         };
@@ -192,7 +192,7 @@ public class TaskHandlerTests : IDisposable
         // Act & Assert
         var handler = new DeleteTaskCommandHandler(_context, _publisher);
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            handler.Handle(new DeleteTaskCommand { TaskId = 999 }, CancellationToken.None));
+            handler.Handle(new DeleteTaskCommand { TaskId = Guid.NewGuid() }, CancellationToken.None));
     }
 
     [Fact]

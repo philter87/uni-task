@@ -2,7 +2,7 @@ namespace UniTask.Api.Tasks;
 
 public class Attachment
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public required string Url { get; set; }
@@ -10,8 +10,8 @@ public class Attachment
     public required string FileType { get; set; }
     
     // Foreign Keys
-    public int TaskItemId { get; set; }
-    public int? UploadedById { get; set; }
+    public Guid TaskItemId { get; set; }
+    public Guid? UploadedById { get; set; }
     
     // Navigation properties
     public TaskItem TaskItem { get; set; } = null!;

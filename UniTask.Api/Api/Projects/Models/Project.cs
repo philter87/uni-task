@@ -5,13 +5,13 @@ namespace UniTask.Api.Projects;
 
 public class Project
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public int? OrganisationId { get; set; }
+    public Guid? OrganisationId { get; set; }
     public TaskProvider? Provider { get; set; }
 
     // Navigation properties

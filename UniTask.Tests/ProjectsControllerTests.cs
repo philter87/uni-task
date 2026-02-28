@@ -48,7 +48,7 @@ public class ProjectsControllerTests : IDisposable
         Assert.NotNull(projectCreated);
         Assert.Equal("Test Project", projectCreated.Name);
         Assert.Equal("Test project description", projectCreated.Description);
-        Assert.True(projectCreated.ProjectId > 0);
+        Assert.NotEqual(Guid.Empty, projectCreated.ProjectId);
         Assert.True(projectCreated.CreatedAt > DateTime.MinValue);
     }
 
@@ -70,6 +70,6 @@ public class ProjectsControllerTests : IDisposable
         Assert.NotNull(projectCreated);
         Assert.Equal("Minimal Project", projectCreated.Name);
         Assert.Null(projectCreated.Description);
-        Assert.True(projectCreated.ProjectId > 0);
+        Assert.NotEqual(Guid.Empty, projectCreated.ProjectId);
     }
 }

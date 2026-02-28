@@ -46,7 +46,7 @@ public class GitHubTaskProviderClient : ITaskProviderClient
 
         return issues?.Select(issue => new TaskItemDto
         {
-            Id = 0,
+            Id = default,
             ExternalId = issue.Number.ToString(),
             Title = issue.Title,
             Description = issue.Body,
