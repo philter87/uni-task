@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using UniTask.Api.Projects;
+using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
-using UniTask.Api.Users;
+using UniTask.Tests.Utls;
 using Xunit;
 
 namespace UniTask.Tests;

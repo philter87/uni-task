@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="UniTask.Api/UniTask.Api.csproj" />
   <Project Path="UniTask.Tests/UniTask.Tests.csproj" />
+  <Project Path="UniTask\UniTask.csproj" />
 </Solution>

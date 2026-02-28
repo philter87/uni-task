@@ -3,13 +3,13 @@ A unified TaskManager for Azure DevOps boards and GitHub issues
 
 ## Architecture
 
-This project uses **CQRS with MediatR** to provide a clean, maintainable, and extensible codebase.
+This project uses **CQRS with MediatR** and **Domain-Driven Design (DDD)** to provide a clean, maintainable, and extensible codebase.
 
-### 1. CQRS Pattern with MediatR
+### 1. CQRS + Domain-Driven Design
 
-The application uses **Command Query Responsibility Segregation (CQRS)** to separate read operations (queries) from write operations (commands). This is implemented using **MediatR**, a simple mediator implementation in .NET.
+The application uses **Command Query Responsibility Segregation (CQRS)** to separate read operations (queries) from write operations (commands). This is implemented using **MediatR**, a simple mediator implementation in .NET, combined with **Domain Events** pattern for loose coupling.
 
-#### Commands, Queries, and Events
+#### Commands, Queries, and Domain Events
 
 Every controller in the app should either create a **Command** or a **Query**:
 
@@ -19,22 +19,22 @@ Every controller in the app should either create a **Command** or a **Query**:
 - **Queries**: Retrieve data without modifying state:
   - `GetAllProjects`, `GetTaskById`, `GetTasksByStatus`
 
-- **Events**: Represent things that have already happened (past tense). They are published by CommandHandlers after successful operations, and handled by EventHandlers for side effects and external integrations:
-  - `ProjectCreated`, `TaskCreated`, `TaskStatusChanged`
+- **Domain Events**: Represent things that have already happened (past tense). They are stored in the entity's `DomainEvents` collection, published before `SaveChanges`, and handled by EventHandlers for side effects and external integrations:
+  - `ProjectCreatedEvent`, `TaskCreatedEvent`, `TaskStatusChangedEvent`
 
 #### Flow
 
 ```
-Controller → Command/Query → Handler → DbContext → Event (for commands)
-                                                        ↓
-                                                   EventHandler (external integrations)
+Controller → Command → Handler → Entity Factory (adds DomainEvents) → Publish DomainEvents → SaveChanges
+                                                                             ↓
+                                                                        EventHandler (external integrations)
 ```
 
 1. **Controllers** receive HTTP requests and dispatch Commands or Queries via MediatR
 2. **Handlers** process the Commands/Queries:
-   - **CommandHandlers** write to `TaskDbContext` directly and publish Events when operations succeed
+   - **CommandHandlers** call entity factory methods (e.g., `Project.Create()`), publish domain events using `_publisher.PublishAll(entity.DomainEvents)`, then save to `TaskDbContext`
    - **QueryHandlers** read from `TaskDbContext` directly and return DTOs
-3. **Events** are dispatched by MediatR and handled by **EventHandlers** for side effects (logging, notifications, external API calls)
+3. **Domain Events** are published by handlers before `SaveChangesAsync` and handled by **EventHandlers** for side effects (logging, notifications, external API calls)
 
 **Example: CreateProject Flow**
 
@@ -42,11 +42,20 @@ Controller → Command/Query → Handler → DbContext → Event (for commands)
 ProjectsController 
     ↓ sends CreateProjectCommand
 CreateProjectCommandHandler
+    ↓ calls Project.Create(command)
+Project (entity)
+    ↓ adds ProjectCreatedEvent to DomainEvents collection
+CreateProjectCommandHandler
+    ↓ publishes entity.DomainEvents via _publisher.PublishAll()
     ↓ saves to TaskDbContext
-    ↓ publishes ProjectCreatedEvent
 ProjectCreatedEventHandler
     ↓ performs additional actions (logging, notifications, external sync, etc.)
 ```
+
+**Key Pattern:**
+- Entities have `[NotMapped] public List<INotification> DomainEvents { get; private set; } = new();`
+- Static factory methods (e.g., `Project.Create(command)`) create the entity and add events to `DomainEvents`
+- Handlers publish events BEFORE `SaveChangesAsync` using `await _publisher.PublishAll(entity.DomainEvents, cancellationToken)`
 
 ### 2. External Integrations (GitHub, Azure DevOps)
 
@@ -133,7 +142,43 @@ Each feature folder contains:
 
 ## Testing with the Any Class
 
-This project uses the `Any` class in test projects to generate random test data, making tests more maintainable and less brittle.
+### Integration Testing Approach
+
+This project uses **integration tests** with `CustomWebApplicationFactory` to test the complete CQRS flow including MediatR, handlers, and database operations.
+
+**Pattern:**
+```csharp
+public class CreateProjectHandlerTests
+{
+    private readonly CustomWebApplicationFactory _factory = new();
+    private readonly IMediator _mediator;
+    private readonly TaskDbContext _dbContext;
+
+    public CreateProjectHandlerTests()
+    {
+        var scope = _factory.Services.CreateScope();
+        _mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        _dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    }
+    
+    [Fact]
+    public async Task Should_CreateProjectInDatabase_WhenCommandIsExecuted()
+    {
+        // Arrange
+        var command = Any.CreateProjectCommand();
+
+        // Act
+        await _mediator.Send(command);
+        
+        // Assert
+        Assert.Single(_dbContext.Projects);
+    }
+}
+```
+
+### Test Data Generation with Any
+
+This project uses the `Any` class to generate random test data, making tests more maintainable and less brittle.
 
 ### Why Use Any?
 
@@ -149,6 +194,10 @@ This project uses the `Any` class in test projects to generate random test data,
 var randomString = Any.String(10);        // Random string of length 10
 var randomInt = Any.Int(1, 100);          // Random integer between 1 and 100
 var randomEmail = Any.Email();            // Random email address
+
+// Create commands with random data
+var command = Any.CreateProjectCommand();
+var commandWithOverrides = Any.CreateProjectCommand(name: "Specific Name");
 
 // Create complex objects with random data
 var project = Any.Project();              // All fields randomized
@@ -167,11 +216,16 @@ var task = Any.TaskItem(
 - `Any.Enum<T>()` - Random enum value
 - `Any.DateTime(minDaysAgo, maxDaysAgo)` - Random DateTime
 
+**Commands:**
+- `Any.CreateProjectCommand(...)` - Random CreateProjectCommand with optional overrides
+
 **Entity Models:**
 - `Any.Project(...)` - Random Project with optional overrides
 - `Any.TaskItem(...)` - Random TaskItem with optional overrides
 - `Any.TaskType(...)` - Random TaskType with optional overrides
 - `Any.Status(...)` - Random Status with optional overrides
+
+**Important**: When adding new commands, always add a corresponding factory method to the `Any` class.
 
 We strongly encourage using the `Any` class in all test cases to keep tests clean, focused, and maintainable.
 

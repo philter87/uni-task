@@ -22,7 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UniTask.Api\UniTask.Api.csproj" />
+    <ProjectReference Include="..\UniTask\UniTask.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Api\Projects\Queries\" />
+    <Folder Include="Api\Tasks\Commands\" />
+    <Folder Include="HttpMocks\" />
   </ItemGroup>
 
 </Project>

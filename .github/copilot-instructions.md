@@ -2,21 +2,24 @@
 
 ## Architecture Overview
 
-UniTask uses **CQRS with MediatR** to create a unified task management API. Commands and queries interact directly with the database via `TaskDbContext`. External provider integrations (GitHub, Azure DevOps, etc.) belong in **EventHandlers**.
+UniTask uses **CQRS with MediatR** and **Domain-Driven Design (DDD)** to create a unified task management API. Commands modify state and trigger domain events stored on entities. External provider integrations (GitHub, Azure DevOps, etc.) belong in **EventHandlers**.
 
-### CQRS Flow
+### CQRS + DDD Flow
 ```
-Controller → Command/Query → Handler → DbContext → Event (for commands)
-                                                        ↓
-                                                   EventHandler (external integrations)
+Controller → Command → Handler → Entity Factory (adds DomainEvents) → Publish DomainEvents → SaveChanges
+                                                                             ↓
+                                                                        EventHandler (external integrations)
 ```
 
 **Key Rules:**
-- **Commands**: Imperative verbs (`CreateProject`, `ChangeTaskStatus`) - modify state, interact with `TaskDbContext` directly
+- **Commands**: Imperative verbs (`CreateProject`, `ChangeTaskStatus`) - modify state via entity methods
 - **Queries**: Start with `Get` (`GetAllProjects`, `GetTaskById`) - read-only, query `TaskDbContext` directly
-- **Events**: Past tense (`ProjectCreated`, `TaskStatusChanged`) - published by CommandHandlers, handled by EventHandlers for side effects and external integrations
+- **Entities**: Have static factory methods (e.g., `Project.Create()`) that add domain events to `DomainEvents` collection
+- **Domain Events**: Past tense (`ProjectCreatedEvent`, `TaskStatusChangedEvent`) - stored on entities, published before `SaveChanges`
+- **Handlers**: Inject `TaskDbContext` and `IPublisher`, call entity factories, use `_publisher.PublishAll(entity.DomainEvents)` before `SaveChangesAsync`
+- **EventHandlers**: Implement `INotificationHandler<TEvent>` for side effects and external integrations
 
-**Example:** See [`ProjectsController`](UniTask.Api/Api/Projects/ProjectsController.cs) → [`CreateProjectCommandHandler`](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs)
+**Example:** See [CreateProjectCommandHandler](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs) → [Project.Create()](UniTask.Api/Api/Projects/Models/Project.cs)
 
 ## Project Structure (Feature-Based)
 
@@ -63,16 +66,49 @@ UniTask.Api/Api/
 
 ## Adding New CQRS Operations
 
-1. **Create Command/Query** in `Commands/{Operation}/` or `Queries/{Operation}/`
-2. **Create Handler** implementing `IRequestHandler<TRequest, TResponse>` — inject `TaskDbContext` for DB access
-3. **Create Event** in `Events/` and optional EventHandler for side effects
-4. **Add Controller endpoint** using `await _mediator.Send(command)`
+### For Commands (State Changes)
 
-**Example:** Adding `UpdateProject`:
-- Create `Commands/Update/UpdateProjectCommand.cs`
-- Create `Commands/Update/UpdateProjectCommandHandler.cs` — inject `TaskDbContext`, do the DB work directly
-- Create `Events/ProjectUpdatedEvent.cs` and optional `Events/ProjectUpdatedEventHandler.cs`
-- Add `[HttpPut("{id}")]` endpoint in `ProjectsController.cs`
+1. **Create Command** in `Commands/{Operation}/`
+   - Implement `IRequest` or `IRequest<TResponse>`
+   - Implement `IProviderEvent` (includes `Origin` and `TaskProvider`)
+   - Example: [CreateProjectCommand.cs](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommand.cs)
+
+2. **Create Event** in `Events/`
+   - Implement `INotification` and `IProviderEvent`
+   - Use past tense naming (e.g., `ProjectCreatedEvent`)
+   - Example: [ProjectCreatedEvent.cs](UniTask.Api/Api/Projects/Events/ProjectCreatedEvent.cs)
+
+3. **Add Domain Event to Entity**
+   - Entities have `[NotMapped] public List<INotification> DomainEvents { get; private set; } = new();`
+   - Create static factory method (e.g., `Project.Create(command)`) that:
+     - Creates the entity
+     - Adds domain event to `DomainEvents` collection
+     - Returns the entity
+   - Example: [Project.Create()](UniTask.Api/Api/Projects/Models/Project.cs)
+
+4. **Create Handler** in `Commands/{Operation}/`
+   - Implement `IRequestHandler<TCommand>` or `IRequestHandler<TCommand, TResponse>`
+   - Inject `TaskDbContext` and `IPublisher`
+   - Call entity factory method
+   - Add entity to `DbContext`
+   - Call `await _publisher.PublishAll(entity.DomainEvents, cancellationToken)` BEFORE `SaveChangesAsync`
+   - Call `await _context.SaveChangesAsync(cancellationToken)`
+   - Example: [CreateProjectCommandHandler.cs](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs)
+
+5. **Create EventHandler** (optional, for side effects)
+   - Implement `INotificationHandler<TEvent>` in `Events/`
+   - Handle external integrations, notifications, etc.
+
+6. **Add Controller endpoint** using `await _mediator.Send(command)`
+
+### For Queries (Read-Only)
+
+1. **Create Query** in `Queries/{Operation}/`
+   - Implement `IRequest<TResponse>`
+2. **Create Handler** implementing `IRequestHandler<TQuery, TResponse>`
+   - Inject `TaskDbContext`
+   - Query database and return result
+3. **Add Controller endpoint** using `await _mediator.Send(query)`
 
 ## External Integrations (GitHub, Azure DevOps)
 
@@ -86,26 +122,73 @@ Refer to `.github/skills/github-issues-rest-api/` for GitHub API patterns.
 
 ## Testing Conventions
 
-Use the **`Any` class** ([`UniTask.Tests/Any.cs`](UniTask.Tests/Any.cs)) for test data:
+### Integration Testing Approach
+
+**Preferred**: Use `CustomWebApplicationFactory` with full DI container and in-memory database. This tests the complete CQRS flow.
+
+**Pattern:**
 ```csharp
-// Generate random data
+public class CreateProjectHandlerTests
+{
+    private readonly CustomWebApplicationFactory _factory = new();
+    private readonly IMediator _mediator;
+    private readonly TaskDbContext _dbContext;
+
+    public CreateProjectHandlerTests()
+    {
+        var scope = _factory.Services.CreateScope();
+        _mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        _dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    }
+    
+    [Fact]
+    public async Task Should_CreateProjectInDatabase_WhenCommandIsExecuted()
+    {
+        // Arrange
+        var command = Any.CreateProjectCommand();
+
+        // Act
+        await _mediator.Send(command);
+        
+        // Assert
+        Assert.Single(_dbContext.Projects);
+    }
+}
+```
+
+**Key Points:**
+- Get `IMediator` and `TaskDbContext` from DI container
+- Send commands through MediatR (tests full pipeline)
+- Assert on database state
+- See [CreateProjectHandlerTests.cs](UniTask.Tests/Api/Projects/Commands/CreateProjectHandlerTests.cs)
+
+### Test Data Generation with `Any`
+
+Use the **`Any` class** ([Any.cs](UniTask.Tests/Utls/Any.cs)) for all test data:
+
+```csharp
+// Commands
+var command = Any.CreateProjectCommand();
+var commandWithOverrides = Any.CreateProjectCommand(name: "Specific Name");
+
+// Entities
 var project = Any.Project();
-var task = Any.TaskItem(title: "Specific Title");  // Override only what matters
+var task = Any.TaskItem(title: "Specific Title");
 
 // Primitive values
 var randomString = Any.String(10);
 var randomInt = Any.Int(1, 100);
 var randomEmail = Any.Email();
+var randomEnum = Any.Enum<TaskProvider>();
 ```
 
-**Unit tests** instantiate handlers directly with an in-memory `TaskDbContext`. See [`LocalAdapterTests.cs`](UniTask.Tests/LocalAdapterTests.cs).
-
-**Integration tests** use `CustomWebApplicationFactory` with in-memory database. See [`ProjectsControllerTests.cs`](UniTask.Tests/ProjectsControllerTests.cs).
-
-**Why `Any`?** 
+**Why `Any`?**
 - Focuses tests on behavior, not data
 - Prevents coupling to specific test values
 - Reduces boilerplate
+- Override only what matters for the test
+
+**When adding new commands**: Add a corresponding factory method to `Any` class.
 
 ## Technology Stack
 
@@ -159,10 +242,13 @@ dotnet test
 ## Common Pitfalls
 
 1. **Don't bypass MediatR** - Controllers should only call `_mediator.Send()`, never `TaskDbContext` directly
-2. **Events are for side effects** - Main operation result goes through command response; events handle notifications, logging, and external integrations
-3. **Handlers own the DB logic** - CommandHandlers write to the DB; QueryHandlers read from the DB
-4. **External integrations go in EventHandlers** - Don't call GitHub/Azure DevOps APIs from command or query handlers
-5. **Each CQRS operation gets its own folder** - Don't cram multiple commands in one file/folder
+2. **Publish events BEFORE SaveChanges** - Always call `_publisher.PublishAll(entity.DomainEvents)` before `SaveChangesAsync` for transactional consistency
+3. **Domain events live on entities** - Don't publish events directly from handlers; add them to entity's `DomainEvents` collection in factory methods
+4. **Use entity factory methods** - Don't construct entities with `new` in handlers; use static factory methods like `Project.Create(command)`
+5. **Events are for side effects** - Main operation result goes through command response; events handle notifications, logging, and external integrations
+6. **External integrations go in EventHandlers** - Don't call GitHub/Azure DevOps APIs from command handlers
+7. **Each CQRS operation gets its own folder** - Don't cram multiple commands in one file/folder
+8. **Add corresponding `Any` methods** - When creating new commands, add factory methods to `Any` class for testing
 
 ## Frontend Integration
 
