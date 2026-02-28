@@ -22,6 +22,9 @@ builder.Services.AddIdentityCore<UniUser>()
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
+// Register HttpClient
+builder.Services.AddHttpClient();
+
 // Register task provider clients
 builder.Services.AddSingleton<ITaskProviderClient, MemoryTaskProviderClient>();
 

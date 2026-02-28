@@ -1,3 +1,7 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using MediatR;
+using UniTask.Api.Projects.Commands.Create;
+using UniTask.Api.Projects.Events;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
 
@@ -20,4 +24,31 @@ public class Project
     public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
     public ICollection<Board> Boards { get; set; } = new List<Board>();
     public ICollection<TaskType> TaskTypes { get; set; } = new List<TaskType>();
+
+    [NotMapped]
+    public List<INotification> DomainEvents { get; private set; } = new();
+
+    public static Project Create(CreateProjectCommand command)
+    {
+        var project = new Project
+        {
+            Id = command.Id,
+            Name = command.Name,
+            Description = command.Description,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        project.DomainEvents.Add(new ProjectCreatedEvent
+        {
+            ProjectId = project.Id,
+            Name = project.Name,
+            Description = project.Description,
+            CreatedAt = project.CreatedAt,
+            Origin = command.Origin,
+            TaskProvider = command.TaskProvider
+        });
+
+        return project;
+    }
 }
