@@ -6,6 +6,7 @@ namespace UniTask.Api.Projects.Commands.Create;
 
 public class CreateProjectCommand : IRequest<ProjectCreatedEvent>, IProviderEvent
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public required string Name { get; set; }
     public string? Description { get; set; }
     public ChangeOrigin Origin { get; set; } = ChangeOrigin.Internal;

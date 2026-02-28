@@ -17,27 +17,17 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
 
     public async Task<ProjectCreatedEvent> Handle(CreateProjectCommand request, CancellationToken cancellationToken)
     {
-        var project = new Project
-        {
-            Name = request.Name,
-            Description = request.Description,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var project = Project.Create(request);
 
         _context.Projects.Add(project);
+
+        foreach (var domainEvent in project.DomainEvents)
+        {
+            await _publisher.Publish(domainEvent, cancellationToken);
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
 
-        var projectCreatedEvent = new ProjectCreatedEvent
-        {
-            ProjectId = project.Id,
-            Name = project.Name,
-            Description = project.Description,
-            CreatedAt = project.CreatedAt
-        };
-
-        await _publisher.Publish(projectCreatedEvent, cancellationToken);
-
-        return projectCreatedEvent;
+        return project.DomainEvents.OfType<ProjectCreatedEvent>().First();
     }
 }
