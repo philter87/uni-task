@@ -65,6 +65,15 @@ External provider logic (calling GitHub Issues API, Azure DevOps Boards API, etc
 - `CreateTaskCommandHandler` saves to the DB and publishes `TaskCreatedEvent`
 - A `GitHubTaskSyncEventHandler` (implementing `INotificationHandler<TaskCreatedEvent>`) calls the GitHub API
 
+#### GitHub Concept Mapping
+
+| UniTask concept | GitHub equivalent |
+|-----------------|-------------------|
+| **Project**     | **Repository** — A UniTask project points to a single GitHub repository. Configure it via `ExternalId` (e.g. `owner/repo`). |
+| **Task**        | **Issue** — Each UniTask task synced to GitHub maps to a GitHub issue. |
+
+> **Important:** A *GitHub Project* (the GitHub planning board feature) is **not** the same as a UniTask project. GitHub projects are a kanban/sprint planning tool, whereas UniTask projects map to repositories. For this reason, creating a UniTask project does **not** create any corresponding entity in GitHub — the repository is configured separately.
+
 ## Folder Structure
 
 The project follows a **feature-based** organization combined with **model co-location**, where related code is grouped by feature rather than by technical layer.

@@ -81,10 +81,10 @@ var response = await httpClient.SendAsync(request, cancellationToken);
 
 ## Complete Example
 
-Here's a complete example from `ProjectCreatedEventHandler`:
+Here's a complete example of creating a GitHub issue from a `TaskCreatedEventHandler`:
 
 ```csharp
-public async Task Handle(ProjectCreatedEvent notification, CancellationToken cancellationToken)
+public async Task Handle(TaskCreatedEvent notification, CancellationToken cancellationToken)
 {
     // Check if GitHub provider
     if (notification.TaskProvider != TaskProvider.GitHub)
@@ -93,7 +93,7 @@ public async Task Handle(ProjectCreatedEvent notification, CancellationToken can
     // Validate configuration
     if (!_gitHubClientFactory.IsConfigured())
     {
-        _logger.LogWarning("GitHub configuration is missing. Skipping GitHub project creation.");
+        _logger.LogWarning("GitHub configuration is missing. Skipping GitHub issue creation.");
         return;
     }
 
@@ -105,7 +105,7 @@ public async Task Handle(ProjectCreatedEvent notification, CancellationToken can
     // Prepare request
     var body = new
     {
-        title = notification.Name,
+        title = notification.Title,
         body = notification.Description
     };
 
@@ -130,6 +130,8 @@ public async Task Handle(ProjectCreatedEvent notification, CancellationToken can
     }
 }
 ```
+
+> **Note:** The `ProjectCreatedEvent` is intentionally **not** synced to GitHub. A UniTask project maps to a GitHub *repository*, not a GitHub *project*. GitHub projects are a separate planning concept (kanban boards/sprints) unrelated to UniTask projects. When using GitHub as a task provider, configure the target repository in `appsettings.json` instead.
 
 ## Benefits
 
