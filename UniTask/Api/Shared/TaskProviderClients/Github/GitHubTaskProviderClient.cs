@@ -32,13 +32,23 @@ public class GitHubTaskProviderClient : ITaskProviderClient
         if (string.IsNullOrEmpty(getTasks.ExternalProjectId))
             return Enumerable.Empty<TaskItemDto>();
 
+        if (getTasks.ProjectId.HasValue && _gitHubClientFactory.IsConfiguredForProject(getTasks.ProjectId.Value))
+        {
+            var httpClient = _gitHubClientFactory.CreateClientForProject(getTasks.ProjectId.Value);
+            return await FetchIssuesAsync(httpClient, getTasks);
+        }
+
         var organisationId = await GetOrganisationIdAsync(getTasks.ProjectId);
 
         if (!_gitHubClientFactory.IsConfigured(organisationId))
             return Enumerable.Empty<TaskItemDto>();
 
-        var httpClient = _gitHubClientFactory.CreateClient(organisationId);
+        var client = _gitHubClientFactory.CreateClient(organisationId);
+        return await FetchIssuesAsync(client, getTasks);
+    }
 
+    private async Task<IEnumerable<TaskItemDto>> FetchIssuesAsync(HttpClient httpClient, GetTasksQuery getTasks)
+    {
         List<GitHubIssue>? issues;
         try
         {
