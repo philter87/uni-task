@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniTask.Api.Organisations.CreateTaskProviderAuth;
 
@@ -6,6 +7,7 @@ namespace UniTask.Api.Organisations;
 
 [ApiController]
 [Route("api/task-provider-auths")]
+[Authorize]
 public class TaskProviderAuthController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -16,8 +18,9 @@ public class TaskProviderAuthController : ControllerBase
     }
 
     [HttpPost]
-    public async Task CreateTaskProviderAuth([FromBody] CreateTaskProviderAuthCommand command)
+    public async Task<ActionResult<Guid>> CreateTaskProviderAuth([FromBody] CreateTaskProviderAuthCommand command)
     {
-        await _mediator.Send(command);
+        var id = await _mediator.Send(command);
+        return Ok(id);
     }
 }

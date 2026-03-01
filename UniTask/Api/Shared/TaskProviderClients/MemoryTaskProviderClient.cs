@@ -13,6 +13,8 @@ public class MemoryTaskProviderClient : ITaskProviderClient
     private readonly ConcurrentDictionary<Guid, ProjectDto> _projects = new();
     private readonly ConcurrentDictionary<Guid, TaskItemDto> _tasks = new();
 
+    public TaskProvider Provider => TaskProvider.Internal;
+
     public Task CreateProject(ProjectCreatedEvent projectCreated)
     {
         var dto = MemoryProviderMapper.MapToProjectDto(projectCreated);

@@ -27,6 +27,9 @@ public class GetProjectQueryHandler : IRequestHandler<GetProjectQuery, ProjectDt
             ExternalId = project.ExternalId,
             Name = project.Name,
             Description = project.Description,
+            OrganisationId = project.OrganisationId,
+            Provider = project.Provider,
+            TaskProviderAuthId = project.TaskProviderAuthId,
             CreatedAt = project.CreatedAt,
             UpdatedAt = project.UpdatedAt
         };

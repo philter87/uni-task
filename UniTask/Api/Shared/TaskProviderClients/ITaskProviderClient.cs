@@ -9,6 +9,8 @@ namespace UniTask.Api.Shared.TaskProviderClients;
 
 public interface ITaskProviderClient
 {
+    TaskProvider Provider { get; }
+
     Task CreateProject(ProjectCreatedEvent projectCreated);
     Task<IEnumerable<ProjectDto>> GetProjects(GetProjectsQuery getProjects);
 

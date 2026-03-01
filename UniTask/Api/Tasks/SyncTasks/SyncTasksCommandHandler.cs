@@ -10,32 +10,37 @@ namespace UniTask.Api.Tasks.SyncTasks;
 public class SyncTasksCommandHandler : IRequestHandler<SyncTasksCommand, IEnumerable<TaskItemDto>>
 {
     private readonly TaskDbContext _context;
-    private readonly ITaskProviderClient _taskProviderClient;
+    private readonly ITaskProviderClientFactory _clientFactory;
 
-    public SyncTasksCommandHandler(TaskDbContext context, ITaskProviderClient taskProviderClient)
+    public SyncTasksCommandHandler(TaskDbContext context, ITaskProviderClientFactory clientFactory)
     {
         _context = context;
-        _taskProviderClient = taskProviderClient;
+        _clientFactory = clientFactory;
     }
 
     public async Task<IEnumerable<TaskItemDto>> Handle(SyncTasksCommand request, CancellationToken cancellationToken)
     {
         var project = await _context.Projects.FindAsync([request.ProjectId], cancellationToken);
+        if (project == null) return Enumerable.Empty<TaskItemDto>();
+
+        var client = _clientFactory.GetClient(project.Provider ?? TaskProvider.Internal);
 
         var query = new GetTasksQuery
         {
             ProjectId = request.ProjectId,
-            ExternalProjectId = project?.ExternalId
+            ExternalProjectId = project.ExternalId
         };
 
-        var tasks = await _taskProviderClient.GetTasks(query);
+        var tasks = await client.GetTasks(query);
         var taskList = tasks.ToList();
 
         foreach (var taskDto in taskList)
         {
             TaskItem? existing = null;
             if (!string.IsNullOrEmpty(taskDto.ExternalId))
-                existing = await _context.Tasks.FirstOrDefaultAsync(t => t.ExternalId == taskDto.ExternalId && t.ProjectId == request.ProjectId, cancellationToken);
+                existing = await _context.Tasks.FirstOrDefaultAsync(
+                    t => t.ExternalId == taskDto.ExternalId && t.ProjectId == request.ProjectId,
+                    cancellationToken);
 
             if (existing == null)
             {

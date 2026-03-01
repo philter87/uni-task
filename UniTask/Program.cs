@@ -1,7 +1,14 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NSwag.Generation.Processors.Security;
+using UniTask.Api.Auth;
 using UniTask.Api.Shared;
 using UniTask.Api.Shared.TaskProviderClients;
+using UniTask.Api.Shared.TaskProviderClients.AzureDevOps;
 using UniTask.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,10 +21,50 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tasks.db"));
 
-// Configure Identity
-builder.Services.AddIdentityCore<UniUser>()
-    .AddRoles<IdentityRole<Guid>>()
-    .AddEntityFrameworkStores<TaskDbContext>();
+// Configure Identity (full Identity with SignInManager for OAuth)
+builder.Services.AddIdentity<UniUser, IdentityRole<Guid>>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<TaskDbContext>()
+.AddDefaultTokenProviders();
+
+// Configure JWT + OAuth authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "REPLACE_WITH_SECURE_256BIT_KEY_IN_USER_SECRETS";
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+    };
+})
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Auth:Google:ClientId"] ?? string.Empty;
+    options.ClientSecret = builder.Configuration["Auth:Google:ClientSecret"] ?? string.Empty;
+    options.CallbackPath = "/api/auth/callback/google";
+    options.SignInScheme = IdentityConstants.ExternalScheme;
+})
+.AddGitHub(options =>
+{
+    options.ClientId = builder.Configuration["Auth:GitHub:ClientId"] ?? string.Empty;
+    options.ClientSecret = builder.Configuration["Auth:GitHub:ClientSecret"] ?? string.Empty;
+    options.CallbackPath = "/api/auth/callback/github";
+    options.SignInScheme = IdentityConstants.ExternalScheme;
+    options.Scope.Add("user:email");
+    options.ClaimActions.Add(new JsonKeyClaimAction("urn:github:avatar", "string", "avatar_url"));
+});
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(UniTask.Program).Assembly));
@@ -28,15 +75,29 @@ builder.Services.AddHttpClient();
 // Register GitHub HTTP Client Factory
 builder.Services.AddSingleton<IGitHubHttpClientFactory, GitHubHttpClientFactory>();
 
-// Register task provider clients
-builder.Services.AddSingleton<ITaskProviderClient, MemoryTaskProviderClient>();
+// Register JWT service
+builder.Services.AddScoped<JwtService>();
 
-// Configure OpenAPI with NSwag
+// Register task provider clients
+builder.Services.AddScoped<GitHubTaskProviderClient>();
+builder.Services.AddScoped<AzureDevOpsTaskProviderClient>();
+builder.Services.AddScoped<MemoryTaskProviderClient>();
+builder.Services.AddScoped<ITaskProviderClientFactory, TaskProviderClientFactory>();
+
+// Configure OpenAPI with NSwag (JWT bearer scheme)
 builder.Services.AddOpenApiDocument(config =>
 {
     config.Title = "UniTask API";
     config.Description = "A unified task manager API for Azure DevOps and GitHub";
     config.Version = "v1";
+    config.AddSecurity("JWT", Enumerable.Empty<string>(), new NSwag.OpenApiSecurityScheme
+    {
+        Type = NSwag.OpenApiSecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Enter your JWT token",
+    });
+    config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
 });
 
 // Configure CORS for frontend
@@ -48,7 +109,8 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("http://localhost:5173", "https://localhost:5173",
                                "http://localhost:5174", "https://localhost:5174")
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .AllowCredentials();
         });
 });
 
@@ -62,17 +124,16 @@ if (app.Environment.IsDevelopment())
     {
         config.Path = "/swagger";
     });
-    
-    // Ensure database is created (only for SQLite)
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-        db.Database.EnsureCreated();
-    }
+
+    // Apply migrations in development
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

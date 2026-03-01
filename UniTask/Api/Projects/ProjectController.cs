@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniTask.Api.Projects.Create;
 using UniTask.Api.Projects.GetProject;
@@ -8,6 +9,7 @@ namespace UniTask.Api.Projects;
 
 [ApiController]
 [Route("api/projects")]
+[Authorize]
 public class ProjectController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -18,9 +20,10 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPost]
-    public async Task CreateProject([FromBody] CreateProjectCommand command)
+    public async Task<ActionResult<Guid>> CreateProject([FromBody] CreateProjectCommand command)
     {
-        await _mediator.Send(command);
+        var id = await _mediator.Send(command);
+        return CreatedAtAction(nameof(GetProject), new { id }, id);
     }
 
     [HttpGet("{id}")]
@@ -28,16 +31,14 @@ public class ProjectController : ControllerBase
     {
         var project = await _mediator.Send(new GetProjectQuery { Id = id });
         if (project == null)
-        {
             return NotFound();
-        }
         return Ok(project);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAllProjects()
+    public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAllProjects([FromQuery] Guid? organisationId)
     {
-        var projects = await _mediator.Send(new GetProjectsQuery());
+        var projects = await _mediator.Send(new GetProjectsQuery { OrganisationId = organisationId });
         return Ok(projects);
     }
 }
