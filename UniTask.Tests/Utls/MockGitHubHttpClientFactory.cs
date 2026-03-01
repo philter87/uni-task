@@ -9,6 +9,8 @@ public class MockGitHubHttpClientFactory : IGitHubHttpClientFactory
     private readonly MockHttpMessageHandler _mockHandler;
     private const string GitHubApiBaseUrl = "https://api.github.com";
 
+    public Guid LastOrganisationId { get; private set; }
+
     public MockGitHubHttpClientFactory()
     {
         _mockHandler = new MockHttpMessageHandler();
@@ -31,8 +33,9 @@ public class MockGitHubHttpClientFactory : IGitHubHttpClientFactory
             .Respond("application/json", issuesJson);
     }
 
-    public HttpClient CreateClient()
+    public HttpClient CreateClient(Guid organisationId)
     {
+        LastOrganisationId = organisationId;
         var httpClient = _mockHandler.ToHttpClient();
         httpClient.BaseAddress = new Uri(GitHubApiBaseUrl);
         httpClient.DefaultRequestHeaders.Accept.Add(
@@ -50,6 +53,6 @@ public class MockGitHubHttpClientFactory : IGitHubHttpClientFactory
 
     public string GetRepo() => "repo";
 
-    public bool IsConfigured() => true;
+    public bool IsConfigured(Guid organisationId) => true;
 }
 

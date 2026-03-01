@@ -1,4 +1,6 @@
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Shared.TaskProviderClients;
 using UniTask.Api.Tasks.Queries.GetTasks;
@@ -10,11 +12,16 @@ public class GithubTaskProviderClientTests : IDisposable
 {
     private readonly AppFactory _appFactory;
     private readonly GitHubTaskProviderClient _client;
+    private readonly MockGitHubHttpClientFactory _mockFactory;
+    private readonly TaskDbContext _dbContext;
 
     public GithubTaskProviderClientTests()
     {
         _appFactory = new AppFactory();
         _client = _appFactory.Services.GetRequiredService<GitHubTaskProviderClient>();
+        _mockFactory = (MockGitHubHttpClientFactory)_appFactory.Services.GetRequiredService<IGitHubHttpClientFactory>();
+        var scope = _appFactory.Services.CreateScope();
+        _dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
     }
 
     [Fact]
@@ -87,6 +94,66 @@ public class GithubTaskProviderClientTests : IDisposable
         // Assert
         Assert.NotNull(tasks);
         Assert.Empty(tasks);
+    }
+
+    [Fact]
+    public async Task Should_PassEmptyOrganisationId_When_ProjectIdIsNull()
+    {
+        // Arrange
+        var query = new GetTasksQuery
+        {
+            ExternalProjectId = "org/repo",
+            ProjectId = null
+        };
+
+        // Act
+        await _client.GetTasks(query);
+
+        // Assert
+        Assert.Equal(Guid.Empty, _mockFactory.LastOrganisationId);
+    }
+
+    [Fact]
+    public async Task Should_PassEmptyOrganisationId_When_ProjectNotFound()
+    {
+        // Arrange
+        var query = new GetTasksQuery
+        {
+            ExternalProjectId = "org/repo",
+            ProjectId = Guid.NewGuid()  // Project doesn't exist in DB
+        };
+
+        // Act
+        await _client.GetTasks(query);
+
+        // Assert
+        Assert.Equal(Guid.Empty, _mockFactory.LastOrganisationId);
+    }
+
+    [Fact]
+    public async Task Should_PassOrganisationId_When_ProjectExistsWithOrganisation()
+    {
+        // Arrange
+        var org = Any.Organisation();
+        _dbContext.Organisations.Add(org);
+        await _dbContext.SaveChangesAsync();
+
+        var project = Any.Project();
+        project.OrganisationId = org.Id;
+        _dbContext.Projects.Add(project);
+        await _dbContext.SaveChangesAsync();
+
+        var query = new GetTasksQuery
+        {
+            ExternalProjectId = "org/repo",
+            ProjectId = project.Id
+        };
+
+        // Act
+        await _client.GetTasks(query);
+
+        // Assert
+        Assert.Equal(org.Id, _mockFactory.LastOrganisationId);
     }
 
     public void Dispose()

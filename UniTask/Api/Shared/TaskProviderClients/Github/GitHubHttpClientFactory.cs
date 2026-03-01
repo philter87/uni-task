@@ -1,13 +1,15 @@
 using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using UniTask.Api.Projects.Models;
 
 namespace UniTask.Api.Shared.TaskProviderClients;
 
 public interface IGitHubHttpClientFactory
 {
-    HttpClient CreateClient();
+    HttpClient CreateClient(Guid organisationId);
     string GetOwner();
     string GetRepo();
-    bool IsConfigured();
+    bool IsConfigured(Guid organisationId);
 }
 
 public class GitHubHttpClientFactory : IGitHubHttpClientFactory
@@ -16,25 +18,28 @@ public class GitHubHttpClientFactory : IGitHubHttpClientFactory
     
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<GitHubHttpClientFactory> _logger;
 
     public GitHubHttpClientFactory(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
+        IServiceScopeFactory scopeFactory,
         ILogger<GitHubHttpClientFactory> logger)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
-    public HttpClient CreateClient()
+    public HttpClient CreateClient(Guid organisationId)
     {
-        var token = _configuration["GitHub:Token"];
+        var token = GetToken(organisationId);
         
         if (string.IsNullOrEmpty(token))
         {
-            _logger.LogWarning("GitHub Token is missing from configuration. GitHub API calls may fail.");
+            _logger.LogWarning("GitHub Token is missing. GitHub API calls may fail.");
         }
 
         var httpClient = _httpClientFactory.CreateClient("GitHub");
@@ -59,15 +64,25 @@ public class GitHubHttpClientFactory : IGitHubHttpClientFactory
     
     public string GetRepo() => _configuration["GitHub:Repo"] ?? string.Empty;
     
-    public bool IsConfigured()
+    public bool IsConfigured(Guid organisationId)
     {
-        var token = _configuration["GitHub:Token"];
-        var owner = _configuration["GitHub:Owner"];
-        var repo = _configuration["GitHub:Repo"];
-        
-        return !string.IsNullOrEmpty(token) && 
-               !string.IsNullOrEmpty(owner) && 
-               !string.IsNullOrEmpty(repo);
+        return !string.IsNullOrEmpty(GetToken(organisationId));
+    }
+
+    private string? GetToken(Guid organisationId)
+    {
+        if (organisationId != Guid.Empty)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var auth = context.TaskProviderAuths
+                .FirstOrDefault(a => a.OrganisationId == organisationId
+                    && a.AuthenticationType == AuthenticationType.GitHubApp);
+            if (auth != null)
+                return auth.SecretValue;
+        }
+
+        return _configuration["GitHub:Token"];
     }
 }
 
