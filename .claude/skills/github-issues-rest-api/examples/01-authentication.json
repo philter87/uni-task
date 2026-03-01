@@ -1,0 +1,210 @@
+{
+  "_comment": "Authentication Examples for GitHub REST API",
+  "authentication_methods": {
+    "personal_access_token": {
+      "description": "Using a Personal Access Token (PAT)",
+      "method": "Bearer token in Authorization header",
+      "example_curl": "curl -L -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer YOUR_PAT\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/user",
+      "headers": {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      "how_to_create": {
+        "fine_grained": [
+          "1. Go to GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens",
+          "2. Click 'Generate new token'",
+          "3. Set token name and expiration",
+          "4. Select repository access",
+          "5. Select permissions (for issues: 'Issues' read/write)",
+          "6. Click 'Generate token'"
+        ],
+        "classic": [
+          "1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)",
+          "2. Click 'Generate new token'",
+          "3. Select scopes (repo for full access, or public_repo for public repos)",
+          "4. Click 'Generate token'"
+        ]
+      },
+      "scopes_required": {
+        "issues_read": "Issues repository permissions (read)",
+        "issues_write": "Issues repository permissions (write)"
+      }
+    },
+    "github_app": {
+      "description": "Using GitHub App installation access token",
+      "method": "Two-step process: JWT → Installation token → API calls",
+      "step1_generate_jwt": {
+        "description": "Generate JWT using your app's private key",
+        "example_payload": {
+          "iat": 1234567890,
+          "exp": 1234568490,
+          "iss": "YOUR_APP_ID"
+        },
+        "algorithm": "RS256",
+        "note": "JWT valid for max 10 minutes"
+      },
+      "step2_get_installation_token": {
+        "endpoint": "POST /app/installations/{installation_id}/access_tokens",
+        "headers": {
+          "Accept": "application/vnd.github+json",
+          "Authorization": "Bearer YOUR_JWT",
+          "X-GitHub-Api-Version": "2022-11-28"
+        },
+        "optional_request_body": {
+          "repositories": ["repo1", "repo2"],
+          "permissions": {
+            "issues": "write",
+            "contents": "read"
+          }
+        },
+        "response_example": {
+          "token": "ghs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "expires_at": "2026-02-21T10:00:00Z",
+          "permissions": {
+            "issues": "write",
+            "contents": "read"
+          },
+          "repository_selection": "selected"
+        }
+      },
+      "step3_use_installation_token": {
+        "description": "Use the installation access token for API calls",
+        "headers": {
+          "Accept": "application/vnd.github+json",
+          "Authorization": "Bearer ghs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      },
+      "permissions_required": {
+        "issues": "read or write"
+      }
+    },
+    "github_actions": {
+      "description": "Using built-in GITHUB_TOKEN in workflows",
+      "method": "Access via secrets.GITHUB_TOKEN",
+      "example_workflow": {
+        "name": "Use GitHub API",
+        "on": ["push"],
+        "jobs": {
+          "api_call": {
+            "runs-on": "ubuntu-latest",
+            "permissions": {
+              "issues": "write"
+            },
+            "steps": [
+              {
+                "name": "Create issue using curl",
+                "env": {
+                  "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}"
+                },
+                "run": "curl -L -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer $GH_TOKEN\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/${{ github.repository }}/issues -d '{\"title\":\"Issue from workflow\",\"body\":\"Auto-created\"}'"
+              },
+              {
+                "name": "Create issue using GitHub CLI",
+                "env": {
+                  "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}"
+                },
+                "run": "gh api repos/${{ github.repository }}/issues -X POST -f title='Issue title' -f body='Issue body'"
+              }
+            ]
+          }
+        }
+      },
+      "note": "Token is automatically scoped to the repository and expires after job completes"
+    },
+    "oauth_app": {
+      "description": "Using OAuth App (for user-facing applications)",
+      "method": "OAuth flow to get user access token",
+      "flow": [
+        "1. Redirect user to: https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&scope=repo",
+        "2. User authorizes",
+        "3. GitHub redirects to callback with code",
+        "4. Exchange code for token: POST https://github.com/login/oauth/access_token",
+        "5. Use token in API calls"
+      ],
+      "token_exchange_example": {
+        "request": {
+          "method": "POST",
+          "url": "https://github.com/login/oauth/access_token",
+          "headers": {
+            "Accept": "application/json"
+          },
+          "body": {
+            "client_id": "YOUR_CLIENT_ID",
+            "client_secret": "YOUR_CLIENT_SECRET",
+            "code": "CODE_FROM_CALLBACK",
+            "redirect_uri": "https://your-app.com/callback"
+          }
+        },
+        "response": {
+          "access_token": "gho_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "token_type": "bearer",
+          "scope": "repo,user"
+        }
+      },
+      "use_token": {
+        "headers": {
+          "Authorization": "Bearer gho_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      }
+    },
+    "basic_authentication": {
+      "description": "Basic Authentication with username/password",
+      "status": "DEPRECATED - NO LONGER SUPPORTED",
+      "note": "GitHub has removed support for password authentication. Use tokens instead."
+    }
+  },
+  "rate_limiting": {
+    "authenticated": {
+      "requests_per_hour": 5000,
+      "applies_to": "PAT, GitHub Apps, OAuth"
+    },
+    "unauthenticated": {
+      "requests_per_hour": 60,
+      "note": "Based on IP address"
+    },
+    "check_rate_limit": {
+      "endpoint": "GET /rate_limit",
+      "example_response": {
+        "resources": {
+          "core": {
+            "limit": 5000,
+            "remaining": 4999,
+            "reset": 1708520419,
+            "used": 1
+          }
+        }
+      }
+    },
+    "headers_in_response": {
+      "X-RateLimit-Limit": "5000",
+      "X-RateLimit-Remaining": "4999",
+      "X-RateLimit-Reset": "1708520419",
+      "X-RateLimit-Used": "1"
+    }
+  },
+  "best_practices": {
+    "security": [
+      "Never commit tokens to version control",
+      "Use environment variables or secrets management",
+      "Set minimal required permissions",
+      "Rotate tokens regularly",
+      "Use fine-grained tokens when possible"
+    ],
+    "performance": [
+      "Cache responses when appropriate",
+      "Use conditional requests (If-None-Match header)",
+      "Respect rate limits",
+      "Use pagination for large datasets"
+    ],
+    "error_handling": [
+      "Handle 401 (Unauthorized) - Check token validity",
+      "Handle 403 (Forbidden) - Check permissions or rate limit",
+      "Handle 404 (Not Found) - Resource doesn't exist or no access",
+      "Handle 422 (Validation Failed) - Check request body"
+    ]
+  }
+}

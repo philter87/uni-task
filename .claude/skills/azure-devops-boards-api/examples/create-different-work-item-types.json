@@ -1,0 +1,422 @@
+{
+  "description": "Examples of creating different work item types with their specific fields",
+  "work_item_types": [
+    {
+      "type": "Bug",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Bug?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "Login button not responding on mobile Safari"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.TCM.ReproSteps",
+          "value": "<div><b>Steps to reproduce:</b><ol><li>Open app on iPhone with Safari</li><li>Navigate to login page</li><li>Tap login button</li></ol><b>Expected:</b> Login form appears<br/><b>Actual:</b> Nothing happens</div>",
+          "notes": "ReproSteps is specific to Bug work items"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.TCM.SystemInfo",
+          "value": "iPhone 14, iOS 17.2, Safari 17.2",
+          "notes": "System information where bug was found"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.Severity",
+          "value": "2 - High",
+          "notes": "Severity: 1-Critical, 2-High, 3-Medium, 4-Low"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.Priority",
+          "value": 1
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Tags",
+          "value": "mobile; safari; login; ui-bug"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.AssignedTo",
+          "value": "mobile-team@example.com"
+        }
+      ],
+      "bug_specific_fields": {
+        "Microsoft.VSTS.TCM.ReproSteps": "HTML - Steps to reproduce the bug",
+        "Microsoft.VSTS.TCM.SystemInfo": "String - System/environment information",
+        "Microsoft.VSTS.Common.Severity": "String - 1-Critical, 2-High, 3-Medium, 4-Low",
+        "Microsoft.VSTS.Build.FoundIn": "String - Build number where bug was found",
+        "Microsoft.VSTS.Build.IntegrationBuild": "String - Build where bug was fixed"
+      }
+    },
+    {
+      "type": "Task",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Task?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "Create password validation API endpoint"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Description",
+          "value": "<div>Implement REST API endpoint for password strength validation following NIST guidelines.</div>"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Scheduling.RemainingWork",
+          "value": 6,
+          "notes": "Remaining work in hours"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Scheduling.OriginalEstimate",
+          "value": 6,
+          "notes": "Original estimate in hours"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.Activity",
+          "value": "Development",
+          "notes": "Activity: Development, Testing, Design, Documentation, Deployment, Requirements"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.AssignedTo",
+          "value": "backend-dev@example.com"
+        },
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Hierarchy-Reverse",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123",
+            "attributes": {
+              "comment": "Parent user story"
+            }
+          },
+          "notes": "Link to parent user story"
+        }
+      ],
+      "task_specific_fields": {
+        "Microsoft.VSTS.Scheduling.RemainingWork": "Decimal - Hours remaining",
+        "Microsoft.VSTS.Scheduling.OriginalEstimate": "Decimal - Original estimate in hours",
+        "Microsoft.VSTS.Scheduling.CompletedWork": "Decimal - Hours completed",
+        "Microsoft.VSTS.Common.Activity": "String - Type of activity (Development, Testing, etc.)"
+      }
+    },
+    {
+      "type": "Feature",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Feature?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "User Authentication System"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Description",
+          "value": "<div>Complete authentication system including login, registration, password reset, and social authentication.<br/><br/><b>Success Criteria:</b><ul><li>Users can register with email</li><li>Users can log in with email/password</li><li>Users can reset forgotten passwords</li><li>Users can log in with Google/Facebook</li><li>All auth flows follow security best practices</li></ul></div>"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.BusinessValue",
+          "value": 100,
+          "notes": "Business value score for prioritization"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.ValueArea",
+          "value": "Business",
+          "notes": "Business or Architectural"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Scheduling.TargetDate",
+          "value": "2026-03-31",
+          "notes": "Target completion date"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Tags",
+          "value": "authentication; security; mvp"
+        }
+      ],
+      "feature_specific_fields": {
+        "Microsoft.VSTS.Common.BusinessValue": "Integer - Business value for prioritization",
+        "Microsoft.VSTS.Common.TimeCriticality": "Decimal - Time criticality score",
+        "Microsoft.VSTS.Scheduling.TargetDate": "DateTime - Target completion date",
+        "Microsoft.VSTS.Common.ValueArea": "String - Business or Architectural",
+        "Microsoft.VSTS.Common.Risk": "String - Risk assessment"
+      }
+    },
+    {
+      "type": "Epic",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Epic?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "User Management Platform"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Description",
+          "value": "<div><b>Epic Goal:</b><br/>Build a complete user management platform including authentication, authorization, profile management, and user administration.<br/><br/><b>Features:</b><ul><li>User Authentication System</li><li>Role-Based Access Control</li><li>User Profile Management</li><li>Admin Dashboard for User Management</li></ul><br/><b>Success Metrics:</b><ul><li>Support 10,000+ concurrent users</li><li>99.9% uptime</li><li>Sub-second login response time</li></ul></div>"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Scheduling.StartDate",
+          "value": "2026-02-01",
+          "notes": "Epic start date"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Scheduling.TargetDate",
+          "value": "2026-06-30",
+          "notes": "Epic target completion date"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.BusinessValue",
+          "value": 500
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Tags",
+          "value": "platform; user-management; q1-2026; strategic"
+        }
+      ],
+      "epic_specific_fields": {
+        "Microsoft.VSTS.Scheduling.StartDate": "DateTime - Epic start date",
+        "Microsoft.VSTS.Scheduling.TargetDate": "DateTime - Epic target date",
+        "Microsoft.VSTS.Common.BusinessValue": "Integer - Business value",
+        "Microsoft.VSTS.Common.TimeCriticality": "Decimal - Time criticality"
+      }
+    },
+    {
+      "type": "Test Case",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Test Case?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "Verify successful login with valid credentials"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.TCM.Steps",
+          "value": "<steps id=\"0\" last=\"3\"><step id=\"2\" type=\"ValidateStep\"><parameterizedString isformatted=\"true\">&lt;DIV&gt;&lt;P&gt;Navigate to login page&lt;/P&gt;&lt;/DIV&gt;</parameterizedString><parameterizedString isformatted=\"true\">&lt;DIV&gt;&lt;P&gt;Login page is displayed&lt;/P&gt;&lt;/DIV&gt;</parameterizedString><description/></step><step id=\"3\" type=\"ValidateStep\"><parameterizedString isformatted=\"true\">&lt;DIV&gt;&lt;P&gt;Enter valid email and password&lt;/P&gt;&lt;/DIV&gt;</parameterizedString><parameterizedString isformatted=\"true\">&lt;DIV&gt;&lt;P&gt;Credentials are accepted&lt;/P&gt;&lt;/DIV&gt;</parameterizedString><description/></step><step id=\"4\" type=\"ValidateStep\"><parameterizedString isformatted=\"true\">&lt;DIV&gt;&lt;P&gt;Click login button&lt;/P&gt;&lt;/DIV&gt;</parameterizedString><parameterizedString isformatted=\"true\">&lt;DIV&gt;&lt;P&gt;User is redirected to dashboard&lt;/P&gt;&lt;/DIV&gt;</parameterizedString><description/></step></steps>",
+          "notes": "Test steps in XML format - complex, usually managed through UI"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.Priority",
+          "value": 1
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Tags",
+          "value": "smoke-test; authentication"
+        },
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "Microsoft.VSTS.Common.TestedBy-Reverse",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/123",
+            "attributes": {
+              "comment": "Tests the login user story"
+            }
+          }
+        }
+      ],
+      "test_case_specific_fields": {
+        "Microsoft.VSTS.TCM.Steps": "XML - Test steps (complex format)",
+        "Microsoft.VSTS.TCM.AutomationStatus": "String - Not Automated, Planned, Automated",
+        "Microsoft.VSTS.TCM.Parameters": "XML - Test parameters",
+        "Microsoft.VSTS.TCM.LocalDataSource": "XML - Data source for data-driven tests"
+      },
+      "notes": [
+        "Test Case work items have complex XML fields",
+        "Usually better to create through Azure DevOps UI or Test Plans",
+        "Can link to User Stories with TestedBy relationship"
+      ]
+    },
+    {
+      "type": "Issue (Impediment)",
+      "endpoint": "POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/$Issue?api-version=7.1",
+      "headers": {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": "Basic {base64_encoded_pat}"
+      },
+      "request": [
+        {
+          "op": "add",
+          "path": "/fields/System.Title",
+          "value": "Waiting for API documentation from third-party service"
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Description",
+          "value": "<div>We need the OAuth API documentation from the social auth provider to continue implementation. Contacted their support on 2026-02-15.</div>"
+        },
+        {
+          "op": "add",
+          "path": "/fields/Microsoft.VSTS.Common.Priority",
+          "value": 1
+        },
+        {
+          "op": "add",
+          "path": "/fields/System.Tags",
+          "value": "blocker; external-dependency; oauth"
+        },
+        {
+          "op": "add",
+          "path": "/relations/-",
+          "value": {
+            "rel": "System.LinkTypes.Related",
+            "url": "https://dev.azure.com/{organization}/_apis/wit/workItems/145",
+            "attributes": {
+              "comment": "Blocking the social auth user story"
+            }
+          }
+        }
+      ],
+      "issue_specific_fields": {
+        "Microsoft.VSTS.Common.Priority": "Integer - Priority level"
+      },
+      "notes": [
+        "Issues track impediments, risks, or problems",
+        "Often linked to blocked work items",
+        "Used in Scrum for tracking blockers"
+      ]
+    }
+  ],
+  "process_templates": {
+    "agile": {
+      "work_item_types": [
+        "Epic",
+        "Feature",
+        "User Story",
+        "Task",
+        "Bug",
+        "Issue",
+        "Test Case"
+      ],
+      "hierarchy": "Epic > Feature > User Story > Task"
+    },
+    "scrum": {
+      "work_item_types": [
+        "Epic",
+        "Feature",
+        "Product Backlog Item",
+        "Task",
+        "Bug",
+        "Impediment",
+        "Test Case"
+      ],
+      "hierarchy": "Epic > Feature > Product Backlog Item > Task",
+      "notes": "Product Backlog Item (PBI) replaces User Story"
+    },
+    "cmmi": {
+      "work_item_types": [
+        "Epic",
+        "Feature",
+        "Requirement",
+        "Task",
+        "Bug",
+        "Issue",
+        "Risk",
+        "Review",
+        "Test Case"
+      ],
+      "hierarchy": "Epic > Feature > Requirement > Task",
+      "notes": "More formal process with additional work item types"
+    },
+    "basic": {
+      "work_item_types": ["Epic", "Issue", "Task"],
+      "hierarchy": "Epic > Issue > Task",
+      "notes": "Simplified process for small teams"
+    }
+  },
+  "common_fields_by_type": {
+    "all_types": [
+      "System.Title",
+      "System.Description",
+      "System.AssignedTo",
+      "System.State",
+      "System.Tags",
+      "System.AreaPath",
+      "System.IterationPath",
+      "Microsoft.VSTS.Common.Priority"
+    ],
+    "backlog_items": [
+      "Microsoft.VSTS.Scheduling.StoryPoints",
+      "Microsoft.VSTS.Common.ValueArea",
+      "Microsoft.VSTS.Common.Risk",
+      "Microsoft.VSTS.Scheduling.Effort"
+    ],
+    "task": [
+      "Microsoft.VSTS.Scheduling.RemainingWork",
+      "Microsoft.VSTS.Scheduling.OriginalEstimate",
+      "Microsoft.VSTS.Scheduling.CompletedWork",
+      "Microsoft.VSTS.Common.Activity"
+    ],
+    "bug": [
+      "Microsoft.VSTS.TCM.ReproSteps",
+      "Microsoft.VSTS.TCM.SystemInfo",
+      "Microsoft.VSTS.Common.Severity",
+      "Microsoft.VSTS.Build.FoundIn",
+      "Microsoft.VSTS.Build.IntegrationBuild"
+    ],
+    "portfolio": [
+      "Microsoft.VSTS.Common.BusinessValue",
+      "Microsoft.VSTS.Scheduling.TargetDate",
+      "Microsoft.VSTS.Scheduling.StartDate",
+      "Microsoft.VSTS.Common.TimeCriticality"
+    ]
+  },
+  "best_practices": [
+    "Use the correct work item type for the process template (Agile vs Scrum vs CMMI)",
+    "Always set System.Title - it's required for all work items",
+    "Link child items to parents during creation for better organization",
+    "Set AreaPath and IterationPath to organize work",
+    "Use tags for cross-cutting concerns (e.g., 'security', 'performance')",
+    "For bugs, include detailed ReproSteps and SystemInfo",
+    "For tasks, estimate RemainingWork for better sprint planning",
+    "For portfolio items (Epic/Feature), set TargetDate and BusinessValue"
+  ],
+  "notes": [
+    "Work item types vary by process template - check project settings",
+    "Field reference names are case-sensitive: Microsoft.VSTS.Common.Priority",
+    "Some fields are calculated and cannot be set via API",
+    "Custom fields added to your project can also be set using their reference names",
+    "Use $expand=fields endpoint to discover available fields for a work item type"
+  ]
+}

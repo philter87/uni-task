@@ -1,0 +1,337 @@
+{
+  "_comment": "Examples for updating issues using GitHub REST API",
+  "update_issue": {
+    "description": "Update an existing issue",
+    "endpoint": "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+    "method": "PATCH",
+    "required_permissions": "Issues repository permissions (write)",
+    "example_request": {
+      "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+      "method": "PATCH",
+      "headers": {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer YOUR_TOKEN",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "title": "Updated bug title",
+        "body": "Updated description with more details",
+        "state": "closed",
+        "state_reason": "completed",
+        "labels": ["bug", "fixed"],
+        "assignees": ["octocat", "hubot"],
+        "milestone": 1
+      }
+    },
+    "curl_example": "curl -L -X PATCH -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer YOUR_TOKEN\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/OWNER/REPO/issues/ISSUE_NUMBER -d '{\"state\":\"closed\",\"state_reason\":\"completed\"}'",
+    "request_body_parameters": {
+      "title": {
+        "type": "string or integer or null",
+        "required": false,
+        "description": "The title of the issue"
+      },
+      "body": {
+        "type": "string or null",
+        "required": false,
+        "description": "The contents of the issue"
+      },
+      "assignee": {
+        "type": "string or null",
+        "required": false,
+        "description": "Username to assign (legacy field)"
+      },
+      "state": {
+        "type": "string",
+        "required": false,
+        "options": ["open", "closed"],
+        "description": "State of the issue"
+      },
+      "state_reason": {
+        "type": "string or null",
+        "required": false,
+        "options": ["completed", "not_planned", "reopened", null],
+        "description": "Reason for state change",
+        "note": "Ignored unless state is also changed"
+      },
+      "milestone": {
+        "type": "integer or string or null",
+        "required": false,
+        "description": "Milestone number or null to remove",
+        "note": "Only users with push access can set"
+      },
+      "labels": {
+        "type": "array of strings",
+        "required": false,
+        "description": "Array of labels (replaces all existing labels)",
+        "note": "Send empty array [] to clear all labels"
+      },
+      "assignees": {
+        "type": "array of strings",
+        "required": false,
+        "description": "Array of usernames (replaces all assignees)",
+        "note": "Send empty array [] to clear all assignees"
+      }
+    },
+    "example_response": {
+      "status": 200,
+      "body": {
+        "id": 1,
+        "number": 1347,
+        "state": "closed",
+        "state_reason": "completed",
+        "title": "Updated bug title",
+        "body": "Updated description with more details",
+        "user": {
+          "login": "original-creator",
+          "id": 1
+        },
+        "labels": [
+          {
+            "name": "bug",
+            "color": "f29513"
+          },
+          {
+            "name": "fixed",
+            "color": "00ff00"
+          }
+        ],
+        "assignees": [
+          {
+            "login": "octocat",
+            "id": 1
+          },
+          {
+            "login": "hubot",
+            "id": 2
+          }
+        ],
+        "milestone": {
+          "number": 1,
+          "title": "v1.0"
+        },
+        "updated_at": "2026-02-21T10:30:00Z",
+        "closed_at": "2026-02-21T10:30:00Z",
+        "closed_by": {
+          "login": "closer-user",
+          "id": 3
+        }
+      }
+    }
+  },
+  "common_update_operations": {
+    "close_issue": {
+      "description": "Close an issue as completed",
+      "body": {
+        "state": "closed",
+        "state_reason": "completed"
+      }
+    },
+    "close_as_not_planned": {
+      "description": "Close an issue as not planned",
+      "body": {
+        "state": "closed",
+        "state_reason": "not_planned"
+      }
+    },
+    "reopen_issue": {
+      "description": "Reopen a closed issue",
+      "body": {
+        "state": "open",
+        "state_reason": "reopened"
+      }
+    },
+    "add_to_milestone": {
+      "description": "Add issue to milestone 5",
+      "body": {
+        "milestone": 5
+      }
+    },
+    "remove_from_milestone": {
+      "description": "Remove issue from milestone",
+      "body": {
+        "milestone": null
+      }
+    },
+    "replace_labels": {
+      "description": "Replace all labels with new set",
+      "body": {
+        "labels": ["bug", "high-priority", "needs-review"]
+      }
+    },
+    "clear_all_labels": {
+      "description": "Remove all labels",
+      "body": {
+        "labels": []
+      }
+    },
+    "assign_users": {
+      "description": "Assign multiple users",
+      "body": {
+        "assignees": ["developer1", "developer2"]
+      }
+    },
+    "unassign_all": {
+      "description": "Remove all assignees",
+      "body": {
+        "assignees": []
+      }
+    },
+    "update_title_only": {
+      "description": "Change only the title",
+      "body": {
+        "title": "New clearer title"
+      }
+    },
+    "append_to_body": {
+      "description": "Update description (need to get current first)",
+      "note": "Must include full new body, can't append directly",
+      "body": {
+        "body": "Original content\n\n## Update\nNew information added"
+      }
+    }
+  },
+  "label_management": {
+    "description": "Managing labels on an issue",
+    "add_labels": {
+      "endpoint": "POST /repos/{owner}/{repo}/issues/{issue_number}/labels",
+      "method": "POST",
+      "body": {
+        "labels": ["bug", "documentation"]
+      },
+      "note": "Adds labels without removing existing ones"
+    },
+    "remove_label": {
+      "endpoint": "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{label_name}",
+      "method": "DELETE",
+      "curl": "curl -L -X DELETE -H \"Authorization: Bearer TOKEN\" https://api.github.com/repos/owner/repo/issues/123/labels/bug"
+    },
+    "remove_all_labels": {
+      "endpoint": "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels",
+      "method": "DELETE"
+    },
+    "replace_all_labels": {
+      "endpoint": "PUT /repos/{owner}/{repo}/issues/{issue_number}/labels",
+      "method": "PUT",
+      "body": {
+        "labels": ["new-label1", "new-label2"]
+      }
+    }
+  },
+  "assignee_management": {
+    "description": "Managing assignees on an issue",
+    "add_assignees": {
+      "endpoint": "POST /repos/{owner}/{repo}/issues/{issue_number}/assignees",
+      "method": "POST",
+      "body": {
+        "assignees": ["octocat", "hubot"]
+      },
+      "note": "Adds assignees without removing existing ones"
+    },
+    "remove_assignees": {
+      "endpoint": "DELETE /repos/{owner}/{repo}/issues/{issue_number}/assignees",
+      "method": "DELETE",
+      "body": {
+        "assignees": ["octocat"]
+      }
+    },
+    "check_assignee": {
+      "endpoint": "GET /repos/{owner}/{repo}/assignees/{assignee}",
+      "description": "Check if a user can be assigned to issues",
+      "returns": "204 if user can be assigned, 404 if not"
+    }
+  },
+  "lock_and_unlock": {
+    "lock_issue": {
+      "description": "Lock an issue conversation",
+      "endpoint": "PUT /repos/{owner}/{repo}/issues/{issue_number}/lock",
+      "method": "PUT",
+      "body": {
+        "lock_reason": "too heated"
+      },
+      "lock_reasons": ["off-topic", "too heated", "resolved", "spam"],
+      "note": "Only users with push access can lock"
+    },
+    "unlock_issue": {
+      "description": "Unlock an issue conversation",
+      "endpoint": "DELETE /repos/{owner}/{repo}/issues/{issue_number}/lock",
+      "method": "DELETE"
+    }
+  },
+  "state_reasons": {
+    "completed": {
+      "description": "Issue was completed successfully",
+      "use_when": "Feature implemented, bug fixed, question answered"
+    },
+    "not_planned": {
+      "description": "Issue will not be worked on",
+      "use_when": "Won't fix, duplicate, out of scope"
+    },
+    "reopened": {
+      "description": "Previously closed issue was reopened",
+      "use_when": "Issue still relevant, regression occurred"
+    },
+    "null": {
+      "description": "No specific reason",
+      "use_when": "Generic open/close without specific reason"
+    }
+  },
+  "partial_update_example": {
+    "description": "You can update just one field at a time",
+    "update_only_state": {
+      "body": {
+        "state": "closed"
+      }
+    },
+    "update_only_labels": {
+      "body": {
+        "labels": ["bug", "ui"]
+      }
+    },
+    "update_multiple_fields": {
+      "body": {
+        "state": "closed",
+        "state_reason": "completed",
+        "labels": ["fixed"]
+      }
+    }
+  },
+  "code_examples": {
+    "javascript": "// Close issue and add 'fixed' label\nconst response = await fetch(\n  'https://api.github.com/repos/owner/repo/issues/123',\n  {\n    method: 'PATCH',\n    headers: {\n      'Accept': 'application/vnd.github+json',\n      'Authorization': `Bearer ${token}`,\n      'X-GitHub-Api-Version': '2022-11-28'\n    },\n    body: JSON.stringify({\n      state: 'closed',\n      state_reason: 'completed',\n      labels: ['fixed']\n    })\n  }\n);",
+    "python": "import requests\n\nurl = 'https://api.github.com/repos/owner/repo/issues/123'\nheaders = {\n    'Authorization': f'Bearer {token}',\n    'Accept': 'application/vnd.github+json'\n}\ndata = {\n    'state': 'closed',\n    'state_reason': 'completed',\n    'labels': ['fixed']\n}\n\nresponse = requests.patch(url, headers=headers, json=data)"
+  },
+  "important_notes": {
+    "permissions": "Issue owners and users with push access can edit. Users with triage role can edit certain fields.",
+    "notifications": "Updates trigger notifications to watchers",
+    "labels_replace": "Setting 'labels' field replaces ALL existing labels",
+    "partial_updates": "Only send fields you want to change",
+    "state_reason_requirement": "state_reason is ignored unless state is also being changed",
+    "silently_dropped": "Fields requiring special permissions are silently dropped if user lacks access"
+  },
+  "error_responses": {
+    "301": {
+      "description": "Moved permanently",
+      "cause": "Issue was transferred to another repository"
+    },
+    "403": {
+      "description": "Forbidden",
+      "cause": "Lack of permissions to update issue"
+    },
+    "404": {
+      "description": "Not found",
+      "cause": "Issue doesn't exist or no access to repository"
+    },
+    "410": {
+      "description": "Gone",
+      "cause": "Issue was deleted"
+    },
+    "422": {
+      "description": "Validation failed",
+      "common_causes": [
+        "Invalid state_reason value",
+        "Invalid label names",
+        "Invalid assignee usernames"
+      ]
+    }
+  }
+}
