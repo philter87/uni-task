@@ -3,15 +3,15 @@ using Microsoft.Extensions.DependencyInjection;
 using UniTask.Api.Shared;
 using UniTask.Tests.Utls;
 
-namespace UniTask.Tests.Api.Projects.Commands;
+namespace UniTask.Tests.Api.Organisations.Commands;
 
-public class CreateAuthTaskProviderHandlerTests
+public class CreateOrganisationHandlerTests
 {
     private readonly AppFactory _factory = new AppFactory();
     private readonly IMediator _mediator;
     private readonly TaskDbContext _dbContext;
 
-    public CreateAuthTaskProviderHandlerTests()
+    public CreateOrganisationHandlerTests()
     {
         var scope = _factory.Services.CreateScope();
         _mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -19,32 +19,31 @@ public class CreateAuthTaskProviderHandlerTests
     }
 
     [Fact]
-    public async Task Should_CreateAuthTaskProviderInDatabase_WhenCommandIsExecuted()
+    public async Task Should_CreateOrganisationInDatabase_WhenCommandIsExecuted()
     {
         // Arrange
-        var command = Any.CreateTaskProviderAuthCommand();
+        var command = Any.CreateOrganisationCommand();
 
         // Act
         await _mediator.Send(command);
 
         // Assert
-        Assert.Single(_dbContext.TaskProviderAuths);
+        Assert.Single(_dbContext.Organisations);
     }
 
     [Fact]
     public async Task Should_StoreCorrectValues_WhenCommandIsExecuted()
     {
         // Arrange
-        var command = Any.CreateTaskProviderAuthCommand();
+        var command = Any.CreateOrganisationCommand();
 
         // Act
         await _mediator.Send(command);
 
         // Assert
-        var auth = _dbContext.TaskProviderAuths.Single();
-        Assert.Equal(command.Id, auth.Id);
-        Assert.Equal(command.AuthenticationType, auth.AuthenticationType);
-        Assert.Equal(command.AuthTypeId, auth.AuthTypeId);
-        Assert.Equal(command.SecretValue, auth.SecretValue);
+        var organisation = _dbContext.Organisations.Single();
+        Assert.Equal(command.Id, organisation.Id);
+        Assert.Equal(command.Name, organisation.Name);
+        Assert.Equal(command.ExternalId, organisation.ExternalId);
     }
 }

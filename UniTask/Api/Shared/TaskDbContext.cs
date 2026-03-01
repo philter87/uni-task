@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using UniTask.Api.Organisations.Models;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.PullRequests;
 using UniTask.Api.Tasks.Models;
@@ -82,10 +83,9 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<Guid>, Guid
             entity.Property(e => e.SecretValue).IsRequired().HasMaxLength(1000);
             entity.Property(e => e.AuthenticationType).HasConversion<string>();
 
-            entity.HasOne(e => e.Organisation)
+            entity.HasMany(e => e.Organisations)
                 .WithMany(e => e.Auths)
-                .HasForeignKey(e => e.OrganisationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .UsingEntity(j => j.ToTable("OrganisationTaskProviderAuths"));
         });
 
         // OrganisationMember configuration

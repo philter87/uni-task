@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using MediatR;
-using UniTask.Api.Projects.Commands.CreateAuthTaskProvider;
-using UniTask.Api.Projects.Events;
+using UniTask.Api.Organisations.Commands.CreateTaskProviderAuth;
+using UniTask.Api.Organisations.Events;
 using UniTask.Api.Shared;
 
-namespace UniTask.Api.Projects.Models;
+namespace UniTask.Api.Organisations.Models;
 
 public class TaskProviderAuth
 {
@@ -12,29 +12,27 @@ public class TaskProviderAuth
     public List<INotification> DomainEvents { get; private set; } = new();
 
     public Guid Id { get; set; }
-    public Guid OrganisationId { get; set; }
     public AuthenticationType AuthenticationType { get; set; }
     public required string AuthTypeId { get; set; }
     public required string SecretValue { get; set; }
 
-    // Navigation properties
-    public Organisation Organisation { get; set; } = null!;
+    // Navigation properties (many-to-many)
+    public ICollection<Organisation> Organisations { get; set; } = new List<Organisation>();
 
-    public static TaskProviderAuth Create(CreateAuthTaskProviderCommand command)
+    public static TaskProviderAuth Create(CreateTaskProviderAuthCommand command)
     {
         var auth = new TaskProviderAuth
         {
             Id = command.Id,
-            OrganisationId = command.OrganisationId,
             AuthenticationType = command.AuthenticationType,
             AuthTypeId = command.AuthTypeId,
             SecretValue = command.SecretValue
         };
 
-        auth.DomainEvents.Add(new AuthTaskProviderCreatedEvent
+        auth.DomainEvents.Add(new TaskProviderAuthCreatedEvent
         {
-            AuthTaskProviderId = auth.Id,
-            OrganisationId = auth.OrganisationId,
+            TaskProviderAuthId = auth.Id,
+            OrganisationId = command.OrganisationId,
             AuthenticationType = auth.AuthenticationType,
             Origin = command.Origin,
             TaskProvider = command.TaskProvider

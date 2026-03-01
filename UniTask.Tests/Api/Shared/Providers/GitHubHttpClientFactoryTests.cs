@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using UniTask.Api.Projects.Models;
+using UniTask.Api.Organisations.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Shared.TaskProviderClients;
 using UniTask.Tests.Utls;
@@ -40,10 +40,12 @@ public class GitHubHttpClientFactoryTests : IDisposable
         using (var scope = _serviceProvider.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var organisation = new Organisation { Id = organisationId, Name = "Test Org" };
             var auth = Any.TaskProviderAuth(
                 authenticationType: AuthenticationType.GitHubApp,
-                secretValue: "db-token",
-                organisationId: organisationId);
+                secretValue: "db-token");
+            organisation.Auths.Add(auth);
+            dbContext.Organisations.Add(organisation);
             dbContext.TaskProviderAuths.Add(auth);
             await dbContext.SaveChangesAsync();
         }
@@ -77,10 +79,12 @@ public class GitHubHttpClientFactoryTests : IDisposable
         using (var scope = _serviceProvider.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var organisation = new Organisation { Id = organisationId, Name = "Test Org" };
             var auth = Any.TaskProviderAuth(
                 authenticationType: AuthenticationType.GitHubApp,
-                secretValue: expectedToken,
-                organisationId: organisationId);
+                secretValue: expectedToken);
+            organisation.Auths.Add(auth);
+            dbContext.Organisations.Add(organisation);
             dbContext.TaskProviderAuths.Add(auth);
             await dbContext.SaveChangesAsync();
         }

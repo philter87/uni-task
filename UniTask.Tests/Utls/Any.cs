@@ -1,6 +1,8 @@
+using UniTask.Api.Organisations.Commands.Create;
+using UniTask.Api.Organisations.Commands.CreateTaskProviderAuth;
+using UniTask.Api.Organisations.Models;
 using UniTask.Api.Projects;
 using UniTask.Api.Projects.Commands.Create;
-using UniTask.Api.Projects.Commands.CreateAuthTaskProvider;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
@@ -49,6 +51,23 @@ public static class Any
     public static string Color()
     {
         return $"#{Int(0, 16777215):X6}";
+    }
+
+    public static CreateOrganisationCommand CreateOrganisationCommand(
+        Guid? id = null,
+        string? name = null,
+        string? externalId = null,
+        ChangeOrigin? origin = null,
+        TaskProvider? taskProvider = null)
+    {
+        return new CreateOrganisationCommand
+        {
+            Id = id ?? GuidRan(),
+            Name = name ?? $"Org {String(8)}",
+            ExternalId = externalId,
+            Origin = origin ?? ChangeOrigin.Internal,
+            TaskProvider = taskProvider ?? TaskProvider.Internal,
+        };
     }
 
     public static CreateProjectCommand CreateProjectCommand(
@@ -361,7 +380,7 @@ public static class Any
         };
     }
 
-    public static CreateAuthTaskProviderCommand CreateAuthTaskProviderCommand(
+    public static CreateTaskProviderAuthCommand CreateTaskProviderAuthCommand(
         Guid? id = null,
         Guid? organisationId = null,
         AuthenticationType? authenticationType = null,
@@ -370,7 +389,7 @@ public static class Any
         ChangeOrigin? origin = null,
         TaskProvider? taskProvider = null)
     {
-        return new CreateAuthTaskProviderCommand
+        return new CreateTaskProviderAuthCommand
         {
             Id = id ?? GuidRan(),
             OrganisationId = organisationId ?? GuidRan(),
@@ -385,15 +404,13 @@ public static class Any
     public static TaskProviderAuth TaskProviderAuth(
         AuthenticationType? authenticationType = null,
         string? authTypeId = null,
-        string? secretValue = null,
-        Guid organisationId = default)
+        string? secretValue = null)
     {
         return new TaskProviderAuth
         {
             AuthenticationType = authenticationType ?? Enum<AuthenticationType>(),
             AuthTypeId = authTypeId ?? String(20),
             SecretValue = secretValue ?? String(40),
-            OrganisationId = organisationId
         };
     }
 

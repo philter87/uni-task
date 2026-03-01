@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using UniTask.Api.Organisations.Models;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Tests.Utls;
@@ -170,12 +171,16 @@ public class OrganisationModelTests : IDisposable
         _context.Organisations.Add(organisation);
         await _context.SaveChangesAsync();
 
-        var auth1 = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123", organisationId: organisation.Id);
-        var auth2 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id", organisationId: organisation.Id);
-        var auth3 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id-2", organisationId: organisation.Id);
+        var auth1 = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123");
+        var auth2 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id");
+        var auth3 = Any.TaskProviderAuth(authenticationType: AuthenticationType.AzureAppRegistration, authTypeId: "azure-client-id-2");
+        _context.TaskProviderAuths.AddRange(auth1, auth2, auth3);
+
+        organisation.Auths.Add(auth1);
+        organisation.Auths.Add(auth2);
+        organisation.Auths.Add(auth3);
 
         // Act
-        _context.TaskProviderAuths.AddRange(auth1, auth2, auth3);
         await _context.SaveChangesAsync();
 
         // Assert
@@ -191,24 +196,25 @@ public class OrganisationModelTests : IDisposable
     }
 
     [Fact]
-    public async Task DeletingOrganisation_CascadeDeletesTaskProviderAuths()
+    public async Task DeletingOrganisation_RemovesAssociationWithTaskProviderAuths()
     {
         // Arrange
         var organisation = Any.Organisation();
         _context.Organisations.Add(organisation);
         await _context.SaveChangesAsync();
 
-        var auth = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123", organisationId: organisation.Id);
+        var auth = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, authTypeId: "gh-app-id-123");
         _context.TaskProviderAuths.Add(auth);
+        organisation.Auths.Add(auth);
         await _context.SaveChangesAsync();
 
         // Act
         _context.Organisations.Remove(organisation);
         await _context.SaveChangesAsync();
 
-        // Assert
+        // Assert: The auth itself is NOT deleted (many-to-many), only the association is removed
         var savedAuth = await _context.TaskProviderAuths.FirstOrDefaultAsync(a => a.Id == auth.Id);
-        Assert.Null(savedAuth);
+        Assert.NotNull(savedAuth);
     }
 }
 
