@@ -8,12 +8,12 @@ namespace UniTask.Tests.Api.Projects;
 
 public class ProjectControllerTests : IDisposable
 {
-    private readonly CustomWebApplicationFactory _factory;
+    private readonly AppFactory _factory;
     private readonly HttpClient _client;
 
     public ProjectControllerTests()
     {
-        _factory = new CustomWebApplicationFactory();
+        _factory = new AppFactory();
         _client = _factory.CreateClient();
     }
 

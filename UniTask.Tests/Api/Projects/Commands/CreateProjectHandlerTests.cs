@@ -7,7 +7,7 @@ namespace UniTask.Tests.Api.Projects.Commands;
 
 public class CreateProjectHandlerTests
 {
-    private readonly CustomWebApplicationFactory _factory = new CustomWebApplicationFactory();
+    private readonly AppFactory _factory = new AppFactory();
     private readonly IMediator _mediator;
     private readonly TaskDbContext _dbContext;
 

@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using UniTask.Api.Shared;
+using UniTask.Api.Shared.TaskProviderClients;
 
 namespace UniTask.Tests.Utls;
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class AppFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = Guid.NewGuid().ToString();
 
@@ -33,6 +34,19 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase(_dbName);
             });
+
+            // Remove existing IGitHubHttpClientFactory registration
+            var githubFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IGitHubHttpClientFactory));
+            if (githubFactoryDescriptor != null)
+            {
+                services.Remove(githubFactoryDescriptor);
+            }
+
+            // Register MockGitHubHttpClientFactory for tests
+            services.AddSingleton<IGitHubHttpClientFactory, MockGitHubHttpClientFactory>();
+
+            // Register GitHubTaskProviderClient for tests
+            services.AddSingleton<GitHubTaskProviderClient>();
         });
 
         builder.UseEnvironment("Testing");

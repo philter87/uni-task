@@ -1,0 +1,51 @@
+[
+  {
+    "number": 1,
+    "title": "Add user authentication",
+    "body": "Implement JWT authentication for API endpoints",
+    "assignee": {
+      "login": "developer1"
+    },
+    "created_at": "2026-01-15T10:00:00Z",
+    "updated_at": "2026-02-01T14:30:00Z"
+  },
+  {
+    "number": 2,
+    "title": "Fix database connection issue",
+    "body": "Database connection pool is exhausted under high load",
+    "assignee": {
+      "login": "developer2"
+    },
+    "created_at": "2026-01-20T15:45:00Z",
+    "updated_at": "2026-02-15T09:20:00Z"
+  },
+  {
+    "number": 3,
+    "title": "Update documentation",
+    "body": "API documentation needs to be updated with new endpoints",
+    "assignee": null,
+    "created_at": "2026-02-05T11:30:00Z",
+    "updated_at": "2026-02-10T16:45:00Z"
+  },
+  {
+    "number": 4,
+    "title": "Implement caching layer",
+    "body": "Add Redis caching to improve performance",
+    "assignee": {
+      "login": "developer1"
+    },
+    "created_at": "2026-02-12T08:15:00Z",
+    "updated_at": "2026-02-28T13:00:00Z"
+  },
+  {
+    "number": 5,
+    "title": "Security vulnerability in dependencies",
+    "body": "Update vulnerable npm packages to latest versions",
+    "assignee": {
+      "login": "security-team"
+    },
+    "created_at": "2026-02-20T14:00:00Z",
+    "updated_at": "2026-02-25T10:30:00Z"
+  }
+]
+
