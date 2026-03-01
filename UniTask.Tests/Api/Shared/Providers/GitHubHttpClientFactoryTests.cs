@@ -99,6 +99,99 @@ public class GitHubHttpClientFactoryTests : IDisposable
     }
 
     [Fact]
+    public async Task IsConfigured_Should_ReturnTrue_When_ProjectHasTaskProviderAuth()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var auth = Any.TaskProviderAuth(
+                authenticationType: AuthenticationType.GitHubApp,
+                secretValue: "project-token");
+            dbContext.TaskProviderAuths.Add(auth);
+            await dbContext.SaveChangesAsync();
+
+            var project = Any.Project();
+            project.Id = projectId;
+            project.TaskProviderAuthId = auth.Id;
+            dbContext.Projects.Add(project);
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Act
+        var result = _factory.IsConfigured(Guid.Empty, projectId);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task CreateClient_Should_UseProjectToken_When_ProjectHasTaskProviderAuth()
+    {
+        // Arrange
+        var projectId = Guid.NewGuid();
+        const string expectedToken = "project-level-token";
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var auth = Any.TaskProviderAuth(
+                authenticationType: AuthenticationType.GitHubApp,
+                secretValue: expectedToken);
+            dbContext.TaskProviderAuths.Add(auth);
+            await dbContext.SaveChangesAsync();
+
+            var project = Any.Project();
+            project.Id = projectId;
+            project.TaskProviderAuthId = auth.Id;
+            dbContext.Projects.Add(project);
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Act
+        var client = _factory.CreateClient(Guid.Empty, projectId);
+
+        // Assert
+        Assert.NotNull(client.DefaultRequestHeaders.Authorization);
+        Assert.Equal("Bearer", client.DefaultRequestHeaders.Authorization!.Scheme);
+        Assert.Equal(expectedToken, client.DefaultRequestHeaders.Authorization.Parameter);
+    }
+
+    [Fact]
+    public async Task CreateClient_Should_UseOrgToken_When_ProjectHasNoTaskProviderAuth()
+    {
+        // Arrange
+        var organisationId = Guid.NewGuid();
+        var projectId = Guid.NewGuid();
+        const string expectedToken = "org-token";
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var organisation = new Organisation { Id = organisationId, Name = "Test Org" };
+            var auth = Any.TaskProviderAuth(
+                authenticationType: AuthenticationType.GitHubApp,
+                secretValue: expectedToken);
+            organisation.Auths.Add(auth);
+            dbContext.Organisations.Add(organisation);
+            dbContext.TaskProviderAuths.Add(auth);
+
+            var project = Any.Project();
+            project.Id = projectId;
+            dbContext.Projects.Add(project);
+
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Act
+        var client = _factory.CreateClient(organisationId, projectId);
+
+        // Assert
+        Assert.NotNull(client.DefaultRequestHeaders.Authorization);
+        Assert.Equal("Bearer", client.DefaultRequestHeaders.Authorization!.Scheme);
+        Assert.Equal(expectedToken, client.DefaultRequestHeaders.Authorization.Parameter);
+    }
+
+    [Fact]
     public void CreateClient_Should_NotSetAuthHeader_When_NoTokenAvailable()
     {
         // Arrange

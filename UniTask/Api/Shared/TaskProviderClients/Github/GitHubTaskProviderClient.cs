@@ -34,10 +34,10 @@ public class GitHubTaskProviderClient : ITaskProviderClient
 
         var organisationId = await GetOrganisationIdAsync(getTasks.ProjectId);
 
-        if (!_gitHubClientFactory.IsConfigured(organisationId))
+        if (!_gitHubClientFactory.IsConfigured(organisationId, getTasks.ProjectId))
             return Enumerable.Empty<TaskItemDto>();
 
-        var httpClient = _gitHubClientFactory.CreateClient(organisationId);
+        var httpClient = _gitHubClientFactory.CreateClient(organisationId, getTasks.ProjectId);
 
         List<GitHubIssue>? issues;
         try

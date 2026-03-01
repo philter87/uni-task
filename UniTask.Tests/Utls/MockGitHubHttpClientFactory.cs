@@ -33,7 +33,7 @@ public class MockGitHubHttpClientFactory : IGitHubHttpClientFactory
             .Respond("application/json", issuesJson);
     }
 
-    public HttpClient CreateClient(Guid organisationId)
+    public HttpClient CreateClient(Guid organisationId, Guid? projectId = null)
     {
         LastOrganisationId = organisationId;
         var httpClient = _mockHandler.ToHttpClient();
@@ -53,6 +53,6 @@ public class MockGitHubHttpClientFactory : IGitHubHttpClientFactory
 
     public string GetRepo() => "repo";
 
-    public bool IsConfigured(Guid organisationId) => true;
+    public bool IsConfigured(Guid organisationId, Guid? projectId = null) => true;
 }
 

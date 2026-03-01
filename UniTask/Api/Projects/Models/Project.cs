@@ -23,8 +23,11 @@ public class Project
     public Guid? OrganisationId { get; set; }
     public TaskProvider? Provider { get; set; }
 
+    public Guid? TaskProviderAuthId { get; set; }
+
     // Navigation properties
     public Organisation? Organisation { get; set; }
+    public TaskProviderAuth? TaskProviderAuth { get; set; }
     public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
     public ICollection<ProjectMember> Members { get; set; } = new List<ProjectMember>();
     public ICollection<Board> Boards { get; set; } = new List<Board>();

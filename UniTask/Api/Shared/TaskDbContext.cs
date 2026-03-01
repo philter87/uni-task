@@ -65,6 +65,11 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<Guid>, Guid
                 .WithOne(e => e.Project)
                 .HasForeignKey(e => e.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.TaskProviderAuth)
+                .WithMany()
+                .HasForeignKey(e => e.TaskProviderAuthId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Organisation configuration

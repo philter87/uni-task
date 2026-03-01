@@ -7,10 +7,10 @@ namespace UniTask.Api.Shared.TaskProviderClients;
 
 public interface IGitHubHttpClientFactory
 {
-    HttpClient CreateClient(Guid organisationId);
+    HttpClient CreateClient(Guid organisationId, Guid? projectId = null);
     string GetOwner();
     string GetRepo();
-    bool IsConfigured(Guid organisationId);
+    bool IsConfigured(Guid organisationId, Guid? projectId = null);
 }
 
 public class GitHubHttpClientFactory : IGitHubHttpClientFactory
@@ -34,9 +34,9 @@ public class GitHubHttpClientFactory : IGitHubHttpClientFactory
         _logger = logger;
     }
 
-    public HttpClient CreateClient(Guid organisationId)
+    public HttpClient CreateClient(Guid organisationId, Guid? projectId = null)
     {
-        var token = GetToken(organisationId);
+        var token = GetToken(organisationId, projectId);
         
         if (string.IsNullOrEmpty(token))
         {
@@ -65,18 +65,30 @@ public class GitHubHttpClientFactory : IGitHubHttpClientFactory
     
     public string GetRepo() => _configuration["GitHub:Repo"] ?? string.Empty;
     
-    public bool IsConfigured(Guid organisationId)
+    public bool IsConfigured(Guid organisationId, Guid? projectId = null)
     {
-        return !string.IsNullOrEmpty(GetToken(organisationId));
+        return !string.IsNullOrEmpty(GetToken(organisationId, projectId));
     }
 
-    private string? GetToken(Guid organisationId)
+    private string? GetToken(Guid organisationId, Guid? projectId = null)
     {
+        if (projectId.HasValue && projectId != Guid.Empty)
+        {
+            using var projectScope = _scopeFactory.CreateScope();
+            var projectContext = projectScope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var secretValue = projectContext.Projects
+                .Where(p => p.Id == projectId.Value)
+                .Select(p => p.TaskProviderAuth != null ? p.TaskProviderAuth.SecretValue : null)
+                .FirstOrDefault();
+            if (secretValue != null)
+                return secretValue;
+        }
+
         if (organisationId != Guid.Empty)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var auth = context.TaskProviderAuths
+            using var orgScope = _scopeFactory.CreateScope();
+            var orgContext = orgScope.ServiceProvider.GetRequiredService<TaskDbContext>();
+            var auth = orgContext.TaskProviderAuths
                 .Include(a => a.Organisations)
                 .FirstOrDefault(a => a.Organisations.Any(o => o.Id == organisationId)
                     && a.AuthenticationType == AuthenticationType.GitHubApp);
