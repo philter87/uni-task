@@ -1,5 +1,6 @@
 using UniTask.Api.Projects;
 using UniTask.Api.Projects.Commands.Create;
+using UniTask.Api.Projects.Commands.CreateAuthTaskProvider;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
@@ -357,6 +358,27 @@ public static class Any
         {
             Name = name ?? $"Org {String(8)}",
             ExternalId = externalId
+        };
+    }
+
+    public static CreateAuthTaskProviderCommand CreateAuthTaskProviderCommand(
+        Guid? id = null,
+        Guid? organisationId = null,
+        AuthenticationType? authenticationType = null,
+        string? authTypeId = null,
+        string? secretValue = null,
+        ChangeOrigin? origin = null,
+        TaskProvider? taskProvider = null)
+    {
+        return new CreateAuthTaskProviderCommand
+        {
+            Id = id ?? GuidRan(),
+            OrganisationId = organisationId ?? GuidRan(),
+            AuthenticationType = authenticationType ?? Enum<AuthenticationType>(),
+            AuthTypeId = authTypeId ?? String(20),
+            SecretValue = secretValue ?? String(40),
+            Origin = origin ?? ChangeOrigin.Internal,
+            TaskProvider = taskProvider ?? TaskProvider.Internal,
         };
     }
 
