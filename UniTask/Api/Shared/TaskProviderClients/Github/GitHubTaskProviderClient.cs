@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 using UniTask.Api.Projects;
 using UniTask.Api.Projects.Events;
 using UniTask.Api.Projects.Queries.GetProjects;
@@ -11,10 +12,12 @@ namespace UniTask.Api.Shared.TaskProviderClients;
 public class GitHubTaskProviderClient : ITaskProviderClient
 {
     private readonly IGitHubHttpClientFactory _gitHubClientFactory;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public GitHubTaskProviderClient(IGitHubHttpClientFactory gitHubClientFactory)
+    public GitHubTaskProviderClient(IGitHubHttpClientFactory gitHubClientFactory, IServiceScopeFactory scopeFactory)
     {
         _gitHubClientFactory = gitHubClientFactory;
+        _scopeFactory = scopeFactory;
     }
 
     public Task CreateProject(ProjectCreatedEvent projectCreated) => Task.CompletedTask;
@@ -29,10 +32,12 @@ public class GitHubTaskProviderClient : ITaskProviderClient
         if (string.IsNullOrEmpty(getTasks.ExternalProjectId))
             return Enumerable.Empty<TaskItemDto>();
 
-        if (!_gitHubClientFactory.IsConfigured())
+        var organisationId = await GetOrganisationIdAsync(getTasks.ProjectId);
+
+        if (!_gitHubClientFactory.IsConfigured(organisationId))
             return Enumerable.Empty<TaskItemDto>();
 
-        var httpClient = _gitHubClientFactory.CreateClient();
+        var httpClient = _gitHubClientFactory.CreateClient(organisationId);
 
         List<GitHubIssue>? issues;
         try
@@ -58,6 +63,17 @@ public class GitHubTaskProviderClient : ITaskProviderClient
             CreatedAt = issue.CreatedAt,
             UpdatedAt = issue.UpdatedAt
         }) ?? Enumerable.Empty<TaskItemDto>();
+    }
+
+    private async Task<Guid> GetOrganisationIdAsync(Guid? projectId)
+    {
+        if (projectId == null)
+            return Guid.Empty;
+
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+        var project = await context.Projects.FindAsync(projectId);
+        return project?.OrganisationId ?? Guid.Empty;
     }
 
     private class GitHubIssue
