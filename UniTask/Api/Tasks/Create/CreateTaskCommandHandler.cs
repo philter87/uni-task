@@ -17,38 +17,12 @@ public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, TaskC
 
     public async Task<TaskCreatedEvent> Handle(CreateTaskCommand request, CancellationToken cancellationToken)
     {
-        var taskItem = new TaskItem
-        {
-            Title = request.Title,
-            Description = request.Description,
-            ProjectId = request.ProjectId,
-            TaskTypeId = request.TaskTypeId,
-            StatusId = request.StatusId,
-            BoardId = request.BoardId,
-            Priority = request.Priority,
-            DueDate = request.DueDate,
-            AssignedTo = request.AssignedTo,
-            AssignedToUserId = request.AssignedToUserId,
-            Provider = request.Provider,
-            ExternalId = request.ExternalId,
-            DurationHours = request.DurationHours,
-            DurationRemainingHours = request.DurationRemainingHours,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
+        var taskItem = TaskItem.Create(request);
         _context.Tasks.Add(taskItem);
+
+        await _publisher.PublishAll(taskItem.DomainEvents, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        var taskCreatedEvent = new TaskCreatedEvent
-        {
-            TaskId = taskItem.Id,
-            Title = taskItem.Title,
-            CreatedAt = taskItem.CreatedAt
-        };
-
-        await _publisher.Publish(taskCreatedEvent, cancellationToken);
-
-        return taskCreatedEvent;
+        return taskItem.DomainEvents.OfType<TaskCreatedEvent>().First();
     }
 }

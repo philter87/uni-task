@@ -22,17 +22,12 @@ public class DeleteTaskCommandHandler : IRequestHandler<DeleteTaskCommand, TaskD
             throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
         }
 
+        task.Delete(request);
         _context.Tasks.Remove(task);
+
+        await _publisher.PublishAll(task.DomainEvents, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        var taskDeletedEvent = new TaskDeletedEvent
-        {
-            TaskId = request.TaskId,
-            DeletedAt = DateTime.UtcNow
-        };
-
-        await _publisher.Publish(taskDeletedEvent, cancellationToken);
-
-        return taskDeletedEvent;
+        return task.DomainEvents.OfType<TaskDeletedEvent>().First();
     }
 }

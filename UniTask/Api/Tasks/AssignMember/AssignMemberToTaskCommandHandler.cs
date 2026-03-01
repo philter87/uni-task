@@ -22,20 +22,11 @@ public class AssignMemberToTaskCommandHandler : IRequestHandler<AssignMemberToTa
             throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
         }
 
-        task.AssignedTo = request.AssignedTo;
-        task.UpdatedAt = DateTime.UtcNow;
+        task.AssignMember(request);
 
+        await _publisher.PublishAll(task.DomainEvents, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        var memberAssignedEvent = new MemberAssignedToTaskEvent
-        {
-            TaskId = request.TaskId,
-            AssignedTo = request.AssignedTo,
-            AssignedAt = DateTime.UtcNow
-        };
-
-        await _publisher.Publish(memberAssignedEvent, cancellationToken);
-
-        return memberAssignedEvent;
+        return task.DomainEvents.OfType<MemberAssignedToTaskEvent>().First();
     }
 }

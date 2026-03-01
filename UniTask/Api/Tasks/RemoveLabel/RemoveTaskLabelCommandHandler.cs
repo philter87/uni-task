@@ -26,23 +26,11 @@ public class RemoveTaskLabelCommandHandler : IRequestHandler<RemoveTaskLabelComm
             throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
         }
 
-        var label = task.Labels.FirstOrDefault(l => l.Id == request.LabelId);
-        if (label != null)
-        {
-            task.Labels.Remove(label);
-            task.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        task.RemoveLabel(request.LabelId, request);
 
-        var labelRemovedEvent = new TaskLabelRemovedEvent
-        {
-            TaskId = request.TaskId,
-            LabelId = request.LabelId,
-            RemovedAt = DateTime.UtcNow
-        };
+        await _publisher.PublishAll(task.DomainEvents, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(labelRemovedEvent, cancellationToken);
-
-        return labelRemovedEvent;
+        return task.DomainEvents.OfType<TaskLabelRemovedEvent>().First();
     }
 }

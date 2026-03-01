@@ -22,20 +22,11 @@ public class ChangeTaskStatusCommandHandler : IRequestHandler<ChangeTaskStatusCo
             throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
         }
 
-        task.StatusId = request.StatusId;
-        task.UpdatedAt = DateTime.UtcNow;
+        task.ChangeStatus(request);
 
+        await _publisher.PublishAll(task.DomainEvents, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        var taskStatusChangedEvent = new TaskStatusChangedEvent
-        {
-            TaskId = request.TaskId,
-            StatusId = request.StatusId,
-            ChangedAt = DateTime.UtcNow
-        };
-
-        await _publisher.Publish(taskStatusChangedEvent, cancellationToken);
-
-        return taskStatusChangedEvent;
+        return task.DomainEvents.OfType<TaskStatusChangedEvent>().First();
     }
 }
