@@ -3,7 +3,7 @@ using UniTask.Api.Shared;
 
 namespace UniTask.Api.Organisations.CreateTaskProviderAuth;
 
-public class CreateTaskProviderAuthCommand : IRequest, IProviderEvent
+public class CreateTaskProviderAuthCommand : IRequest<Guid>, IProviderEvent
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid OrganisationId { get; set; }

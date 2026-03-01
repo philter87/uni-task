@@ -14,6 +14,8 @@ public class GitHubTaskProviderClient : ITaskProviderClient
     private readonly IGitHubHttpClientFactory _gitHubClientFactory;
     private readonly IServiceScopeFactory _scopeFactory;
 
+    public TaskProvider Provider => TaskProvider.GitHub;
+
     public GitHubTaskProviderClient(IGitHubHttpClientFactory gitHubClientFactory, IServiceScopeFactory scopeFactory)
     {
         _gitHubClientFactory = gitHubClientFactory;

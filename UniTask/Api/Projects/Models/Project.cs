@@ -39,6 +39,10 @@ public class Project
             Id = command.Id,
             Name = command.Name,
             Description = command.Description,
+            OrganisationId = command.OrganisationId,
+            Provider = command.Provider,
+            ExternalId = command.ExternalId,
+            TaskProviderAuthId = command.TaskProviderAuthId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

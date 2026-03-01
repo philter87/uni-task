@@ -15,7 +15,10 @@ public class GetProjectsQueryHandler : IRequestHandler<GetProjectsQuery, IEnumer
 
     public async Task<IEnumerable<ProjectDto>> Handle(GetProjectsQuery request, CancellationToken cancellationToken)
     {
-        var projects = await _context.Projects.ToListAsync(cancellationToken);
+        var query = _context.Projects.AsQueryable();
+        if (request.OrganisationId.HasValue)
+            query = query.Where(p => p.OrganisationId == request.OrganisationId.Value);
+        var projects = await query.ToListAsync(cancellationToken);
 
         return projects.Select(p => new ProjectDto
         {
@@ -23,6 +26,9 @@ public class GetProjectsQueryHandler : IRequestHandler<GetProjectsQuery, IEnumer
             ExternalId = p.ExternalId,
             Name = p.Name,
             Description = p.Description,
+            OrganisationId = p.OrganisationId,
+            Provider = p.Provider,
+            TaskProviderAuthId = p.TaskProviderAuthId,
             CreatedAt = p.CreatedAt,
             UpdatedAt = p.UpdatedAt
         });

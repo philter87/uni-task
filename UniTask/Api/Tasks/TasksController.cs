@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniTask.Api.Tasks.AddLabel;
 using UniTask.Api.Tasks.AssignMember;
@@ -15,6 +16,7 @@ namespace UniTask.Api.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TasksController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -25,10 +27,10 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetTasks()
+    public async Task<ActionResult<PagedResult<TaskItemDto>>> GetTasks([FromQuery] GetTasksQuery query)
     {
-        var tasks = await _mediator.Send(new GetTasksQuery());
-        return Ok(tasks);
+        var result = await _mediator.Send(query);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
@@ -36,9 +38,7 @@ public class TasksController : ControllerBase
     {
         var task = await _mediator.Send(new GetTaskQuery { Id = id });
         if (task == null)
-        {
             return NotFound();
-        }
         return Ok(task);
     }
 
@@ -90,12 +90,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var command = new ChangeTaskStatusCommand
-            {
-                TaskId = id,
-                StatusId = request.StatusId
-            };
-
+            var command = new ChangeTaskStatusCommand { TaskId = id, StatusId = request.StatusId };
             var result = await _mediator.Send(command);
             return Ok(result);
         }
@@ -110,12 +105,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var command = new AssignMemberToTaskCommand
-            {
-                TaskId = id,
-                AssignedTo = request.AssignedTo
-            };
-
+            var command = new AssignMemberToTaskCommand { TaskId = id, AssignedTo = request.AssignedTo };
             var result = await _mediator.Send(command);
             return Ok(result);
         }
@@ -130,13 +120,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var command = new AddTaskLabelCommand
-            {
-                TaskId = id,
-                LabelId = labelId
-            };
-
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(new AddTaskLabelCommand { TaskId = id, LabelId = labelId });
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -150,13 +134,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var command = new RemoveTaskLabelCommand
-            {
-                TaskId = id,
-                LabelId = labelId
-            };
-
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(new RemoveTaskLabelCommand { TaskId = id, LabelId = labelId });
             return Ok(result);
         }
         catch (InvalidOperationException ex)

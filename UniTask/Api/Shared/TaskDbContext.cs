@@ -128,6 +128,7 @@ public class TaskDbContext : IdentityDbContext<UniUser, IdentityRole<Guid>, Guid
         {
             entity.Property(e => e.ExternalId).HasMaxLength(100);
             entity.Property(e => e.DisplayName).HasMaxLength(200);
+            entity.Property(e => e.AvatarUrl).HasMaxLength(500);
         });
 
         // TaskType configuration

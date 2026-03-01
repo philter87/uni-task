@@ -5,7 +5,7 @@ using UniTask.Api.Shared;
 
 namespace UniTask.Api.Organisations.CreateTaskProviderAuth;
 
-public class CreateTaskProviderAuthCommandHandler : IRequestHandler<CreateTaskProviderAuthCommand>
+public class CreateTaskProviderAuthCommandHandler : IRequestHandler<CreateTaskProviderAuthCommand, Guid>
 {
     private readonly TaskDbContext _context;
     private readonly IPublisher _publisher;
@@ -16,7 +16,7 @@ public class CreateTaskProviderAuthCommandHandler : IRequestHandler<CreateTaskPr
         _publisher = publisher;
     }
 
-    public async Task Handle(CreateTaskProviderAuthCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateTaskProviderAuthCommand request, CancellationToken cancellationToken)
     {
         var organisation = await _context.Organisations
             .Include(o => o.Auths)
@@ -26,11 +26,11 @@ public class CreateTaskProviderAuthCommandHandler : IRequestHandler<CreateTaskPr
         _context.TaskProviderAuths.Add(auth);
 
         if (organisation != null)
-        {
             organisation.Auths.Add(auth);
-        }
 
         await _publisher.PublishAll(auth.DomainEvents, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+
+        return auth.Id;
     }
 }

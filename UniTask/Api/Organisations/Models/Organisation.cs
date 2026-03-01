@@ -15,6 +15,7 @@ public class Organisation
     public string? ExternalId { get; set; }
     public required string Name { get; set; }
     public TaskProvider? Provider { get; set; }
+    public bool IsPersonal { get; set; }
 
     // Navigation properties
     public ICollection<Project> Projects { get; set; } = new List<Project>();
@@ -28,6 +29,7 @@ public class Organisation
             Id = command.Id,
             Name = command.Name,
             ExternalId = command.ExternalId,
+            IsPersonal = command.IsPersonal,
         };
 
         organisation.DomainEvents.Add(new OrganisationCreatedEvent
