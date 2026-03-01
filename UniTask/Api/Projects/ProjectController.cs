@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using UniTask.Api.Projects.Commands.Create;
-using UniTask.Api.Projects.Queries.GetProject;
-using UniTask.Api.Projects.Queries.GetProjects;
+using UniTask.Api.Projects.Create;
+using UniTask.Api.Projects.GetProject;
+using UniTask.Api.Projects.GetProjects;
 
 namespace UniTask.Api.Projects;
 

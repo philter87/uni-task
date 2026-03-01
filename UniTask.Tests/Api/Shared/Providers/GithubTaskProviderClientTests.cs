@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Shared.TaskProviderClients;
-using UniTask.Api.Tasks.Queries.GetTasks;
+using UniTask.Api.Tasks.GetTasks;
 using UniTask.Tests.Utls;
 
 namespace UniTask.Tests.Api.Shared.Providers;

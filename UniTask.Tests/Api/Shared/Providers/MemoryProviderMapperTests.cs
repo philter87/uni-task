@@ -1,6 +1,6 @@
-using UniTask.Api.Projects.Events;
+using UniTask.Api.Projects.Create;
 using UniTask.Api.Shared.TaskProviderClients;
-using UniTask.Api.Tasks.Events;
+using UniTask.Api.Tasks.Create;
 using UniTask.Tests.Utls;
 
 namespace UniTask.Tests.Api.Shared.Providers;

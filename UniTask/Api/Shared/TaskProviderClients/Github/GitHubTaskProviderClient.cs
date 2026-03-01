@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using UniTask.Api.Projects;
-using UniTask.Api.Projects.Events;
-using UniTask.Api.Projects.Queries.GetProjects;
+using UniTask.Api.Projects.Create;
+using UniTask.Api.Projects.GetProjects;
 using UniTask.Api.Tasks;
-using UniTask.Api.Tasks.Events;
-using UniTask.Api.Tasks.Queries.GetTasks;
+using UniTask.Api.Tasks.Create;
+using UniTask.Api.Tasks.GetTasks;
 
 namespace UniTask.Api.Shared.TaskProviderClients;
 

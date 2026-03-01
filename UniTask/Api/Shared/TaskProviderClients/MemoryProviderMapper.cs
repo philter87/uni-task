@@ -1,7 +1,7 @@
 using UniTask.Api.Projects;
-using UniTask.Api.Projects.Events;
+using UniTask.Api.Projects.Create;
 using UniTask.Api.Tasks;
-using UniTask.Api.Tasks.Events;
+using UniTask.Api.Tasks.Create;
 
 namespace UniTask.Api.Shared.TaskProviderClients;
 

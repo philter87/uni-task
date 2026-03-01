@@ -19,41 +19,40 @@ Controller → Command → Handler → Entity Factory (adds DomainEvents) → Pu
 - **Handlers**: Inject `TaskDbContext` and `IPublisher`, call entity factories, use `_publisher.PublishAll(entity.DomainEvents)` before `SaveChangesAsync`
 - **EventHandlers**: Implement `INotificationHandler<TEvent>` for side effects and external integrations
 
-**Example:** See [CreateProjectCommandHandler](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs) → [Project.Create()](UniTask.Api/Api/Projects/Models/Project.cs)
+**Example:** See [CreateProjectCommandHandler](UniTask.Api/Api/Projects/Create/CreateProjectCommandHandler.cs) → [Project.Create()](UniTask.Api/Api/Projects/Models/Project.cs)
 
 ## Project Structure (Feature-Based)
 
 ```
 UniTask.Api/Api/
 ├── Projects/                    # Project feature
-│   ├── Commands/Create/         # CreateProject CQRS components (commands only)
+│   ├── Create/                  # Command, Handler, Event, EventHandler co-located
 │   │   ├── CreateProjectCommand.cs
-│   │   └── CreateProjectCommandHandler.cs
-│   ├── Queries/GetProject/      # Queries organized similarly
-│   ├── Models/                  # DB entity models
-│   │   ├── Project.cs
-│   │   ├── Organisation.cs
-│   │   ├── Board.cs
-│   │   └── ...
-│   ├── Events/                  # Events and EventHandlers
+│   │   ├── CreateProjectCommandHandler.cs
 │   │   ├── ProjectCreatedEvent.cs
 │   │   └── ProjectCreatedEventHandler.cs
+│   ├── GetProject/              # Query and Handler
+│   ├── GetProjects/             # Query and Handler
+│   ├── Models/                  # DB entity models
+│   │   ├── Project.cs
+│   │   ├── Board.cs
+│   │   └── ...
 │   ├── ProjectDto.cs            # API contract
 │   └── ProjectsController.cs
 ├── Tasks/                       # Task feature (same structure)
-│   ├── Commands/
-│   │   ├── Create/, Update/, Delete/
-│   │   ├── ChangeStatus/, AddLabel/, RemoveLabel/
-│   │   └── AssignMember/
-│   ├── Queries/
-│   │   ├── GetTask/, GetTasks/
+│   ├── Create/                  # CreateTask command, handler, event, event handler
+│   ├── Update/                  # UpdateTask command, handler, event, event handler
+│   ├── Delete/                  # DeleteTask command, handler, event, event handler
+│   ├── ChangeStatus/            # ChangeTaskStatus command, handler, event, event handler
+│   ├── AddLabel/                # AddTaskLabel command, handler, event, event handler
+│   ├── RemoveLabel/             # RemoveTaskLabel command, handler, event, event handler
+│   ├── AssignMember/            # AssignMemberToTask command, handler, event, event handler
+│   ├── SyncTasks/               # SyncTasks command and handler
+│   ├── GetTask/                 # Query and Handler
+│   ├── GetTasks/                # Query and Handler
 │   ├── Models/                  # DB entity models
 │   │   ├── TaskItem.cs
 │   │   ├── Comment.cs
-│   │   └── ...
-│   ├── Events/                  # Events and EventHandlers
-│   │   ├── TaskCreatedEvent.cs
-│   │   ├── TaskCreatedEventHandler.cs
 │   │   └── ...
 │   └── TaskItemMapper.cs        # Shared entity → DTO mapping
 └── Shared/                      # Cross-feature components
@@ -62,21 +61,21 @@ UniTask.Api/Api/
     └── [Status, TaskType, Label, Comment models/DTOs]
 ```
 
-**Navigation tip:** All code for a feature lives in its folder. New commands/queries go in their own subfolders. Events go in the feature-level `Events/` folder.
+**Navigation tip:** All code for a feature lives in its folder. Each operation (command or query) gets its own subfolder containing the command/query, handler, event, and event handler.
 
 ## Adding New CQRS Operations
 
 ### For Commands (State Changes)
 
-1. **Create Command** in `Commands/{Operation}/`
+1. **Create Command** in `{Feature}/{Operation}/`
    - Implement `IRequest` or `IRequest<TResponse>`
    - Implement `IProviderEvent` (includes `Origin` and `TaskProvider`)
-   - Example: [CreateProjectCommand.cs](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommand.cs)
+   - Example: [CreateProjectCommand.cs](UniTask.Api/Api/Projects/Create/CreateProjectCommand.cs)
 
-2. **Create Event** in `Events/`
+2. **Create Event** in the same `{Feature}/{Operation}/` folder
    - Implement `INotification` and `IProviderEvent`
    - Use past tense naming (e.g., `ProjectCreatedEvent`)
-   - Example: [ProjectCreatedEvent.cs](UniTask.Api/Api/Projects/Events/ProjectCreatedEvent.cs)
+   - Example: [ProjectCreatedEvent.cs](UniTask.Api/Api/Projects/Create/ProjectCreatedEvent.cs)
 
 3. **Add Domain Event to Entity**
    - Entities have `[NotMapped] public List<INotification> DomainEvents { get; private set; } = new();`
@@ -86,26 +85,26 @@ UniTask.Api/Api/
      - Returns the entity
    - Example: [Project.Create()](UniTask.Api/Api/Projects/Models/Project.cs)
 
-4. **Create Handler** in `Commands/{Operation}/`
+4. **Create Handler** in the same `{Feature}/{Operation}/` folder
    - Implement `IRequestHandler<TCommand>` or `IRequestHandler<TCommand, TResponse>`
    - Inject `TaskDbContext` and `IPublisher`
    - Call entity factory method
    - Add entity to `DbContext`
    - Call `await _publisher.PublishAll(entity.DomainEvents, cancellationToken)` BEFORE `SaveChangesAsync`
    - Call `await _context.SaveChangesAsync(cancellationToken)`
-   - Example: [CreateProjectCommandHandler.cs](UniTask.Api/Api/Projects/Commands/Create/CreateProjectCommandHandler.cs)
+   - Example: [CreateProjectCommandHandler.cs](UniTask.Api/Api/Projects/Create/CreateProjectCommandHandler.cs)
 
 5. **Create EventHandler** (optional, for side effects)
-   - Implement `INotificationHandler<TEvent>` in `Events/`
+   - Implement `INotificationHandler<TEvent>` in the same `{Feature}/{Operation}/` folder
    - Handle external integrations, notifications, etc.
 
 6. **Add Controller endpoint** using `await _mediator.Send(command)`
 
 ### For Queries (Read-Only)
 
-1. **Create Query** in `Queries/{Operation}/`
+1. **Create Query** in `{Feature}/{Operation}/` (e.g., `Projects/GetProject/`)
    - Implement `IRequest<TResponse>`
-2. **Create Handler** implementing `IRequestHandler<TQuery, TResponse>`
+2. **Create Handler** implementing `IRequestHandler<TQuery, TResponse>` in the same folder
    - Inject `TaskDbContext`
    - Query database and return result
 3. **Add Controller endpoint** using `await _mediator.Send(query)`

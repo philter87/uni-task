@@ -84,37 +84,35 @@ The project follows a **feature-based** organization combined with **model co-lo
 UniTask.Api/
 └── Api/
     ├── Projects/          # Project feature
-    │   ├── Commands/
-    │   │   └── Create/    # CreateProjectCommand, Handler
-    │   ├── Queries/
-    │   │   ├── GetProject/
-    │   │   └── GetProjects/
-    │   ├── Models/        # DB entity models
-    │   │   ├── Project.cs
-    │   │   ├── Organisation.cs
-    │   │   ├── Board.cs
-    │   │   └── ...
-    │   ├── Events/        # Events and EventHandlers
+    │   ├── Create/        # Command, Handler, Event, EventHandler
+    │   │   ├── CreateProjectCommand.cs
+    │   │   ├── CreateProjectCommandHandler.cs
     │   │   ├── ProjectCreatedEvent.cs
     │   │   └── ProjectCreatedEventHandler.cs
+    │   ├── GetProject/    # Query and Handler
+    │   ├── GetProjects/   # Query and Handler
+    │   ├── Models/        # DB entity models
+    │   │   ├── Project.cs
+    │   │   ├── Board.cs
+    │   │   └── ...
     │   ├── ProjectDto.cs  # Project DTO
     │   └── ProjectsController.cs
     │
     ├── Tasks/             # Task feature
-    │   ├── Commands/
-    │   │   ├── Create/, Update/, Delete/
-    │   │   ├── ChangeStatus/, AddLabel/, RemoveLabel/
-    │   │   └── AssignMember/
-    │   ├── Queries/
-    │   │   ├── GetTask/, GetTasks/
+    │   ├── Create/        # CreateTask command, handler, event, event handler
+    │   ├── Update/        # UpdateTask command, handler, event, event handler
+    │   ├── Delete/        # DeleteTask command, handler, event, event handler
+    │   ├── ChangeStatus/  # ChangeTaskStatus command, handler, event, event handler
+    │   ├── AddLabel/      # AddTaskLabel command, handler, event, event handler
+    │   ├── RemoveLabel/   # RemoveTaskLabel command, handler, event, event handler
+    │   ├── AssignMember/  # AssignMemberToTask command, handler, event, event handler
+    │   ├── SyncTasks/     # SyncTasks command and handler
+    │   ├── GetTask/       # Query and Handler
+    │   ├── GetTasks/      # Query and Handler
     │   ├── Models/        # DB entity models
     │   │   ├── TaskItem.cs
     │   │   ├── Comment.cs
     │   │   ├── Label.cs
-    │   │   └── ...
-    │   ├── Events/        # Events and EventHandlers
-    │   │   ├── TaskCreatedEvent.cs
-    │   │   ├── TaskCreatedEventHandler.cs
     │   │   └── ...
     │   ├── TaskItemDto.cs # TaskItem DTO
     │   ├── TaskItemMapper.cs # Shared entity → DTO mapping
@@ -139,13 +137,10 @@ Each feature folder contains:
 - **Controller** (`*Controller.cs`): API endpoints for the feature
   - Example: `ProjectsController.cs`, `TasksController.cs`
   
-- **Commands/** and **Queries/**: CQRS sub-folders (without events)
-  - Example: `Projects/Commands/Create/` contains:
+- **Operation slices** (`{Operation}/`): Each operation (command or query) gets its own folder containing the command/query, handler, event, and event handler
+  - Example: `Projects/Create/` contains:
     - `CreateProjectCommand.cs` - The command
     - `CreateProjectCommandHandler.cs` - Command handler (injects `TaskDbContext`)
-
-- **Events/**: Events and EventHandlers for the feature
-  - Example: `Projects/Events/` contains:
     - `ProjectCreatedEvent.cs` - Event raised after creation
     - `ProjectCreatedEventHandler.cs` - Event handler (side effects / external integrations)
 

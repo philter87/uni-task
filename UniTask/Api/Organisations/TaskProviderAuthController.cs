@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using UniTask.Api.Organisations.Commands.CreateTaskProviderAuth;
+using UniTask.Api.Organisations.CreateTaskProviderAuth;
 
 namespace UniTask.Api.Organisations;
 

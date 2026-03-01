@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using MediatR;
-using UniTask.Api.Organisations.Commands.CreateTaskProviderAuth;
-using UniTask.Api.Organisations.Events;
+using UniTask.Api.Organisations.CreateTaskProviderAuth;
 using UniTask.Api.Shared;
 
 namespace UniTask.Api.Organisations.Models;

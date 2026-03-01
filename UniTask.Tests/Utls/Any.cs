@@ -1,8 +1,8 @@
-using UniTask.Api.Organisations.Commands.Create;
-using UniTask.Api.Organisations.Commands.CreateTaskProviderAuth;
+using UniTask.Api.Organisations.Create;
+using UniTask.Api.Organisations.CreateTaskProviderAuth;
 using UniTask.Api.Organisations.Models;
 using UniTask.Api.Projects;
-using UniTask.Api.Projects.Commands.Create;
+using UniTask.Api.Projects.Create;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;

@@ -1,0 +1,12 @@
+using MediatR;
+using UniTask.Api.Shared;
+
+namespace UniTask.Api.Tasks.Delete;
+
+public class TaskDeletedEvent : INotification, IProviderEvent
+{
+    public Guid TaskId { get; set; }
+    public DateTime DeletedAt { get; set; }
+    public ChangeOrigin Origin { get; set; } = ChangeOrigin.Internal;
+    public TaskProvider TaskProvider { get; set; } = TaskProvider.Internal;
+}
