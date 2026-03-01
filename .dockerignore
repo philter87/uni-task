@@ -1,0 +1,9 @@
+**/node_modules
+**/bin
+**/obj
+**/.git
+UniTask/tasks.db
+UniTask/wwwroot/
+**/usersecrets
+**/*.user
+**/.vs

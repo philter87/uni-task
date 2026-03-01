@@ -101,13 +101,17 @@ builder.Services.AddOpenApiDocument(config =>
 });
 
 // Configure CORS for frontend
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:5173", "https://localhost:5173",
+        "http://localhost:5174", "https://localhost:5174"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173", "https://localhost:5173",
-                               "http://localhost:5174", "https://localhost:5174")
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials();
@@ -124,9 +128,11 @@ if (app.Environment.IsDevelopment())
     {
         config.Path = "/swagger";
     });
+}
 
-    // Apply migrations in development
-    using var scope = app.Services.CreateScope();
+// Always apply migrations so the DB is initialised on first boot
+using (var scope = app.Services.CreateScope())
+{
     var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
     db.Database.Migrate();
 }
