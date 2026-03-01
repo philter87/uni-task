@@ -23,21 +23,11 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskU
             throw new InvalidOperationException($"Task with ID {request.TaskId} not found");
         }
 
-        existingTask.Title = request.Title;
-        existingTask.Description = request.Description;
-        existingTask.StatusId = request.StatusId;
-        existingTask.Priority = request.Priority;
-        existingTask.DueDate = request.DueDate;
-        existingTask.AssignedTo = request.AssignedTo;
-        existingTask.ProjectId = request.ProjectId;
-        existingTask.TaskTypeId = request.TaskTypeId;
-        existingTask.BoardId = request.BoardId;
-        existingTask.DurationHours = request.DurationHours;
-        existingTask.DurationRemainingHours = request.DurationRemainingHours;
-        existingTask.UpdatedAt = DateTime.UtcNow;
+        existingTask.Update(request);
 
         try
         {
+            await _publisher.PublishAll(existingTask.DomainEvents, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
@@ -49,15 +39,6 @@ public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskU
             throw;
         }
 
-        var taskUpdatedEvent = new TaskUpdatedEvent
-        {
-            TaskId = existingTask.Id,
-            Title = existingTask.Title,
-            UpdatedAt = existingTask.UpdatedAt
-        };
-
-        await _publisher.Publish(taskUpdatedEvent, cancellationToken);
-
-        return taskUpdatedEvent;
+        return existingTask.DomainEvents.OfType<TaskUpdatedEvent>().First();
     }
 }

@@ -6,6 +6,7 @@ using UniTask.Api.Projects.Create;
 using UniTask.Api.Projects.Models;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
+using UniTask.Api.Tasks.Create;
 using UniTask.Api.Tasks.Models;
 using UniTask.Api.Users;
 
@@ -84,6 +85,31 @@ public static class Any
             Description = description ?? String(),
             Origin = origin ?? ChangeOrigin.Internal,
             TaskProvider = taskProvider ?? TaskProvider.GitHub,
+        };
+    }
+
+    public static CreateTaskCommand CreateTaskCommand(
+        string? title = null,
+        string? description = null,
+        Guid? projectId = null,
+        Guid? taskTypeId = null,
+        Guid? statusId = null,
+        Guid? boardId = null,
+        double? priority = null,
+        ChangeOrigin? origin = null,
+        TaskProvider? taskProvider = null)
+    {
+        return new CreateTaskCommand
+        {
+            Title = title ?? $"Task {String(10)}",
+            Description = description ?? String(30),
+            ProjectId = projectId,
+            TaskTypeId = taskTypeId,
+            StatusId = statusId,
+            BoardId = boardId,
+            Priority = priority ?? Random.Shared.NextDouble() * 10,
+            Origin = origin ?? ChangeOrigin.Internal,
+            TaskProvider = taskProvider ?? TaskProvider.Internal,
         };
     }
 

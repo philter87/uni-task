@@ -32,22 +32,11 @@ public class AddTaskLabelCommandHandler : IRequestHandler<AddTaskLabelCommand, T
             throw new InvalidOperationException($"Label with ID {request.LabelId} not found");
         }
 
-        if (!task.Labels.Any(l => l.Id == request.LabelId))
-        {
-            task.Labels.Add(label);
-            task.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        task.AddLabel(label, request);
 
-        var labelAddedEvent = new TaskLabelAddedEvent
-        {
-            TaskId = request.TaskId,
-            LabelId = request.LabelId,
-            AddedAt = DateTime.UtcNow
-        };
+        await _publisher.PublishAll(task.DomainEvents, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(labelAddedEvent, cancellationToken);
-
-        return labelAddedEvent;
+        return task.DomainEvents.OfType<TaskLabelAddedEvent>().First();
     }
 }
