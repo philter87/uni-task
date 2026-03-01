@@ -49,10 +49,14 @@ public class MockGitHubHttpClientFactory : IGitHubHttpClientFactory
         return httpClient;
     }
 
+    public HttpClient CreateClientForProject(Guid projectId) => CreateClient(Guid.Empty);
+
     public string GetOwner() => "org";
 
     public string GetRepo() => "repo";
 
     public bool IsConfigured(Guid organisationId) => true;
+
+    public bool IsConfiguredForProject(Guid projectId) => false;
 }
 

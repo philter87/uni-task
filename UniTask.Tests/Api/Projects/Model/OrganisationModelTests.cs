@@ -164,6 +164,65 @@ public class OrganisationModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Project_HasOptionalTaskProviderAuthReference()
+    {
+        // Arrange
+        var auth = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp, secretValue: "gh-token-xyz");
+        _context.TaskProviderAuths.Add(auth);
+        await _context.SaveChangesAsync();
+
+        var projectWithAuth = Any.Project(name: "Project With Auth");
+        projectWithAuth.TaskProviderAuthId = auth.Id;
+
+        var projectWithoutAuth = Any.Project(name: "Project Without Auth");
+
+        // Act
+        _context.Projects.AddRange(projectWithAuth, projectWithoutAuth);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        var savedWithAuth = await _context.Projects
+            .Include(p => p.TaskProviderAuth)
+            .FirstOrDefaultAsync(p => p.Id == projectWithAuth.Id);
+
+        var savedWithoutAuth = await _context.Projects
+            .Include(p => p.TaskProviderAuth)
+            .FirstOrDefaultAsync(p => p.Id == projectWithoutAuth.Id);
+
+        Assert.NotNull(savedWithAuth);
+        Assert.NotNull(savedWithAuth.TaskProviderAuth);
+        Assert.Equal(auth.Id, savedWithAuth.TaskProviderAuth.Id);
+        Assert.Equal("gh-token-xyz", savedWithAuth.TaskProviderAuth.SecretValue);
+
+        Assert.NotNull(savedWithoutAuth);
+        Assert.Null(savedWithoutAuth.TaskProviderAuth);
+    }
+
+    [Fact]
+    public async Task DeletingTaskProviderAuth_SetsProjectTaskProviderAuthIdToNull()
+    {
+        // Arrange
+        var auth = Any.TaskProviderAuth(authenticationType: AuthenticationType.GitHubApp);
+        _context.TaskProviderAuths.Add(auth);
+        await _context.SaveChangesAsync();
+
+        var project = Any.Project(name: "Auth Project");
+        project.TaskProviderAuthId = auth.Id;
+        _context.Projects.Add(project);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _context.TaskProviderAuths.Remove(auth);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        var savedProject = await _context.Projects.FirstOrDefaultAsync(p => p.Id == project.Id);
+        Assert.NotNull(savedProject);
+        Assert.Null(savedProject.TaskProviderAuthId);
+    }
+
+
+    [Fact]
     public async Task Organisation_CanHaveTaskProviderAuths()
     {
         // Arrange
