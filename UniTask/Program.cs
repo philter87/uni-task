@@ -49,22 +49,35 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
     };
 })
-.AddGoogle(options =>
+;
+
+var googleClientId = builder.Configuration["Auth:Google:ClientId"];
+if (!string.IsNullOrEmpty(googleClientId))
 {
-    options.ClientId = builder.Configuration["Auth:Google:ClientId"] ?? string.Empty;
-    options.ClientSecret = builder.Configuration["Auth:Google:ClientSecret"] ?? string.Empty;
-    options.CallbackPath = "/api/auth/callback/google";
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-})
-.AddGitHub(options =>
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = builder.Configuration["Auth:Google:ClientSecret"]!;
+            options.CallbackPath = "/api/auth/callback/google";
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+        });
+}
+
+var githubClientId = builder.Configuration["Auth:GitHub:ClientId"];
+if (!string.IsNullOrEmpty(githubClientId))
 {
-    options.ClientId = builder.Configuration["Auth:GitHub:ClientId"] ?? string.Empty;
-    options.ClientSecret = builder.Configuration["Auth:GitHub:ClientSecret"] ?? string.Empty;
-    options.CallbackPath = "/api/auth/callback/github";
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-    options.Scope.Add("user:email");
-    options.ClaimActions.Add(new JsonKeyClaimAction("urn:github:avatar", "string", "avatar_url"));
-});
+    builder.Services.AddAuthentication()
+        .AddGitHub(options =>
+        {
+            options.ClientId = githubClientId;
+            options.ClientSecret = builder.Configuration["Auth:GitHub:ClientSecret"]!;
+            options.CallbackPath = "/api/auth/callback/github";
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.Scope.Add("user:email");
+            options.ClaimActions.Add(new JsonKeyClaimAction("urn:github:avatar", "string", "avatar_url"));
+        });
+}
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(UniTask.Program).Assembly));

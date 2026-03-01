@@ -5,6 +5,9 @@ primary_region = "ams"
 
 [env]
   ASPNETCORE_ENVIRONMENT = "Production"
+  ConnectionStrings__DefaultConnection = "Data Source=/data/tasks.db"
+  FrontendUrl = "https://uni-task.fly.dev"
+  AllowedOrigins__0 = "https://uni-task.fly.dev"
 
 [http_service]
   internal_port = 8080
