@@ -8,9 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UniTask.Api.Shared;
 using UniTask.Api.Tasks;
-using UniTask.Api.Tasks.Commands.Create;
-using UniTask.Api.Tasks.Commands.Update;
-using UniTask.Api.Tasks.Events;
+using UniTask.Api.Tasks.Create;
+using UniTask.Api.Tasks.Update;
+using UniTask.Api.Tasks.Delete;
+using UniTask.Api.Tasks.ChangeStatus;
+using UniTask.Api.Tasks.AssignMember;
+using UniTask.Api.Tasks.AddLabel;
+using UniTask.Api.Tasks.RemoveLabel;
 using UniTask.Tests.Utls;
 using Xunit;
 

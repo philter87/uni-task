@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using UniTask.Api.Organisations.Commands.Create;
+using UniTask.Api.Organisations.Create;
 
 namespace UniTask.Api.Organisations;
 

@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UniTask.Api.Shared;
-using UniTask.Api.Tasks.Commands.Create;
-using UniTask.Api.Tasks.Commands.Delete;
-using UniTask.Api.Tasks.Commands.Update;
-using UniTask.Api.Tasks.Queries.GetTask;
-using UniTask.Api.Tasks.Queries.GetTasks;
+using UniTask.Api.Tasks.Create;
+using UniTask.Api.Tasks.Delete;
+using UniTask.Api.Tasks.Update;
+using UniTask.Api.Tasks.GetTask;
+using UniTask.Api.Tasks.GetTasks;
 using UniTask.Tests.Utls;
 using Xunit;
 

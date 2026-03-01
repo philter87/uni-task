@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using UniTask.Api.Projects.Commands.Create;
-using UniTask.Api.Projects.Events;
+using UniTask.Api.Projects.Create;
 using UniTask.Tests.Utls;
 
 namespace UniTask.Tests.Api.Projects;

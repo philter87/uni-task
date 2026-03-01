@@ -1,16 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using UniTask.Api.Tasks.Commands.AddLabel;
-using UniTask.Api.Tasks.Commands.AssignMember;
-using UniTask.Api.Tasks.Commands.ChangeStatus;
-using UniTask.Api.Tasks.Commands.Create;
-using UniTask.Api.Tasks.Commands.Delete;
-using UniTask.Api.Tasks.Commands.RemoveLabel;
-using UniTask.Api.Tasks.Commands.SyncTasks;
-using UniTask.Api.Tasks.Commands.Update;
-using UniTask.Api.Tasks.Events;
-using UniTask.Api.Tasks.Queries.GetTask;
-using UniTask.Api.Tasks.Queries.GetTasks;
+using UniTask.Api.Tasks.AddLabel;
+using UniTask.Api.Tasks.AssignMember;
+using UniTask.Api.Tasks.ChangeStatus;
+using UniTask.Api.Tasks.Create;
+using UniTask.Api.Tasks.Delete;
+using UniTask.Api.Tasks.RemoveLabel;
+using UniTask.Api.Tasks.SyncTasks;
+using UniTask.Api.Tasks.Update;
+using UniTask.Api.Tasks.GetTask;
+using UniTask.Api.Tasks.GetTasks;
 
 namespace UniTask.Api.Tasks;
 
