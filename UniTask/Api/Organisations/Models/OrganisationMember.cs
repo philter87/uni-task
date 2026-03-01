@@ -1,6 +1,6 @@
 using UniTask.Api.Users;
 
-namespace UniTask.Api.Projects.Models;
+namespace UniTask.Api.Organisations.Models;
 
 public class OrganisationMember
 {

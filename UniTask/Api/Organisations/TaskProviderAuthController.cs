@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using UniTask.Api.Projects.Commands.CreateAuthTaskProvider;
+using UniTask.Api.Organisations.Commands.CreateTaskProviderAuth;
 
-namespace UniTask.Api.Projects;
+namespace UniTask.Api.Organisations;
 
 [ApiController]
 [Route("api/task-provider-auths")]
@@ -16,7 +16,7 @@ public class TaskProviderAuthController : ControllerBase
     }
 
     [HttpPost]
-    public async Task CreateAuthTaskProvider([FromBody] CreateAuthTaskProviderCommand command)
+    public async Task CreateTaskProviderAuth([FromBody] CreateTaskProviderAuthCommand command)
     {
         await _mediator.Send(command);
     }

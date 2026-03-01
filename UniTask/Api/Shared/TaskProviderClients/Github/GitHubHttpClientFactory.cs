@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using UniTask.Api.Projects.Models;
+using UniTask.Api.Organisations.Models;
 
 namespace UniTask.Api.Shared.TaskProviderClients;
 
@@ -76,7 +77,8 @@ public class GitHubHttpClientFactory : IGitHubHttpClientFactory
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
             var auth = context.TaskProviderAuths
-                .FirstOrDefault(a => a.OrganisationId == organisationId
+                .Include(a => a.Organisations)
+                .FirstOrDefault(a => a.Organisations.Any(o => o.Id == organisationId)
                     && a.AuthenticationType == AuthenticationType.GitHubApp);
             if (auth != null)
                 return auth.SecretValue;

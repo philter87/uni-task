@@ -25,7 +25,7 @@ public class TaskProviderAuthControllerTests : IDisposable
     public async Task CreateAuthTaskProvider_ReturnsOk()
     {
         // Arrange
-        var command = Any.CreateAuthTaskProviderCommand();
+        var command = Any.CreateTaskProviderAuthCommand();
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/task-provider-auths", command);
