@@ -56,12 +56,15 @@ public class AuthController : ControllerBase
             return Redirect($"{frontendUrl}/login?error=auth_failed");
 
         var principal = result.Principal!;
-        var email = principal.FindFirstValue(ClaimTypes.Email);
         var name = principal.FindFirstValue(ClaimTypes.Name);
         var externalId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
         // GitHub sets a custom claim; Google uses "picture"
         var avatarUrl = principal.FindFirstValue("urn:github:avatar")
                      ?? principal.FindFirstValue("picture");
+
+        // GitHub returns public email from /user; private-email users get null → fall back to noreply address
+        var email = principal.FindFirstValue(ClaimTypes.Email)
+                 ?? $"{externalId}+{name}@users.noreply.github.com";
 
         if (string.IsNullOrEmpty(email))
             return Redirect($"{frontendUrl}/login?error=no_email");

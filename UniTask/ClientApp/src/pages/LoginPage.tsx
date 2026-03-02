@@ -1,7 +1,11 @@
 import { Github, Chrome } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
 export default function LoginPage() {
+  const [searchParams] = useSearchParams()
+  const error = searchParams.get('error')
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-8 px-4">
@@ -15,6 +19,13 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold tracking-tight">UniTask</h1>
           <p className="text-sm text-muted-foreground">Unified task management across all your tools</p>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+            {decodeURIComponent(error)}
+          </div>
+        )}
 
         {/* Auth buttons */}
         <div className="space-y-3">

@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -74,8 +75,19 @@ if (!string.IsNullOrEmpty(githubClientId))
             options.ClientSecret = builder.Configuration["Auth:GitHub:ClientSecret"]!;
             options.CallbackPath = "/api/auth/callback/github";
             options.SignInScheme = IdentityConstants.ExternalScheme;
-            options.Scope.Add("user:email");
             options.ClaimActions.Add(new JsonKeyClaimAction("urn:github:avatar", "string", "avatar_url"));
+            options.Events = new OAuthEvents
+            {
+                OnRemoteFailure = context =>
+                {
+                    var frontendUrl = context.HttpContext.RequestServices
+                        .GetRequiredService<IConfiguration>()["FrontendUrl"] ?? "http://localhost:5173";
+                    var error = Uri.EscapeDataString(context.Failure?.Message ?? "auth_failed");
+                    context.Response.Redirect($"{frontendUrl}/login?error={error}");
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                }
+            };
         });
 }
 
