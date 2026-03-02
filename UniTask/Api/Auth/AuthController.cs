@@ -39,9 +39,10 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public IActionResult Login(string provider)
     {
+        var scheme = NormalizeScheme(provider);
         var redirectUrl = Url.Action(nameof(Callback), new { provider });
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-        return Challenge(properties, provider);
+        return Challenge(properties, scheme);
     }
 
     [HttpGet("callback/{provider}")]
@@ -50,7 +51,7 @@ public class AuthController : ControllerBase
     {
         var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:5173";
 
-        var result = await HttpContext.AuthenticateAsync(provider);
+        var result = await HttpContext.AuthenticateAsync(NormalizeScheme(provider));
         if (!result.Succeeded)
             return Redirect($"{frontendUrl}/login?error=auth_failed");
 
@@ -112,6 +113,14 @@ public class AuthController : ControllerBase
         var token = _jwtService.CreateToken(user);
         return Redirect($"{frontendUrl}/auth/callback?token={token}");
     }
+
+    private static string NormalizeScheme(string provider) =>
+        provider.ToLower() switch
+        {
+            "github" => "GitHub",
+            "google" => "Google",
+            _ => provider,
+        };
 
     [HttpGet("me")]
     [Authorize]
