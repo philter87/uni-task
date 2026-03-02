@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
@@ -14,6 +15,15 @@ using UniTask.Api.Shared.TaskProviderClients.AzureDevOps;
 using UniTask.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Trust Fly.io's reverse proxy so Request.IsHttps = true → correlation cookie gets Secure flag
+// Without this, SameSite=None cookies are set without Secure and rejected by browsers
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Persist Data Protection keys so OAuth state survives machine restarts (critical on Fly.io)
 var dpKeysPath = builder.Configuration["DataProtection:KeysPath"];
