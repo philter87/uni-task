@@ -14,6 +14,16 @@ using UniTask.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Persist Data Protection keys so OAuth state survives machine restarts (critical on Fly.io)
+var dpKeysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrEmpty(dpKeysPath))
+{
+    var keysDir = new DirectoryInfo(dpKeysPath);
+    keysDir.Create();
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(keysDir);
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
